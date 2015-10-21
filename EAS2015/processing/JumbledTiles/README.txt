@@ -1,0 +1,1 @@
+This s/w is essentially the same as that used for JMJ's PS15 puzzle called "Self Reference" - latter code under PS2015\processing\SelfReference.
