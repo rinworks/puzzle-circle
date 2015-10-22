@@ -167,7 +167,7 @@ class TwowayMirror implements  Drawable {
     noStroke();
     fill(params.borderColor);
     rectMode(CENTER);
-    rect(0, 0, 5, 30); // A vertical mirror - corresponding to it's NORMAL having an orientation of 0 degrees.
+    rect(0, 0, 5, 30); // A vertical mirror - corresponding to it's NORMAL having an orientation of0
     gUtils.popTransform();
   }
 }
@@ -208,8 +208,8 @@ class Cell {
     this.i = i;
     this.j = j;
   }
-  
- String getClassName() {
+
+  String getClassName() {
     String className = (dObject==null)  ? "" : dObject.getClass().getName();
     className = className.substring(className.indexOf("$")+1); // relise of indexOf returning -1 if not found.
     return className;
@@ -243,7 +243,7 @@ class Grid {
 
     for (int i=0; i<rows; i++) {
       for (int j=0; j<cols; j++) {
-        Cell c = new Cell(i,j);
+        Cell c = new Cell(i, j);
         c.eW  = eW;
         c.eH = eH;
         c.iW = iW;

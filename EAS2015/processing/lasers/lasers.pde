@@ -1,4 +1,4 @@
-import java.util.Comparator;
+import java.util.Comparator; //<>// //<>// //<>// //<>// //<>// //<>//
 import java.util.Arrays;
 
 void setup() {
@@ -6,6 +6,25 @@ void setup() {
 
 
   // ;==v and :==/
+  String[] positionsGood = {
+    ".............", 
+    ".../.....:...", 
+    ".....>...::..", 
+    ".....;>..:::.", 
+    "..>/E:.. ....", 
+    "./.:......:I.", 
+    "..>./...J....", 
+    "...T.../...<.", 
+    "...P...OD....", 
+    "...:....:..<.", 
+    "...U../X^....", 
+    ".^//.::..//<.", 
+    ".>./.N..:^...", 
+    "..:.:..<:./..", 
+    "....^.^......", 
+    "............."
+  };
+
   String[] positions = {
     ".............", 
     ".../.....:...", 
@@ -24,15 +43,16 @@ void setup() {
     "....^.^......", 
     "............."
   };
-  
+
+
   // Grid coordinates: (i, j) are like rows of an array/matrix. So i is vertical,
   // with increasing i going downwards.
   // Angles: normal interpration (0 == going right; 90== going up, etc.)
 
-  int[] laserIds = {11, 5, 7, 13, 6, 14, 10, 8, 12, 15, 3, 9, 1, 2, 4}; //<>//
+  int[] laserIds = {11, 5, 7, 13, 6, 14, 10, 8, 12, 15, 3, 9, 1, 2, 4};
 
-  Grid g = genObjects(positions, laserIds); //<>//
-  drawPaths(g);
+  Grid g = genObjects(positions, laserIds);
+  drawPaths(g, "JUNE EXPEDITION");
   g.draw();
   //println(PFont.list());
 }
@@ -98,16 +118,19 @@ Grid genObjects(String[] spec, int[] laserIds) {
 
 // Draw the laser paths and return a string containing
 // any letters hit, in order of laserIds.
-String drawPaths(Grid g) {
-  Cell[] laserCells = findLasers(g); //<>//
+String drawPaths(Grid g, String expectedText) {
+  Cell[] laserCells = findLasers(g);
+  int i = 0;
   for (Cell c : laserCells) {
     Laser l = laserFromCell(c);
     println("Found laser " + l.id + " at (" + c.i + "," + c.j + ")");
     ArrayList<Cell> path = new ArrayList<Cell>();
     path.add(c);
-    growLaserPath(g, path); //<>//
-    drawLaserPath(g, path);
+    growLaserPath(g, path);
+    String s = i<expectedText.length() ? expectedText.substring(i, i+1) : "";
+    drawLaserPath(g, path, s);
     //break;
+    i++;
   }
   return "";
 }
@@ -144,13 +167,13 @@ String shortClassName(String className) {
   return className.substring(className.indexOf("$")+1); // relise of indexOf returning -1 if not found.
 }
 
-void growLaserPath(Grid g, ArrayList<Cell> path) { //<>//
+void growLaserPath(Grid g, ArrayList<Cell> path) {
   println("Entering growLaserPath. #elements: " + path.size());
   int len = path.size();
   if (len==0) {
     return;
   }
-  Cell cLast = path.get(len-1); //<>//
+  Cell cLast = path.get(len-1);
   Cell cNext = null;
   float orientation;
   if (len == 1) {
@@ -252,17 +275,47 @@ float getCurrentBeamOrientation(Cell cPrev, Cell c) {
   return ret;
 }
 
-void drawLaserPath(Grid g, ArrayList<Cell> path) {
+void drawLaserPath(Grid g, ArrayList<Cell> path, String expectedText) {
   if (path.size()==0) {
     return;
   }
   Cell cPrev = null;
-  stroke(color(255,0,0));
-  strokeWeight(4);
+  //Check what kind of a path to draw -successful or failed.
+  Boolean success = false;
+  Cell cLast = path.get(path.size()-1); // can be null
+  if (cLast != null && cLast.dObject!= null &&  cLast.dObject instanceof TextBox) {
+    TextBox tb = (TextBox) cLast.dObject;
+    if (tb.label.equals(expectedText)) {
+      {
+        // We're good!
+        success = true;
+      }
+    }
+  }
+  int laserColor = color(255, 0, 0);
+  int weight = 2;
+  if (!success) {
+    laserColor = color(255, 153, 0); // orange
+    weight = 10;
+  }
+
+
+  stroke(laserColor);
+  strokeWeight(weight);
+  Cell cFinal = null;
   for (Cell c : path) {
     if (cPrev!=null && c!=null) {
       line(cPrev.center.x, cPrev.center.y, c.center.x, c.center.y);
     }
     cPrev = c;
+    cFinal = (c==null) ? cFinal : c;
+  }
+
+  // We draw a disk at the final destination (or pre-final if the final is null)
+  if (!success) {
+    assert(cFinal!=null); // there should be at least one non-null cell!
+    fill(laserColor);
+    ellipseMode(CENTER);
+    ellipse(cFinal.center.x, cFinal.center.y, 40, 40);
   }
 }
