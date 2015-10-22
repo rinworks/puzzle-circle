@@ -24,12 +24,16 @@ void setup() {
     "....^.^......", 
     "............."
   };
+  
+  // Grid coordinates: (i, j) are like rows of an array/matrix. So i is vertical,
+  // with increasing i going downwards.
+  // Angles: normal interpration (0 == going right; 90== going up, etc.)
 
   int[] laserIds = {11, 5, 7, 13, 6, 14, 10, 8, 12, 15, 3, 9, 1, 2, 4}; //<>//
 
   Grid g = genObjects(positions, laserIds); //<>//
-  //g.draw();
   drawPaths(g);
+  g.draw();
   //println(PFont.list());
 }
 
@@ -103,7 +107,7 @@ String drawPaths(Grid g) {
     path.add(c);
     growLaserPath(g, path); //<>//
     drawLaserPath(g, path);
-    break;
+    //break;
   }
   return "";
 }
@@ -142,7 +146,6 @@ String shortClassName(String className) {
 
 void growLaserPath(Grid g, ArrayList<Cell> path) { //<>//
   println("Entering growLaserPath. #elements: " + path.size());
-  String NULL = "null";
   int len = path.size();
   if (len==0) {
     return;
@@ -181,16 +184,16 @@ Cell findNextTarget(Grid g, Cell c, float orientation) {
   int di=0, dj=0;
   switch (k) {
   case 0:  // right
-    di=1;
-    break;
-  case 1:  // up
     dj=1;
     break;
-  case 2:  // left
+  case 1:  // up
     di=-1;
     break;
-  case 3:  // down
+  case 2:  // left
     dj=-1;
+    break;
+  case 3:  // down
+    di=1;
     break;
   default: // shouldn't get here.
     assert(false);
@@ -217,9 +220,10 @@ Cell findNextTarget(Grid g, Cell c, float orientation) {
 float getNextBeamOrientation(float prevOrientation, float mirrorOrientation)
 {
   int prev = round((prevOrientation+360)/90.0) % 4; // 0=right 1=up 2=left 3=down
-  int mO = round(mirrorOrientation); // should be either 45 or -45
-  int[] m45 = {-90, 180, 90, 0};
-  int[] mMinus45 = {90, 0, -90, -90};
+  assert(prev>=0 && prev<4);
+  int mO = round(mirrorOrientation); // should be either 45 or -45 - this is the NORMAL of the mirror, NOT the plane of the mirror.
+  int[] m45 = {-90, 180, 90, 0}; // If it was 0 (going right) it would now be -90 (going down), etc.
+  int[] mMinus45 = {90, 0, -90, 180}; // If it was 0 (going right) it will now be 90 (going up), etc.
   if (mO == 45) {
     return m45[prev];
   } else {
@@ -234,16 +238,16 @@ float getNextBeamOrientation(float prevOrientation, float mirrorOrientation)
 float getCurrentBeamOrientation(Cell cPrev, Cell c) {
   // We assume direction is only in the cardinal directions for now.
   float ret = 0; 
-  if (cPrev.i<c.i) {
-    ret = 0.0;
-  } else if (cPrev.i>c.i) {
-    ret =   180.0;
-  } else if (cPrev.j<c.j) {
-    ret =  90;
+  if (cPrev.j<c.j) {
+    ret = 0.0; // increasing j is leftwards
   } else if (cPrev.j>c.j) {
-    ret = -90;
+    ret =   180.0;
+  } else if (cPrev.i<c.i) {
+    ret =  -90; // increasing i is downwards
+  } else if (cPrev.i>c.i) {
+    ret = 90;
   } else {
-    assert(false);
+    assert(false); // The cells are identifical - beam orientation is undefined. We shoudl never get here.
   }
   return ret;
 }
@@ -253,11 +257,11 @@ void drawLaserPath(Grid g, ArrayList<Cell> path) {
     return;
   }
   Cell cPrev = null;
-  stroke(0);
-  strokeWeight(2);
+  stroke(color(255,0,0));
+  strokeWeight(4);
   for (Cell c : path) {
     if (cPrev!=null && c!=null) {
-      line(cPrev.i*c.eW, cPrev.j*c.eH, c.i*c.eW, c.j*c.eW);
+      line(cPrev.center.x, cPrev.center.y, c.center.x, c.center.y);
     }
     cPrev = c;
   }

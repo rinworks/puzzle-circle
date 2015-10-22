@@ -167,7 +167,7 @@ class TwowayMirror implements  Drawable {
     noStroke();
     fill(params.borderColor);
     rectMode(CENTER);
-    rect(0, 0, 5, 30);
+    rect(0, 0, 5, 30); // A vertical mirror - corresponding to it's NORMAL having an orientation of 0 degrees.
     gUtils.popTransform();
   }
 }
