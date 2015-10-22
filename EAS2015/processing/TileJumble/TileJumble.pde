@@ -17,7 +17,7 @@ void setup() {
 
   //gHP = new HilbertPuzzle(basePath, "salmon-square.jpg", gPhraseSalmon, "salmon", 8);
   //gHP = new HilbertPuzzle(basePath, "body-square.png", gPhraseBody, "body", 5);
-  gHP = new HilbertPuzzle(basePath, "fractal-square.jpg", gPhraseKeya, "math", 8);
+  gHP = new HilbertPuzzle(basePath, "ammonite-square.jpg", gPhraseMath, "math", 8);
   //gHP = new HilbertPuzzle(basePath, "eagle-square.jpg", gPhraseEagle, "eagle", 5);
   //gHP = new HilbertPuzzle(basePath, "seattle-square.jpg", gPhraseSeattle, "seattle", 7);
   //gHP = new HilbertPuzzle(basePath, "bee-square.jpg", gPhraseBee, "bee", 5);
