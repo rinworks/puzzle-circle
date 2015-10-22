@@ -26,12 +26,12 @@ void setup() {
   };
 
   String[] positions = {
-    ".............", 
+    ".....////....", 
     ".../.....:...", 
-    ".....>...::..", 
+    ".....>.......", 
     ".....;>..:::.", 
     "..>/E:.. ....", 
-    "./.:......:I.", 
+    "./.:../...:I.", 
     "..>./...J....", 
     "...T.../...<.", 
     "...P...OD....", 
@@ -319,3 +319,47 @@ void drawLaserPath(Grid g, ArrayList<Cell> path, String expectedText) {
     ellipse(cFinal.center.x, cFinal.center.y, 40, 40);
   }
 }
+
+
+// Return the compact text representation of the grid
+String[] specFromGrid(Grid g) {
+  String[] spec = new String[g.rows];
+  for (int i=0; i<rows; i++) {
+    String row = "";
+    for (int j=0; j<cols; j++) {
+      Cell c = g.cells[i][j];
+      Drawable d = (c!=null) ? c.dObject : null;
+      if (d==null) continue;
+      int orientation = round(c.orientation);
+      if (d instanceof Dot) {
+        row = ".";
+      } else if (d instanceof Laser) {
+        char[] laserChars = {'>', '^', '<', ';'}; // right, up, left, down
+        int i = ((orientation+360)/90)%4; // 0, 1, 2, 3
+        assert(i>0 && i<4);
+        row += laserChars[i];
+      } else if (d instanceof TwowayMirror) {
+        if (orientation == 45) {
+          row += ":";
+        } else {
+          assert(orientation == -45);
+          row += "/";
+        } else if (d instance TextBox) {
+          char c = ' ';
+          TextBox tb = (TextBox) d;
+          if (d.label!=null && d.label.length==1) {
+            c = d.label.charAt(1);
+          }
+          row += c;
+        }
+      }
+    }
+    spec[i] = row;
+  }
+  return spec;
+}
+
+  // Return the IDs of lasers in the order that they are
+  // visited when doing a rowmajor traversal of the grid.
+  int[] laserIdsFromGrid(Grid g) {
+  }
