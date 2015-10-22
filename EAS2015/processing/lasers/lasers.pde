@@ -55,6 +55,7 @@ void setup() {
   drawPaths(g, "JUNE EXPEDITION");
   g.draw();
   //println(PFont.list());
+  printGrid(g);
 }
 
 Grid genObjects(String[] spec, int[] laserIds) {
@@ -119,7 +120,7 @@ Grid genObjects(String[] spec, int[] laserIds) {
 // Draw the laser paths and return a string containing
 // any letters hit, in order of laserIds.
 String drawPaths(Grid g, String expectedText) {
-  Cell[] laserCells = findLasers(g);
+  Cell[] laserCells = getLasersOrderedById(g);
   int i = 0;
   for (Cell c : laserCells) {
     Laser l = laserFromCell(c);
@@ -137,24 +138,14 @@ String drawPaths(Grid g, String expectedText) {
 
 // Return all cells with lasers, in order of
 // increasing laserIds.
-Cell[] findLasers(Grid g) {
-  ArrayList<Cell> list = new ArrayList<Cell>();
-  for (int i=0; i<g.rows; i++) {
-    for (int j=0; j<g.cols; j++) {
-      Cell c = g.cells[i][j];
-      //Drawable
-      if (c.dObject instanceof Laser) {
-        list.add(c);
-      }
-    }
-  }  
+Cell[] getLasersOrderedById(Grid g) {
+  Cell[] ret = getLasers(g);
   Comparator<Cell> comp 
     = new Comparator<Cell>() {
     public int compare(Cell c1, Cell c2) {
       return laserFromCell(c1).id-laserFromCell(c2).id;
     }
   };
-  Cell[] ret = list.toArray(new Cell[list.size()]);
   Arrays.sort(ret, comp);
   return ret;
 }
@@ -324,34 +315,34 @@ void drawLaserPath(Grid g, ArrayList<Cell> path, String expectedText) {
 // Return the compact text representation of the grid
 String[] specFromGrid(Grid g) {
   String[] spec = new String[g.rows];
-  for (int i=0; i<rows; i++) {
+  for (int i=0; i<g.rows; i++) {
     String row = "";
-    for (int j=0; j<cols; j++) {
+    for (int j=0; j<g.cols; j++) {
       Cell c = g.cells[i][j];
       Drawable d = (c!=null) ? c.dObject : null;
       if (d==null) continue;
       int orientation = round(c.orientation);
       if (d instanceof Dot) {
-        row = ".";
+        row += ".";
       } else if (d instanceof Laser) {
         char[] laserChars = {'>', '^', '<', ';'}; // right, up, left, down
-        int i = ((orientation+360)/90)%4; // 0, 1, 2, 3
-        assert(i>0 && i<4);
-        row += laserChars[i];
+        int k = ((orientation+360)/90)%4; // 0, 1, 2, 3 //<>//
+        assert(k>=0 && k<4);
+        row += laserChars[k];
       } else if (d instanceof TwowayMirror) {
         if (orientation == 45) {
           row += ":";
         } else {
           assert(orientation == -45);
           row += "/";
-        } else if (d instance TextBox) {
-          char c = ' ';
-          TextBox tb = (TextBox) d;
-          if (d.label!=null && d.label.length==1) {
-            c = d.label.charAt(1);
-          }
-          row += c;
         }
+      } else if (d instanceof TextBox) {
+        char letter = ' ';
+        TextBox tb = (TextBox) d;
+        if (tb.label!=null && tb.label.length()==1) {
+          letter = tb.label.charAt(0);
+        }
+        row += letter;
       }
     }
     spec[i] = row;
@@ -359,7 +350,43 @@ String[] specFromGrid(Grid g) {
   return spec;
 }
 
-  // Return the IDs of lasers in the order that they are
-  // visited when doing a rowmajor traversal of the grid.
-  int[] laserIdsFromGrid(Grid g) {
+
+// Return the lasers in the order that they are found in the grid
+Cell[] getLasers(Grid g) {
+  ArrayList<Cell> list = new ArrayList<Cell>();
+  for (int i=0; i<g.rows; i++) {
+    for (int j=0; j<g.cols; j++) {
+      Cell c = g.cells[i][j];
+      if (c.dObject instanceof Laser) {
+        list.add(c);
+      }
+    }
+  }  
+  Cell[] ret = list.toArray(new Cell[list.size()]);
+  return ret;
+}
+
+int[] getLaserIds (Grid g) {
+  Cell[] cells = getLasers(g);
+  int[] ids = new int[cells.length];
+  for (int i=0; i<cells.length; i++) {
+    ids[i] = ((Laser) cells[i].dObject).id;
   }
+  return ids;
+}
+
+void printGrid(Grid g) {
+  String[] spec = specFromGrid(g);
+  int[] ids = getLaserIds(g);
+  println("String[] spec = {");
+  for (int i=0;i<spec.length;i++) {
+    println("   \"" + spec[i] + "\"" + ((i<spec.length-1)?",":""));
+  }
+  println("};");
+  
+  print("int[] ids = {");
+  for (int i=0;i<ids.length;i++) {
+    print(ids[i] + ((i<ids.length-1)?", ":""));
+  }
+  println("};");
+}
