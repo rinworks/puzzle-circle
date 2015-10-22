@@ -13,11 +13,11 @@ void setup() {
 
   noLoop(); // it is switchted to loop/noLoop() in mousePressed and draw.
   size(990, 990);
-  String basePath = "C:\\Users\\josephj\\Documents\\git\\puzzle-circle\\EAS2015\\processing\\JumbledTiles\\output";
+  String basePath = "C:\\Users\\josephj\\Documents\\git\\puzzle-circle\\EAS2015\\processing\\TileJumble\\output";
 
   //gHP = new HilbertPuzzle(basePath, "salmon-square.jpg", gPhraseSalmon, "salmon", 8);
   //gHP = new HilbertPuzzle(basePath, "body-square.png", gPhraseBody, "body", 5);
-  gHP = new HilbertPuzzle(basePath, "fractal-square.jpg", gPhraseMath, "math", 8);
+  gHP = new HilbertPuzzle(basePath, "fractal-square.jpg", gPhraseKeya, "math", 8);
   //gHP = new HilbertPuzzle(basePath, "eagle-square.jpg", gPhraseEagle, "eagle", 5);
   //gHP = new HilbertPuzzle(basePath, "seattle-square.jpg", gPhraseSeattle, "seattle", 7);
   //gHP = new HilbertPuzzle(basePath, "bee-square.jpg", gPhraseBee, "bee", 5);

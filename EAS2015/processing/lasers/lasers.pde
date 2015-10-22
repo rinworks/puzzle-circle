@@ -25,11 +25,11 @@ void setup() {
     "............."
   };
 
-  int[] laserIds = {11, 5, 7, 13, 6, 14, 10, 8, 12, 15, 3, 9, 1, 2, 4};
+  int[] laserIds = {11, 5, 7, 13, 6, 14, 10, 8, 12, 15, 3, 9, 1, 2, 4}; //<>//
 
-  Grid g = genObjects(positions, laserIds);
-  g.draw();
-  g.drawPaths();
+  Grid g = genObjects(positions, laserIds); //<>//
+  //g.draw();
+  drawPaths(g);
   //println(PFont.list());
 }
 
@@ -58,6 +58,7 @@ Grid genObjects(String[] spec, int[] laserIds) {
         d = new Dot(params, params);
       } else if (c=='<'||c=='>'||c=='^'||c==';') {
         d = new Laser(laserIds[laserCount], laserParams, laserParams);
+        println("Laser " + laserIds[laserCount] + " at ["+i+","+j+"]");
         laserCount++;
       } else if  (c=='|'||c=='-'||c=='/'||c==':') {
         d = new TwowayMirror(params, params);
@@ -80,7 +81,10 @@ Grid genObjects(String[] spec, int[] laserIds) {
         Cell cl = g.cells[i][j];
         cl.dObject = d;
         cl.orientation = orientation;
-        println(d + " at ["+i+","+j+"] orientation "+orientation + cl.center);
+        String cName = cl.getClassName();
+        if (cName.equals("Laser")) {
+          //println(cl.getClassName() + " at ["+i+","+j+"] orientation "+orientation + cl.center);
+        }
       }
     }
   }
@@ -91,10 +95,15 @@ Grid genObjects(String[] spec, int[] laserIds) {
 // Draw the laser paths and return a string containing
 // any letters hit, in order of laserIds.
 String drawPaths(Grid g) {
-  Cell[] laserCells = findLasers(g);
-  for (Cell c in laserCells) {
+  Cell[] laserCells = findLasers(g); //<>//
+  for (Cell c : laserCells) {
     Laser l = laserFromCell(c);
-    println("Found laser " + l.id + "at (" + c.i + "," + c.j + ")");
+    println("Found laser " + l.id + " at (" + c.i + "," + c.j + ")");
+    ArrayList<Cell> path = new ArrayList<Cell>();
+    path.add(c);
+    growLaserPath(g, path); //<>//
+    drawLaserPath(g, path);
+    break;
   }
   return "";
 }
@@ -113,11 +122,11 @@ Cell[] findLasers(Grid g) {
     }
   }  
   Comparator<Cell> comp 
-      = new Comparator<Cell>() {
-      public int compare(Cell c1, Cell c2) {
-        return laserFromCell(c1).id-laserFromCell(l20.id;
-      }
-    };
+    = new Comparator<Cell>() {
+    public int compare(Cell c1, Cell c2) {
+      return laserFromCell(c1).id-laserFromCell(c2).id;
+    }
+  };
   Cell[] ret = list.toArray(new Cell[list.size()]);
   Arrays.sort(ret, comp);
   return ret;
@@ -125,4 +134,131 @@ Cell[] findLasers(Grid g) {
 
 Laser laserFromCell(Cell c) {
   return (Laser) c.dObject;
+}
+
+String shortClassName(String className) {
+  return className.substring(className.indexOf("$")+1); // relise of indexOf returning -1 if not found.
+}
+
+void growLaserPath(Grid g, ArrayList<Cell> path) { //<>//
+  println("Entering growLaserPath. #elements: " + path.size());
+  String NULL = "null";
+  int len = path.size();
+  if (len==0) {
+    return;
+  }
+  Cell cLast = path.get(len-1); //<>//
+  Cell cNext = null;
+  float orientation;
+  if (len == 1) {
+    // We're just starting out...
+    assert(cLast.dObject instanceof Laser);//, "ERROR - starting out with a NON laser");
+    Laser l = laserFromCell(cLast);
+    orientation = cLast.orientation;
+    println("Starting with laser " + l.id);
+  } else {
+    // We have at least two items in the path. We only get here if
+    // the last item is a mirror.
+    Cell cPrev = path.get(len-2);
+    assert(cLast.dObject instanceof TwowayMirror); //, "ERROR - last item path is NOT a mirror.");
+    float prevOrientation = getCurrentBeamOrientation(cPrev, cLast);
+    orientation = getNextBeamOrientation(prevOrientation, cLast.orientation);
+  }
+  cNext = findNextTarget(g, cLast, orientation);
+  path.add(cNext); // cNext can be null.
+  if (cNext!= null && cNext.dObject instanceof TwowayMirror) {
+    // we hit a mirror, so we can keep going...
+    println("RECURSIVE CALL to growLaserPath");
+    growLaserPath(g, path);
+  }
+}
+
+// Find the next target the laser would hit, starting from Cell c and going in direction specified by
+// orientation (in degrees). Return a boundary Dot cell if you hit a boundary. Return null if
+// Cell c is already at the boundary and the laser is leaving the boundary.
+Cell findNextTarget(Grid g, Cell c, float orientation) {
+  int k = (round(orientation/90.0)+4)%4 ; // 0(right), 1(up), 2(right), 3(down)
+  int di=0, dj=0;
+  switch (k) {
+  case 0:  // right
+    di=1;
+    break;
+  case 1:  // up
+    dj=1;
+    break;
+  case 2:  // left
+    di=-1;
+    break;
+  case 3:  // down
+    dj=-1;
+    break;
+  default: // shouldn't get here.
+    assert(false);
+    break;
+  }
+  Cell cNext = null;
+  int i=c.i + di;
+  int j=c.j + dj;
+  while (i>=0 && j>=0 && i<g.rows && j<g.cols) {
+    cNext = g.cells[i][j];
+    // If it's null of a Dot, we keep going...
+    if (cNext!=null && !(cNext.dObject instanceof Dot)) {
+      println("Hit object at [" + cNext.i + "," + cNext.j + "]");
+      break;
+    }
+    i += di;
+    j += dj;
+  }
+  return cNext;
+}
+
+// Assuming a beam with orientation prevOrientation hits the mirror,
+// compute the new orientation
+float getNextBeamOrientation(float prevOrientation, float mirrorOrientation)
+{
+  int prev = round((prevOrientation+360)/90.0) % 4; // 0=right 1=up 2=left 3=down
+  int mO = round(mirrorOrientation); // should be either 45 or -45
+  int[] m45 = {-90, 180, 90, 0};
+  int[] mMinus45 = {90, 0, -90, -90};
+  if (mO == 45) {
+    return m45[prev];
+  } else {
+    assert(mO==-45);
+    return mMinus45[prev];
+  }
+}
+
+// Compute the beam orientation for a beam coming
+// from cPrev and hitting Cell c.
+// Return value is in degrees.
+float getCurrentBeamOrientation(Cell cPrev, Cell c) {
+  // We assume direction is only in the cardinal directions for now.
+  float ret = 0; 
+  if (cPrev.i<c.i) {
+    ret = 0.0;
+  } else if (cPrev.i>c.i) {
+    ret =   180.0;
+  } else if (cPrev.j<c.j) {
+    ret =  90;
+  } else if (cPrev.j>c.j) {
+    ret = -90;
+  } else {
+    assert(false);
+  }
+  return ret;
+}
+
+void drawLaserPath(Grid g, ArrayList<Cell> path) {
+  if (path.size()==0) {
+    return;
+  }
+  Cell cPrev = null;
+  stroke(0);
+  strokeWeight(2);
+  for (Cell c : path) {
+    if (cPrev!=null && c!=null) {
+      line(cPrev.i*c.eW, cPrev.j*c.eH, c.i*c.eW, c.j*c.eW);
+    }
+    cPrev = c;
+  }
 }

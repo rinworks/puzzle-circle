@@ -91,6 +91,7 @@ class Laser implements  Drawable {
 
   Laser(int id, GraphicsParams params, GraphicsParams hilightedParams) {
     this.label = "L"+id;
+    this.id = id;
     this.graphicsParams = params;
     this.hilightedGraphicsParams = hilightedParams;
   }
@@ -206,6 +207,12 @@ class Cell {
   public Cell(int i, int j) {
     this.i = i;
     this.j = j;
+  }
+  
+ String getClassName() {
+    String className = (dObject==null)  ? "" : dObject.getClass().getName();
+    className = className.substring(className.indexOf("$")+1); // relise of indexOf returning -1 if not found.
+    return className;
   }
 }
 
