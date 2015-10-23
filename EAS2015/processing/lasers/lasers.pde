@@ -51,8 +51,10 @@ void setup() {
 
   int[] laserIds = {11, 5, 7, 13, 6, 14, 10, 8, 12, 15, 3, 9, 1, 2, 4};
 
-  Grid g = genObjects(positions, laserIds);
-  drawPaths(g, "JUNE EXPEDITION");
+  //Grid g = genObjects(positions, laserIds);
+  //drawPaths(g, "JUNE EXPEDITION");
+  Grid g = createDotGrid(1,2); 
+  addToGrid(g, "A");
   g.draw();
   //println(PFont.list());
   printGrid(g);
@@ -428,7 +430,7 @@ void printGrid(Grid g) {
 // as a fresh target) or create and insert a new text 
 // box.
 Cell newOrExistingTextBox(Grid g, String s) {
-  Cell c = findViableExistingTextBox(g, s);
+  Cell c = findViableExistingTextBox(g, s); //<>//
   if (c == null) {
     c = placeNewTextBox(g, s);
   }
@@ -482,10 +484,10 @@ int computeTextBoxViabilityScore(Grid g, Cell c) {
 Cell placeNewTextBox(Grid g, String s) {
   // We just find the first available one (for now)
   // TODO: pick a random one from the top two scorers.
-  for (int i=0; i<g.rows; i++) {
+  for (int i=0; i<g.rows; i++) { //<>//
     for (int j=0; j<g.cols; j++) {
       Cell c = g.cells[i][j];
-      if (c.dObject==null || c.dObject instanceof TextBox) {
+      if (c.dObject==null || c.dObject instanceof Dot) {
         int score = computeTextBoxViabilityScore(g, c);
         if (score > 0) {
           c.dObject = new TextBox(s, gParams, gParams);
@@ -574,7 +576,7 @@ Cell getCellIfAvailable(Grid g, int i, int j) {
 // already in the system, (or 1 if none exists)
 Boolean addToGrid(Grid g, String text) {
   int[] existingIds = getLaserIds(g);
-  int prevMax = 0;
+  int prevMax = 0; //<>//
   for (int id : existingIds) {
     assert(id!=0);
     if (prevMax < id) {
@@ -595,4 +597,20 @@ Boolean addToGrid(Grid g, String text) {
     }
   }
   return true;
+}
+
+
+// Create a gid and fill it with dots.
+Grid createDotGrid(int rows, int cols) {
+  String[] spec = new String[rows];
+  if (rows>0) {
+    String dots = "";
+    for (int i=0;i<cols;i++) {
+      dots += ".";
+    }
+    for (int i=0;i<rows;i++) {
+      spec[i] = dots;
+    }
+  }
+  return genObjects(spec, null);
 }
