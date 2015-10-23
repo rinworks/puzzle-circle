@@ -1,4 +1,4 @@
-import java.util.Comparator; //<>// //<>// //<>// //<>// //<>// //<>// //<>//
+import java.util.Comparator; //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>//
 import java.util.Arrays;
 
 void setup() {
@@ -52,9 +52,10 @@ void setup() {
   int[] laserIds = {11, 5, 7, 13, 6, 14, 10, 8, 12, 15, 3, 9, 1, 2, 4};
 
   //Grid g = genObjects(positions, laserIds);
-  //drawPaths(g, "JUNE EXPEDITION");
-  Grid g = createDotGrid(2,2); 
-  addToGrid(g, "AA");
+  String puzzleText = "JUNE EXPIDITION";
+  Grid g = createDotGrid(10, 10); 
+  addToGrid(g, puzzleText);
+  //gdrawPaths(g, puzzleText);
   g.draw();
   //println(PFont.list());
   printGrid(g);
@@ -430,7 +431,7 @@ void printGrid(Grid g) {
 // as a fresh target) or create and insert a new text 
 // box.
 Cell newOrExistingTextBox(Grid g, String s) {
-  Cell c = findViableExistingTextBox(g, s); //<>//
+  Cell c = findViableExistingTextBox(g, s);
   if (c == null) {
     c = placeNewTextBox(g, s);
   }
@@ -438,6 +439,7 @@ Cell newOrExistingTextBox(Grid g, String s) {
 }
 
 Cell findViableExistingTextBox(Grid g, String s) {
+  ArrayList<Cell> candidateCells = new ArrayList<Cell>();
   for (int i=0; i<g.rows; i++) {
     for (int j=0; j<g.cols; j++) {
       Cell c = g.cells[i][j];
@@ -445,16 +447,62 @@ Cell findViableExistingTextBox(Grid g, String s) {
         if (((TextBox)c.dObject).label.equals(s)) {
           int score = computeTextBoxViabilityScore(g, c);
           if (score>0) {
-            // For now, we just take the first one we find that's viable.
-            // TODO: pick randomly between the top two scoring cells.
-            return c; // *********** EARLY RETURN **************
+            candidateCells.add(c);
           }
         }
       }
     }
-  }  
+  }
+
+  return pickRandomTopViableCellForTextBox(g, candidateCells);
+}
+
+// Given a list of candidate cells (all of which are assumed to be viable
+// pick a random one amongst the very top scorers
+Cell pickRandomTopViableCellForTextBox(Grid g, ArrayList<Cell> candidateCells) {
+  int[] scores = new int[candidateCells.size()];
+  int maxScore = 0;
+
+  // initialize scores array and find the max score
+  int i=0;
+  for (Cell c : candidateCells) {
+    scores[i] = computeTextBoxViabilityScore(g, c);
+    if (scores[i]>maxScore) {
+      maxScore = scores[i];
+    }
+    i++;
+  }
+
+  // A score of 0 implies nothing is viable
+  if (maxScore==0) {
+    return null;
+  }
+
+  // find count of items with the max score.
+  int numAtMax=0;
+  for (int score : scores) {
+    if (score == maxScore) {
+      numAtMax++;
+    }
+  } //<>//
+  assert(numAtMax>0);
+
+  // Now pick one of these (items with max score) at random...
+  int chosen = (int) random(0, numAtMax);
+  int maxIndex =0;
+  i=0;
+  for (Cell c : candidateCells) {
+    if (scores[i++]==maxScore) {
+      if (maxIndex==chosen) {
+        return c; // ******** EARLY RETURN **********
+      }
+      maxIndex++;
+    }
+  }
+  assert(candidateCells.size()==0); //Should only get here if there were no candidate cell.s
   return null;
 }
+
 
 // Compute the viability for this (TextBox) cell to be
 // the target for a new laser. Positive score means it's viable.
@@ -467,7 +515,7 @@ int computeTextBoxViabilityScore(Grid g, Cell c) {
     for (int dj = -1; dj < 2; dj++) {
       // We wan't to skip diagonals and center!
       if ((di+dj) % 2 != 0) {
-        int i  = c.i + di;
+        int i  = c.i + di; //<>//
         int j = c.j + dj;
         Cell cj = getCellIfAvailable(g, i, j);
         if (cj!=null) {
@@ -484,19 +532,23 @@ int computeTextBoxViabilityScore(Grid g, Cell c) {
 Cell placeNewTextBox(Grid g, String s) {
   // We just find the first available one (for now)
   // TODO: pick a random one from the top two scorers.
-  for (int i=0; i<g.rows; i++) { //<>//
+  ArrayList<Cell> candidateCells = new ArrayList<Cell>();
+  for (int i=0; i<g.rows; i++) {
     for (int j=0; j<g.cols; j++) {
-      Cell c = getCellIfAvailable(g,i,j);
+      Cell c = getCellIfAvailable(g, i, j);
       if (c!=null) {
         int score = computeTextBoxViabilityScore(g, c);
         if (score > 0) {
-          c.dObject = new TextBox(s, gParams, gParams);
-          return c; // *********** EARLY RETURN **************
+          candidateCells.add(c);
         }
       }
     }
   }
-  return null;
+  Cell chosenCell = pickRandomTopViableCellForTextBox(g, candidateCells);
+  if (chosenCell!=null) {
+    chosenCell.dObject = new TextBox(s, gParams, gParams);
+  }
+  return chosenCell;
 }
 
 
@@ -505,7 +557,7 @@ Cell placeNewTextBox(Grid g, String s) {
 // successfully added. The location is assumed to be a viable location
 // to add a laser (there is a spot for the laser)
 // TODO: pick a spot randomly among available spots.
-Boolean addLaserToTarget(Grid g, Cell textCell, int laserId) {
+Boolean addLaserToTarget(Grid g, Cell textCell, int laserId) { //<>//
   int i, j;
   float orientation=0.0;
   Cell c;
@@ -515,7 +567,7 @@ Boolean addLaserToTarget(Grid g, Cell textCell, int laserId) {
   i = textCell.i-1;
   j = textCell.j;
   c = getCellIfAvailable(g, i, j);
-  if (c!=null) { //<>//
+  if (c!=null) {
     found = true;
     orientation = -90; // pointing down.
   }
@@ -524,7 +576,7 @@ Boolean addLaserToTarget(Grid g, Cell textCell, int laserId) {
     // Check bottom
     i = textCell.i+1;
     j = textCell.j;
-    c = getCellIfAvailable(g, i, j);
+    c = getCellIfAvailable(g, i, j); //<>//
     if (c!=null) {
       found = true;
       orientation = 90; // pointing up.
@@ -557,7 +609,7 @@ Boolean addLaserToTarget(Grid g, Cell textCell, int laserId) {
     c.dObject = new Laser(laserId, gLaserParams, gLaserParams);
     c.orientation = orientation;
   }
-  return found; //<>//
+  return found;
 }
 
 Cell getCellIfAvailable(Grid g, int i, int j) {
@@ -576,7 +628,7 @@ Cell getCellIfAvailable(Grid g, int i, int j) {
 // already in the system, (or 1 if none exists)
 Boolean addToGrid(Grid g, String text) {
   int[] existingIds = getLaserIds(g);
-  int prevMax = 0; //<>//
+  int prevMax = 0;
   for (int id : existingIds) {
     assert(id!=0);
     if (prevMax < id) {
@@ -605,10 +657,10 @@ Grid createDotGrid(int rows, int cols) {
   String[] spec = new String[rows];
   if (rows>0) {
     String dots = "";
-    for (int i=0;i<cols;i++) {
+    for (int i=0; i<cols; i++) {
       dots += ".";
     }
-    for (int i=0;i<rows;i++) {
+    for (int i=0; i<rows; i++) {
       spec[i] = dots;
     }
   }
