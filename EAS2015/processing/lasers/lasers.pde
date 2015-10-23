@@ -53,8 +53,8 @@ void setup() {
 
   //Grid g = genObjects(positions, laserIds);
   //drawPaths(g, "JUNE EXPEDITION");
-  Grid g = createDotGrid(1,2); 
-  addToGrid(g, "A");
+  Grid g = createDotGrid(2,2); 
+  addToGrid(g, "AA");
   g.draw();
   //println(PFont.list());
   printGrid(g);
@@ -486,8 +486,8 @@ Cell placeNewTextBox(Grid g, String s) {
   // TODO: pick a random one from the top two scorers.
   for (int i=0; i<g.rows; i++) { //<>//
     for (int j=0; j<g.cols; j++) {
-      Cell c = g.cells[i][j];
-      if (c.dObject==null || c.dObject instanceof Dot) {
+      Cell c = getCellIfAvailable(g,i,j);
+      if (c!=null) {
         int score = computeTextBoxViabilityScore(g, c);
         if (score > 0) {
           c.dObject = new TextBox(s, gParams, gParams);
@@ -515,7 +515,7 @@ Boolean addLaserToTarget(Grid g, Cell textCell, int laserId) {
   i = textCell.i-1;
   j = textCell.j;
   c = getCellIfAvailable(g, i, j);
-  if (c!=null) {
+  if (c!=null) { //<>//
     found = true;
     orientation = -90; // pointing down.
   }
@@ -557,7 +557,7 @@ Boolean addLaserToTarget(Grid g, Cell textCell, int laserId) {
     c.dObject = new Laser(laserId, gLaserParams, gLaserParams);
     c.orientation = orientation;
   }
-  return false;
+  return found; //<>//
 }
 
 Cell getCellIfAvailable(Grid g, int i, int j) {
