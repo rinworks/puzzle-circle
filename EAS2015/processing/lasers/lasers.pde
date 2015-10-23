@@ -55,7 +55,7 @@ void setup() {
   String puzzleText = "JUNE EXPIDITION";
   Grid g = createDotGrid(10, 10); 
   addToGrid(g, puzzleText);
-  //gdrawPaths(g, puzzleText);
+  drawPaths(g, puzzleText);
   g.draw();
   //println(PFont.list());
   printGrid(g);
@@ -559,57 +559,55 @@ Cell placeNewTextBox(Grid g, String s) {
 // TODO: pick a spot randomly among available spots.
 Boolean addLaserToTarget(Grid g, Cell textCell, int laserId) { //<>//
   int i, j;
-  float orientation=0.0;
   Cell c;
-  Boolean found=false;
+  ArrayList<Cell> candidateCells = new ArrayList<Cell>();
+  ArrayList<Integer> candidateOrientations = new ArrayList<Integer>();
 
   // Check top...
   i = textCell.i-1;
   j = textCell.j;
   c = getCellIfAvailable(g, i, j);
   if (c!=null) {
-    found = true;
-    orientation = -90; // pointing down.
+    candidateCells.add(c);
+    candidateOrientations.add(-90); // pointing down.
   }
 
-  if (!found) {
-    // Check bottom
-    i = textCell.i+1;
-    j = textCell.j;
-    c = getCellIfAvailable(g, i, j); //<>//
-    if (c!=null) {
-      found = true;
-      orientation = 90; // pointing up.
-    }
+  // Check bottom
+  i = textCell.i+1;
+  j = textCell.j;
+  c = getCellIfAvailable(g, i, j);
+  if (c!=null) { //<>//
+    candidateCells.add(c);
+    candidateOrientations.add(90); // pointing up.
   }
 
-  if (!found) {
-    // Check left
-    i = textCell.i;
-    j = textCell.j-1;
-    c = getCellIfAvailable(g, i, j);
-    if (c!=null) {
-      found = true;
-      orientation = 0; // pointing left.
-    }
+  // Check left
+  i = textCell.i;
+  j = textCell.j-1;
+  c = getCellIfAvailable(g, i, j);
+  if (c!=null) {
+    candidateCells.add(c);
+    candidateOrientations.add(0); // pointing left.
   }
 
-  if (!found) {
-    // Check right
-    i = textCell.i;
-    j = textCell.j+1;
-    c = getCellIfAvailable(g, i, j);
-    if (c!=null) {
-      found = true;
-      orientation = 180; // pointing right.
-    }
+  // Check right
+  i = textCell.i;
+  j = textCell.j+1;
+  c = getCellIfAvailable(g, i, j);
+  if (c!=null) {
+    candidateCells.add(c);
+    candidateOrientations.add(180); // pointing right.
   }
 
-  if (found) {
+  if (candidateCells.size()>0) {
+    int chosen = (int) random(0,candidateCells.size());
+    c = candidateCells.get(chosen);
     c.dObject = new Laser(laserId, gLaserParams, gLaserParams);
-    c.orientation = orientation;
+    c.orientation = candidateOrientations.get(chosen);
+    return true;
+  } else {
+    return false;
   }
-  return found;
 }
 
 Cell getCellIfAvailable(Grid g, int i, int j) {
