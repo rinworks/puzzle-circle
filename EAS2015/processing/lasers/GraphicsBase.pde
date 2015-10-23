@@ -28,12 +28,12 @@ enum ShapeState {
 // background fill 
 // cap stype
 // text: font, emphasis, size, color
-public final String DEFAULT_FONT = "Segoe WP Black";
+
 class GraphicsParams {
   public int borderColor=0; // -1 means don't set
   public int borderWeight=1; // -1 means don't set
   public int backgroundFill=-255; // -1 means don't set
-  public PFont font= createFont(DEFAULT_FONT, 7); // null means don't set
+  public PFont font=null); // null means don't set
   public int textSize=20; // -1 means don't set
   public int textColor=0; // -1 means don't set
 }
@@ -203,6 +203,7 @@ class Cell {
   public Drawable dObject=null;
   public float orientation=0;
   public ShapeState state = ShapeState.NORMAL;
+  public Boolean visited=false; // Whether a path has visited this cell.
 
   public Cell(int i, int j) {
     this.i = i;
@@ -262,6 +263,14 @@ class Grid {
           cell.dObject.draw(cell.center.x, cell.center.y, cell.orientation, 
             cell.state);
         }
+      }
+    }
+  }
+  
+  void clearVisited() {
+    for (Cell[] row : cells) {
+      for (Cell c : row) {
+        c.visited = false;
       }
     }
   }

@@ -1,4 +1,4 @@
-import java.util.Comparator; //<>// //<>// //<>// //<>// //<>// //<>//
+import java.util.Comparator; //<>// //<>// //<>// //<>// //<>// //<>// //<>//
 import java.util.Arrays;
 
 void setup() {
@@ -28,7 +28,7 @@ void setup() {
   String[] positions = {
     ".....////....", 
     ".../.....:...", 
-    ".....>.......", 
+    ".Y...>..Z ....", 
     ".....;>..:::.", 
     "..>/E:.. ....", 
     "./.:../...:I.", 
@@ -40,7 +40,7 @@ void setup() {
     ".^//.::..//<.", 
     ".>./.N..:^...", 
     "..:.:..<:./..", 
-    "....^.^......", 
+    "....^.^..X...", 
     "............."
   };
 
@@ -58,14 +58,19 @@ void setup() {
   printGrid(g);
 }
 
+GraphicsParams gParams = new GraphicsParams();
+GraphicsParams gLaserParams = new GraphicsParams();
+
 Grid genObjects(String[] spec, int[] laserIds) {
-  GraphicsParams params = new GraphicsParams();
-  params.textColor = 0;
-  params.backgroundFill = 255;
-  GraphicsParams laserParams = new GraphicsParams();
-  laserParams.textColor = 255;
-  laserParams.backgroundFill = color(255, 0, 0);
-  laserParams.borderColor = -1;
+  public final String DEFAULT_FONT = "Segoe WP Black";
+  gParams.font = createFont(DEFAULT_FONT, 7); // null means don't set
+  gParams.textColor = 0;
+  gParams.backgroundFill = 255;
+  
+  gLaserParams.font = createFont(DEFAULT_FONT, 7); // null means don't set
+  gLaserParams.textColor = 255;
+  gLaserParams.backgroundFill = color(255, 0, 0);
+  gLaserParams.borderColor = -1;
   int rows = spec.length;
   int cols = (rows>0)? spec[0].length():0;
   int laserCount = 0;
@@ -80,15 +85,15 @@ Grid genObjects(String[] spec, int[] laserIds) {
       float orientation = 0;
       char c = row.charAt(j);
       if (c=='.') {
-        d = new Dot(params, params);
+        d = new Dot(gParams, gParams);
       } else if (c=='<'||c=='>'||c=='^'||c==';') {
-        d = new Laser(laserIds[laserCount], laserParams, laserParams);
+        d = new Laser(laserIds[laserCount], gLaserParams, gLaserParams);
         println("Laser " + laserIds[laserCount] + " at ["+i+","+j+"]");
         laserCount++;
       } else if  (c=='|'||c=='-'||c=='/'||c==':') {
-        d = new TwowayMirror(params, params);
+        d = new TwowayMirror(gParams, gParams);
       } else {
-        d = new TextBox(""+c, params, params);
+        d = new TextBox(""+c, gParams, gParams);
       }
 
       if (c=='<') {
@@ -119,21 +124,49 @@ Grid genObjects(String[] spec, int[] laserIds) {
 
 // Draw the laser paths and return a string containing
 // any letters hit, in order of laserIds.
-String drawPaths(Grid g, String expectedText) {
+void drawPaths(Grid g, String expectedText) {
   Cell[] laserCells = getLasersOrderedById(g);
   int i = 0;
   for (Cell c : laserCells) {
     Laser l = laserFromCell(c);
     println("Found laser " + l.id + " at (" + c.i + "," + c.j + ")");
-    ArrayList<Cell> path = new ArrayList<Cell>();
-    path.add(c);
-    growLaserPath(g, path);
+    ArrayList<Cell> path = computeLaserPath(g, c);
+    markPath(path);
     String s = i<expectedText.length() ? expectedText.substring(i, i+1) : "";
     drawLaserPath(g, path, s);
     //break;
     i++;
   }
-  return "";
+  highlightUnvisitedObjects(g);
+}
+
+// Hilight all non-DOT objects that have not
+// been visited
+void highlightUnvisitedObjects(Grid g) {
+  stroke(0, 0, 255);
+  strokeWeight(8);
+  noFill();
+  for (Cell[] row : g.cells) {
+    for (Cell c : row) {
+      if (!c.visited && c.dObject != null && !(c.dObject instanceof Dot)) {
+        ellipse(c.center.x, c.center.y, c.iW, c.iH);
+      }
+    }
+  }
+}
+
+ArrayList<Cell> computeLaserPath(Grid g, Cell c) {
+  ArrayList<Cell> path = new ArrayList<Cell>();
+  path.add(c);
+  growLaserPath(g, path);
+  return path;
+}
+
+// Set all path cells visited field to true.
+void markPath(ArrayList<Cell> path) {
+  for (Cell c : path) {
+    c.visited = true;
+  }
 }
 
 // Return all cells with lasers, in order of
@@ -219,7 +252,7 @@ Cell findNextTarget(Grid g, Cell c, float orientation) {
   while (i>=0 && j>=0 && i<g.rows && j<g.cols) {
     cNext = g.cells[i][j];
     // If it's null of a Dot, we keep going...
-    if (cNext!=null && !(cNext.dObject instanceof Dot)) {
+    if (!(cNext.dObject instanceof Dot)) {
       println("Hit object at [" + cNext.i + "," + cNext.j + "]");
       break;
     }
@@ -319,14 +352,14 @@ String[] specFromGrid(Grid g) {
     String row = "";
     for (int j=0; j<g.cols; j++) {
       Cell c = g.cells[i][j];
-      Drawable d = (c!=null) ? c.dObject : null;
+      Drawable d = c.dObject;
       if (d==null) continue;
       int orientation = round(c.orientation);
       if (d instanceof Dot) {
         row += ".";
       } else if (d instanceof Laser) {
         char[] laserChars = {'>', '^', '<', ';'}; // right, up, left, down
-        int k = ((orientation+360)/90)%4; // 0, 1, 2, 3 //<>//
+        int k = ((orientation+360)/90)%4; // 0, 1, 2, 3
         assert(k>=0 && k<4);
         row += laserChars[k];
       } else if (d instanceof TwowayMirror) {
@@ -379,14 +412,125 @@ void printGrid(Grid g) {
   String[] spec = specFromGrid(g);
   int[] ids = getLaserIds(g);
   println("String[] spec = {");
-  for (int i=0;i<spec.length;i++) {
+  for (int i=0; i<spec.length; i++) {
     println("   \"" + spec[i] + "\"" + ((i<spec.length-1)?",":""));
   }
   println("};");
-  
+
   print("int[] ids = {");
-  for (int i=0;i<ids.length;i++) {
+  for (int i=0; i<ids.length; i++) {
     print(ids[i] + ((i<ids.length-1)?", ":""));
   }
   println("};");
+}
+
+// Find an available text box (one that can serve
+// as a fresh target) or create and insert a new text 
+// box.
+Cell newOrExistingTextBox(Grid g, String s) {
+  Cell c = findViableExistingTextBox(g, s);
+  if (c == null) {
+    c = placeNewTextBox(g, s);
+  }
+  return c;
+}
+
+Cell findViableExistingTextBox(Grid g, String s) {
+  for (int i=0; i<g.rows; i++) {
+    for (int j=0; j<g.cols; j++) {
+      Cell c = g.cells[i][j];
+      if (c.dObject!=null && c.dObject instanceof TextBox) {
+        if (((TextBox)c.dObject).label.equals(s)) {
+          int score = computeTextBoxViabilityScore(g, c);
+          if (score>0) {
+            // For now, we just take the first one we find that's viable.
+            // TODO: pick randomly between the top two scoring cells.
+            return c; // *********** EARLY RETURN **************
+          }
+        }
+      }
+    }
+  }  
+  return null;
+}
+
+// Compute the viability for this (TextBox) cell to be
+// the target for a new laser. Positive score means it's viable.
+// (increasing is better). Score of 0 means it is not viable.
+int computeTextBoxViabilityScore(Grid g, Cell c) {
+  int score = 0;
+  // We count the number of places a laser can be placed
+  // in the immediate neighborhood
+  for (int di = -1; di < 2; di++) {
+    for (int dj = -1; dj < 2; dj++) {
+      // We wan't to skip diagonals and center!
+      if ((di+dj) % 2 != 0) {
+        int i  = c.i + di;
+        int j = c.j + dj;
+        if (i>=0 && i<g.rows && j>=0 && j<g.cols) {
+          Cell cj = g.cells[i][j];
+          if (cj.dObject == null || cj.dObject instanceof Dot) {
+            score++;
+          }
+        }
+      }
+    }
+  }
+  return score;
+}
+
+Cell placeNewTextBox(Grid g, String s) {
+  // We just find the first available one (for now)
+  // TODO: pick a random one from the top two scorers.
+  for (int i=0; i<g.rows; i++) {
+    for (int j=0; j<g.cols; j++) {
+      Cell c = g.cells[i][j];
+      if (c.dObject==null || c.dObject instanceof TextBox) {
+        int score = computeTextBoxViabilityScore(g, c);
+        if (score > 0) {
+          c.dObject = new TextBox(s, gParams, gParams);
+          return c; // *********** EARLY RETURN **************
+        }
+      }
+    }
+  }
+  return null;
+}
+
+
+
+// Add a laser that targets the specified
+// text cell. Return true if the laser was
+// successfully added.
+Boolean addLaserToTarget(Grid g, Cell textCell, int laserId) {
+  return false;
+}
+
+// Add more lasers so that the supplied text
+// is *appended* to the existing answer text.
+// Laser Ids start with one more than the max Id
+// already in the system, (or 1 if none exists)
+Boolean addToGrid(Grid g, String text) {
+  int[] existingIds = getLaserIds(g);
+  int prevMax = 0;
+  for (int id : existingIds) {
+    assert(id!=0);
+    if (prevMax < id) {
+      prevMax = id;
+    }
+  }
+  int startId = prevMax+1;
+  for (int i=0; i<text.length(); i++) {
+    String s = "" + text.charAt(i);
+    Cell textCell = newOrExistingTextBox(g, s);
+    Boolean ok = false;
+    if (textCell!=null) {
+      ok = addLaserToTarget(g, textCell, startId + i);
+    }
+    if (!ok) {
+      assert(false);
+      return false; // *********** EARLY RETURN
+    }
+  }
+  return true;
 }
