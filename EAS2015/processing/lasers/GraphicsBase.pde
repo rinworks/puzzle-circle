@@ -33,7 +33,7 @@ class GraphicsParams {
   public int borderColor=0; // -1 means don't set
   public int borderWeight=1; // -1 means don't set
   public int backgroundFill=-255; // -1 means don't set
-  public PFont font=null); // null means don't set
+  public PFont font=null; // null means don't set
   public int textSize=20; // -1 means don't set
   public int textColor=0; // -1 means don't set
 }

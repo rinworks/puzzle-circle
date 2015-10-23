@@ -62,11 +62,11 @@ GraphicsParams gParams = new GraphicsParams();
 GraphicsParams gLaserParams = new GraphicsParams();
 
 Grid genObjects(String[] spec, int[] laserIds) {
-  public final String DEFAULT_FONT = "Segoe WP Black";
+  String DEFAULT_FONT = "Segoe WP Black";
   gParams.font = createFont(DEFAULT_FONT, 7); // null means don't set
   gParams.textColor = 0;
   gParams.backgroundFill = 255;
-  
+
   gLaserParams.font = createFont(DEFAULT_FONT, 7); // null means don't set
   gLaserParams.textColor = 255;
   gLaserParams.backgroundFill = color(255, 0, 0);
@@ -467,8 +467,8 @@ int computeTextBoxViabilityScore(Grid g, Cell c) {
       if ((di+dj) % 2 != 0) {
         int i  = c.i + di;
         int j = c.j + dj;
-        if (i>=0 && i<g.rows && j>=0 && j<g.cols) {
-          Cell cj = g.cells[i][j];
+        Cell cj = getCellIfAvailable(g, i, j);
+        if (cj!=null) {
           if (cj.dObject == null || cj.dObject instanceof Dot) {
             score++;
           }
@@ -499,11 +499,73 @@ Cell placeNewTextBox(Grid g, String s) {
 
 
 
-// Add a laser that targets the specified
-// text cell. Return true if the laser was
-// successfully added.
+// Add a laser that targets the specified text cell. Return true if the laser was
+// successfully added. The location is assumed to be a viable location
+// to add a laser (there is a spot for the laser)
+// TODO: pick a spot randomly among available spots.
 Boolean addLaserToTarget(Grid g, Cell textCell, int laserId) {
+  int i, j;
+  float orientation=0.0;
+  Cell c;
+  Boolean found=false;
+
+  // Check top...
+  i = textCell.i-1;
+  j = textCell.j;
+  c = getCellIfAvailable(g, i, j);
+  if (c!=null) {
+    found = true;
+    orientation = -90; // pointing down.
+  }
+
+  if (!found) {
+    // Check bottom
+    i = textCell.i+1;
+    j = textCell.j;
+    c = getCellIfAvailable(g, i, j);
+    if (c!=null) {
+      found = true;
+      orientation = 90; // pointing up.
+    }
+  }
+
+  if (!found) {
+    // Check left
+    i = textCell.i;
+    j = textCell.j-1;
+    c = getCellIfAvailable(g, i, j);
+    if (c!=null) {
+      found = true;
+      orientation = 0; // pointing left.
+    }
+  }
+
+  if (!found) {
+    // Check right
+    i = textCell.i;
+    j = textCell.j+1;
+    c = getCellIfAvailable(g, i, j);
+    if (c!=null) {
+      found = true;
+      orientation = 180; // pointing right.
+    }
+  }
+
+  if (found) {
+    c.dObject = new Laser(laserId, gLaserParams, gLaserParams);
+    c.orientation = orientation;
+  }
   return false;
+}
+
+Cell getCellIfAvailable(Grid g, int i, int j) {
+  if (i>=0 && i<g.rows && j>=0 && j<g.cols) {
+    Cell cj = g.cells[i][j];
+    if (cj.dObject == null || cj.dObject instanceof Dot) {
+      return cj;
+    }
+  }
+  return null;
 }
 
 // Add more lasers so that the supplied text
