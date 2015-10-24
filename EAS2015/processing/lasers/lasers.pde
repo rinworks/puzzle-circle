@@ -53,10 +53,13 @@ void setup() {
 
   //Grid g = genObjects(positions, laserIds);
   String puzzleText = "JUNE EXPIDITION";
-  Grid g = createDotGrid(10, 10); 
+  Grid g = createDotGrid(13, 16); 
   addToGrid(g, puzzleText);
   //randomlyBackUpLasers(g);
-  addRandomMirrors(g);
+  for (int i=0; i<10; i++) {
+    randomlyBackUpLasers(g);
+    addRandomMirrors(g);
+  }
   drawPaths(g, puzzleText);
   g.draw();
   //println(PFont.list());
@@ -481,10 +484,10 @@ Cell findViableExistingTextBox(Grid g, String s) {
 
 // Given a list of candidate cells (all of which are assumed to be viable)
 // pick a random one amongst the very top scorers
-Cell pickRandomTopViableCellForTextBox(Grid g, ArrayList<Cell> candidateCells, ArrayList<Integer> candidateScores) {
+Cell pickRandomTopViableCellForTextBox(Grid g, ArrayList<Cell> candidateCells, ArrayList<Integer> candidateScores) { //<>//
   int maxScore = 0;
 
-  // Find the max score //<>//
+  // Find the max score
   for (int score : candidateScores) {
     if (score>maxScore) {
       maxScore = score;
@@ -512,10 +515,10 @@ Cell pickRandomTopViableCellForTextBox(Grid g, ArrayList<Cell> candidateCells, A
   for (Cell c : candidateCells) {
     if (candidateScores.get(i++)==maxScore) {
       if (maxIndex==chosen) {
-        return c; // ******** EARLY RETURN **********
+        return c; // ******** EARLY RETURN ********** //<>//
       }
       maxIndex++;
-    } //<>//
+    }
   }
   assert(candidateCells.size()==0); //Should only get here if there were no candidate cell.s
   return null;
@@ -554,10 +557,10 @@ Cell placeNewTextBox(Grid g, String s) {
   ArrayList<Integer> candidateScores = new ArrayList<Integer>();
   for (int i=0; i<g.rows; i++) {
     for (int j=0; j<g.cols; j++) {
-      Cell c = getCellIfAvailable(g, i, j);
+      Cell c = getCellIfAvailable(g, i, j); //<>//
       if (c!=null) {
         int score = computeTextBoxViabilityScore(g, c);
-        if (score > 0) { //<>//
+        if (score > 0) {
           candidateCells.add(c);
           candidateScores.add(score);
         }
@@ -573,10 +576,10 @@ Cell placeNewTextBox(Grid g, String s) {
 
 
 
-// Add a laser that targets the specified text cell. Return true if the laser was
+// Add a laser that targets the specified text cell. Return true if the laser was //<>//
 // successfully added. The location is assumed to be a viable location
 // to add a laser (there is a spot for the laser)
-// TODO: pick a spot randomly among available spots. //<>//
+// TODO: pick a spot randomly among available spots.
 Boolean addLaserToTarget(Grid g, Cell textCell, int laserId) {
   int i, j;
   Cell c;
@@ -723,13 +726,23 @@ void addRandomMirrors(Grid g) {
   markAllPaths(g);
   Cell[] lasers  = pickRandomLaserOrder(g);
   for (Cell c : lasers) {
-    int laserDirection = cardinalDirection(c.orientation);
     // 45-degree (normal) mirror adds -90, -45-degree mirror adds 90 (including changing 180 into (180+90)=270=-90.
-    int mirrorOrientation = (random(1.0)<0.5) ? 45 : -45;
-    int newLaserDirection = (laserDirection + ((mirrorOrientation==45) ? 3 : 1))%4; // note that 3 == -1 mod 4.
-    float newLaserOrientation = orientationFromCardinalDirection(newLaserDirection);
-    int reverseDirection = (newDirection+2)%4;
-    
+    float mirrorOrientation = (random(1.0)<0.5) ? 45.0 : -45.0;
+    float reverseOrientation = c.orientation+180.0;
+    float newReverseOrientation = getNextBeamOrientation(reverseOrientation, mirrorOrientation);
+    float newLaserOrientation = (newReverseOrientation+180);
+    int reverseDirection = cardinalDirection(newReverseOrientation);
+
+    /*
+    int laserDirection = cardinalDirection(c.orientation);
+     int newLaserDirection = (laserDirection + ((mirrorOrientation==45) ? 3 : 1))%4; // note that 3 == -1 mod 4.
+     float newLaserOrientation = orientationFromCardinalDirection(newLaserDirection);
+     int reverseDirection = (newLaserDirection+2)%4;
+     */
+
+
+
+
     Cell newC = randomlyPickBackedupLaserCell(g, c, reverseDirection);
     if (newC!=null) {
       // This means that we CAN backup the laser in the new direction.
@@ -742,12 +755,12 @@ void addRandomMirrors(Grid g) {
       assert(c.dObject instanceof Laser);
       newC.dObject = c.dObject;
       newC.orientation = newLaserOrientation;
-      
+
       // Insert mirror!
       TwowayMirror m = new TwowayMirror(gParams, gParams);
       dTemp = m;
       orientationTemp = mirrorOrientation;
-      
+
       c.dObject = dTemp;
       c.orientation = orientationTemp;
 
@@ -762,7 +775,6 @@ void addRandomMirrors(Grid g) {
 float orientationFromCardinalDirection(int direction) {
   assert(direction>=0 && direction<4);
   return (direction<3) ? direction * 90.0  : -90.0;
-  
 }
 
 // Attempt to backup from cell c in the specified 

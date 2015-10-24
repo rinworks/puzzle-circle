@@ -113,7 +113,7 @@ class Laser implements  Drawable {
     endShape();
     gUtils.setTextParams(params);
     // Don't have upside-down text
-    if (abs(orientation)>90) {
+    if (abs(orientation % 360)>90) {
       rotate(radians(180));
     }
     text(label, -a/4, -a/10);
