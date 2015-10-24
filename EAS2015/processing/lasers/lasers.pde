@@ -48,17 +48,21 @@ void setup() {
   // Grid coordinates: (i, j) are like rows of an array/matrix. So i is vertical,
   // with increasing i going downwards.
   // Angles: normal interpration (0 == going right; 90== going up, etc.)
-
-  int[] laserIds = {11, 5, 7, 13, 6, 14, 10, 8, 12, 15, 3, 9, 1, 2, 4};
-
-  //Grid g = genObjects(positions, laserIds);
+  boolean synthPuzzles = false;
   String puzzleText = "123456789"; //"OXYGEN CARRYING BLOOD CELL";
-  Grid g = createDotGrid(20, 15); //(13, 16); 
-  addToGrid(g, puzzleText);
-  //randomlyBackUpLasers(g);
-  for (int i=0; i<100; i++) {
+  Grid g;
+  if (!synthPuzzles) {
+    int[] laserIds = {11, 5, 7, 13, 6, 14, 10, 8, 12, 15, 3, 9, 1, 2, 4};
+
+    g = genObjects(positions, laserIds);
+  } else {
+    g = createDotGrid(20, 15); //(13, 16); 
+    addToGrid(g, puzzleText);
     //randomlyBackUpLasers(g);
-    addRandomMirrors(g);
+    for (int i=0; i<100; i++) {
+      //randomlyBackUpLasers(g);
+      addRandomMirrors(g);
+    }
   }
   drawPaths(g, puzzleText);
   g.draw();
@@ -139,8 +143,8 @@ void drawPaths(Grid g, String expectedText) {
   for (Cell c : laserCells) {
     Laser l = laserFromCell(c);
     //println("Found laser " + l.id + " at (" + c.i + "," + c.j + ")");
-    ArrayList<Cell> path = computeLaserPath(g, c, false);
-    markPath(g, path);
+    ArrayList<Cell> path = computeLaserPath(g, c, true);
+    //markPath(g, path);
     String s = i<expectedText.length() ? expectedText.substring(i, i+1) : "";
     drawLaserPath(g, path, s);
     //break;
@@ -157,8 +161,8 @@ void markAllPaths(Grid g) {
   int i = 0;
   for (Cell c : laserCells) {
     Laser l = laserFromCell(c);
-    ArrayList<Cell> path = computeLaserPath(g, c, true);
-    markPath(g, path);
+    computeLaserPath(g, c, true);
+    //markPath(g, path);
     i++;
   }
 }
@@ -184,6 +188,9 @@ ArrayList<Cell> computeLaserPath(Grid g, Cell c, Boolean mark) {
   //path.add(c);
   //growLaserPath(g, path);
   LaserHelper lh = new LaserHelper(g);
+  if (mark) {
+    c.visited=true;
+  }
   path.add(c);
   lh.tracePath(c, cardinalDirection(c.orientation), path, null, mark);
   return path;
@@ -290,8 +297,8 @@ void growLaserPath(Grid g, ArrayList<Cell> path) {
 Cell findNextTarget(Grid g, Cell c, int direction, ArrayList<Cell>dotList, int[]dotCount, Boolean mark) {
   assert(direction>=0 && direction<4);
   if (dotCount!=null) {
-      assert( dotCount.length==1);
-      dotCount[0]=0; // int count of dots.
+    assert( dotCount.length==1);
+    dotCount[0]=0; // int count of dots.
   }
   int di=0, dj=0;
   switch (direction) {
@@ -316,7 +323,7 @@ Cell findNextTarget(Grid g, Cell c, int direction, ArrayList<Cell>dotList, int[]
   int j=c.j + dj;
   while (i>=0 && j>=0 && i<g.rows && j<g.cols) {
     cNext = g.cells[i][j];
-    if(mark) {
+    if (mark) {
       cNext.visited=true;
     }
     // If it's null of a Dot, we keep going...
@@ -477,14 +484,14 @@ Cell[] getLasers(Grid g) {
       Cell c = g.cells[i][j];
       if (c.dObject instanceof Laser) {
         list.add(c);
-      }
+      } //<>//
     }
   }  
   Cell[] ret = list.toArray(new Cell[list.size()]);
   return ret;
 }
 
-int[] getLaserIds (Grid g) { //<>//
+int[] getLaserIds (Grid g) {
   Cell[] cells = getLasers(g);
   int[] ids = new int[cells.length];
   for (int i=0; i<cells.length; i++) {
@@ -508,14 +515,14 @@ void printGrid(Grid g) {
   }
   println("};");
 }
-
+ //<>//
 // Find an available text box (one that can serve
 // as a fresh target) or create and insert a new text 
 // box.
 Cell newOrExistingTextBox(Grid g, String s) {
   Cell c = findViableExistingTextBox(g, s);
   if (c == null) {
-    c = placeNewTextBox(g, s); //<>//
+    c = placeNewTextBox(g, s);
   }
   return c;
 }
@@ -550,14 +557,14 @@ Cell pickRandomTopViableCellForTextBox(Grid g, ArrayList<Cell> candidateCells, A
   for (int score : candidateScores) {
     if (score>maxScore) {
       maxScore = score;
-    }
+    } //<>//
   }
 
   // A score of 0 implies nothing is viable
   if (maxScore==0) {
     return null;
   }
- //<>//
+
   // find count of items with the max score.
   int numAtMax=0;
   for (int score : candidateScores) {
@@ -772,7 +779,7 @@ void randomlyBackUpLasers(Grid g) {
       // Re-do the path - it will backwards-extend
       // the existing path
       ArrayList<Cell> path = computeLaserPath(g, newC, true);
-      markPath(g, path);
+      //markPath(g, path);
     }
   }
 }
@@ -822,7 +829,7 @@ void addRandomMirrors(Grid g) {
       // Re-do the path - it will backwards-extend
       // the existing path
       ArrayList<Cell> path = computeLaserPath(g, newC, true);
-      markPath(g, path);
+      //markPath(g, path);
     }
   }
 }
