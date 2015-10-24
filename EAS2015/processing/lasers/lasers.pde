@@ -52,7 +52,7 @@ void setup() {
   int[] laserIds = {11, 5, 7, 13, 6, 14, 10, 8, 12, 15, 3, 9, 1, 2, 4};
 
   //Grid g = genObjects(positions, laserIds);
-  String puzzleText = "OXYGEN CARRYING BLOOD CELL";
+  String puzzleText = "123456789"; //"OXYGEN CARRYING BLOOD CELL";
   Grid g = createDotGrid(20, 15); //(13, 16); 
   addToGrid(g, puzzleText);
   //randomlyBackUpLasers(g);
@@ -139,7 +139,7 @@ void drawPaths(Grid g, String expectedText) {
   for (Cell c : laserCells) {
     Laser l = laserFromCell(c);
     //println("Found laser " + l.id + " at (" + c.i + "," + c.j + ")");
-    ArrayList<Cell> path = computeLaserPath(g, c);
+    ArrayList<Cell> path = computeLaserPath(g, c, false);
     markPath(g, path);
     String s = i<expectedText.length() ? expectedText.substring(i, i+1) : "";
     drawLaserPath(g, path, s);
@@ -157,7 +157,7 @@ void markAllPaths(Grid g) {
   int i = 0;
   for (Cell c : laserCells) {
     Laser l = laserFromCell(c);
-    ArrayList<Cell> path = computeLaserPath(g, c);
+    ArrayList<Cell> path = computeLaserPath(g, c, true);
     markPath(g, path);
     i++;
   }
@@ -179,10 +179,13 @@ void highlightUnvisitedObjects(Grid g) {
   }
 }
 
-ArrayList<Cell> computeLaserPath(Grid g, Cell c) {
+ArrayList<Cell> computeLaserPath(Grid g, Cell c, Boolean mark) {
   ArrayList<Cell> path = new ArrayList<Cell>();
+  //path.add(c);
+  //growLaserPath(g, path);
+  LaserHelper lh = new LaserHelper(g);
   path.add(c);
-  growLaserPath(g, path);
+  lh.tracePath(c, cardinalDirection(c.orientation), path, null, mark);
   return path;
 }
 
@@ -271,7 +274,7 @@ void growLaserPath(Grid g, ArrayList<Cell> path) {
     direction = cardinalDirection(prevOrientation);
     direction = getNextBeamDirection(direction, cLast.orientation);
   }
-  cNext = findNextTarget(g, cLast, direction, null, null);
+  cNext = findNextTarget(g, cLast, direction, null, null, false);
   path.add(cNext); // cNext can be null.
   if (cNext!= null && cNext.dObject instanceof TwowayMirror) {
     // we hit a mirror, so we can keep going...
@@ -284,7 +287,7 @@ void growLaserPath(Grid g, ArrayList<Cell> path) {
 // orientation (in degrees). Return a boundary Dot cell if you hit a boundary. Return null if
 // Cell c is already at the boundary and the laser is leaving the boundary.
 // We use dotCount just to pass-by-reference the count of dots back. A bit of a hack.
-Cell findNextTarget(Grid g, Cell c, int direction, ArrayList<Cell>dotList, int[]dotCount) {
+Cell findNextTarget(Grid g, Cell c, int direction, ArrayList<Cell>dotList, int[]dotCount, Boolean mark) {
   assert(direction>=0 && direction<4);
   if (dotCount!=null) {
       assert( dotCount.length==1);
@@ -313,6 +316,9 @@ Cell findNextTarget(Grid g, Cell c, int direction, ArrayList<Cell>dotList, int[]
   int j=c.j + dj;
   while (i>=0 && j>=0 && i<g.rows && j<g.cols) {
     cNext = g.cells[i][j];
+    if(mark) {
+      cNext.visited=true;
+    }
     // If it's null of a Dot, we keep going...
     if (cNext.dObject instanceof Dot) {
       if (dotList!=null) {
@@ -478,13 +484,13 @@ Cell[] getLasers(Grid g) {
   return ret;
 }
 
-int[] getLaserIds (Grid g) {
+int[] getLaserIds (Grid g) { //<>//
   Cell[] cells = getLasers(g);
   int[] ids = new int[cells.length];
   for (int i=0; i<cells.length; i++) {
     ids[i] = ((Laser) cells[i].dObject).id;
   }
-  return ids; //<>//
+  return ids;
 }
 
 void printGrid(Grid g) {
@@ -509,13 +515,13 @@ void printGrid(Grid g) {
 Cell newOrExistingTextBox(Grid g, String s) {
   Cell c = findViableExistingTextBox(g, s);
   if (c == null) {
-    c = placeNewTextBox(g, s);
+    c = placeNewTextBox(g, s); //<>//
   }
   return c;
 }
 
 Cell findViableExistingTextBox(Grid g, String s) {
-  ArrayList<Cell> candidateCells = new ArrayList<Cell>(); //<>//
+  ArrayList<Cell> candidateCells = new ArrayList<Cell>();
   ArrayList<Integer> candidateScores = new ArrayList<Integer>();
   for (int i=0; i<g.rows; i++) {
     for (int j=0; j<g.cols; j++) {
@@ -551,13 +557,13 @@ Cell pickRandomTopViableCellForTextBox(Grid g, ArrayList<Cell> candidateCells, A
   if (maxScore==0) {
     return null;
   }
-
+ //<>//
   // find count of items with the max score.
   int numAtMax=0;
   for (int score : candidateScores) {
     if (score == maxScore) {
       numAtMax++;
-    } //<>//
+    }
   }
   assert(numAtMax>0);
 
@@ -765,7 +771,7 @@ void randomlyBackUpLasers(Grid g) {
 
       // Re-do the path - it will backwards-extend
       // the existing path
-      ArrayList<Cell> path = computeLaserPath(g, newC);
+      ArrayList<Cell> path = computeLaserPath(g, newC, true);
       markPath(g, path);
     }
   }
@@ -815,7 +821,7 @@ void addRandomMirrors(Grid g) {
 
       // Re-do the path - it will backwards-extend
       // the existing path
-      ArrayList<Cell> path = computeLaserPath(g, newC);
+      ArrayList<Cell> path = computeLaserPath(g, newC, true);
       markPath(g, path);
     }
   }
