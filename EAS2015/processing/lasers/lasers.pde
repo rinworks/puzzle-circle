@@ -48,13 +48,13 @@ void setup() {
   // Grid coordinates: (i, j) are like rows of an array/matrix. So i is vertical,
   // with increasing i going downwards.
   // Angles: normal interpration (0 == going right; 90== going up, etc.)
-  boolean synthPuzzles = false;
-  String puzzleText = "123456789"; //"OXYGEN CARRYING BLOOD CELL";
+  boolean synthPuzzles = true;
+  String puzzleText = "JUNE EXPEDITION"; //"123456789"; //"OXYGEN CARRYING BLOOD CELL";
   Grid g;
   if (!synthPuzzles) {
     int[] laserIds = {11, 5, 7, 13, 6, 14, 10, 8, 12, 15, 3, 9, 1, 2, 4};
 
-    g = genObjects(positions, laserIds);
+    g = genObjects(positionsGood, laserIds);
   } else {
     g = createDotGrid(20, 15); //(13, 16); 
     addToGrid(g, puzzleText);
@@ -144,7 +144,6 @@ void drawPaths(Grid g, String expectedText) {
     Laser l = laserFromCell(c);
     //println("Found laser " + l.id + " at (" + c.i + "," + c.j + ")");
     ArrayList<Cell> path = computeLaserPath(g, c, true);
-    //markPath(g, path);
     String s = i<expectedText.length() ? expectedText.substring(i, i+1) : "";
     drawLaserPath(g, path, s);
     //break;
@@ -162,7 +161,6 @@ void markAllPaths(Grid g) {
   for (Cell c : laserCells) {
     Laser l = laserFromCell(c);
     computeLaserPath(g, c, true);
-    //markPath(g, path);
     i++;
   }
 }
@@ -195,45 +193,6 @@ ArrayList<Cell> computeLaserPath(Grid g, Cell c, Boolean mark) {
   lh.tracePath(c, cardinalDirection(c.orientation), path, null, mark);
   return path;
 }
-
-// Set all path cells visited field to true.
-void markPath(Grid g, ArrayList<Cell> path) {
-  Cell cPrev = null;
-  for (Cell c : path) {
-    markCellSpan(g, cPrev, c);
-    cPrev = c;
-  }
-}
-
-// Marks all the cells between cFrom and cTo,
-// inclusive.
-// Either can be null.
-void markCellSpan(Grid g, Cell cFrom, Cell cTo) {
-  if (cFrom!=null) {
-    cFrom.visited=true;
-  }
-  if (cTo!=null) {
-    cTo.visited=true;
-  }
-  if (cFrom==null || cTo==null) {
-    return;
-  }
-  int iCount = cTo.i-cFrom.i;
-  int jCount = cTo.j-cFrom.j;
-  int dI = iCount < 0 ? -1 : (iCount==0 ? 0 : 1);
-  int dJ = jCount < 0 ? -1 : (jCount==0 ? 0 : 1);
-  int i=cFrom.i, j=cFrom.j;
-  while (i!=cTo.i || j!=cTo.j) {
-    Cell c = g.tryGetCell(i, j);
-    if (c==null) {
-      assert(c!=null);
-    }
-    c.visited=true;
-    i+=dI;
-    j+=dJ;
-  }
-}
-
 
 // Return all cells with lasers, in order of
 // increasing laserIds.
@@ -484,7 +443,7 @@ Cell[] getLasers(Grid g) {
       Cell c = g.cells[i][j];
       if (c.dObject instanceof Laser) {
         list.add(c);
-      } //<>//
+      }
     }
   }  
   Cell[] ret = list.toArray(new Cell[list.size()]);
@@ -515,7 +474,7 @@ void printGrid(Grid g) {
   }
   println("};");
 }
- //<>//
+
 // Find an available text box (one that can serve
 // as a fresh target) or create and insert a new text 
 // box.
@@ -525,7 +484,7 @@ Cell newOrExistingTextBox(Grid g, String s) {
     c = placeNewTextBox(g, s);
   }
   return c;
-}
+} //<>//
 
 Cell findViableExistingTextBox(Grid g, String s) {
   ArrayList<Cell> candidateCells = new ArrayList<Cell>();
@@ -556,8 +515,8 @@ Cell pickRandomTopViableCellForTextBox(Grid g, ArrayList<Cell> candidateCells, A
   // Find the max score
   for (int score : candidateScores) {
     if (score>maxScore) {
-      maxScore = score;
-    } //<>//
+      maxScore = score; //<>//
+    }
   }
 
   // A score of 0 implies nothing is viable
@@ -598,7 +557,7 @@ int computeTextBoxViabilityScore(Grid g, Cell c) {
   int score = 0;
   // We count the number of places a laser can be placed
   // in the immediate neighborhood
-  for (int di = -1; di < 2; di++) {
+  for (int di = -1; di < 2; di++) { //<>//
     for (int dj = -1; dj < 2; dj++) {
       // We wan't to skip diagonals and center!
       if ((di+dj) % 2 != 0) {
@@ -778,8 +737,7 @@ void randomlyBackUpLasers(Grid g) {
 
       // Re-do the path - it will backwards-extend
       // the existing path
-      ArrayList<Cell> path = computeLaserPath(g, newC, true);
-      //markPath(g, path);
+      computeLaserPath(g, newC, true);
     }
   }
 }
@@ -828,8 +786,7 @@ void addRandomMirrors(Grid g) {
 
       // Re-do the path - it will backwards-extend
       // the existing path
-      ArrayList<Cell> path = computeLaserPath(g, newC, true);
-      //markPath(g, path);
+      computeLaserPath(g, newC, true);
     }
   }
 }
