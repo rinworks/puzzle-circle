@@ -718,6 +718,8 @@ void randomlyBackUpLasers(Grid g) {
 Cell randomlyPickBackedupLaserCell(Grid g, Cell c, int direction) {
   int dI = getRowStep(direction);
   int dJ = getColStep(direction);
+  println("randomly backing up laser " + ((Laser) c.dObject).id + "in direction " + direction + "di:" + dI + " dj:"+ dJ);
+
   ArrayList<Cell> candidateCells = new ArrayList<Cell>();
   ArrayList<Integer> candidateScores = new ArrayList<Integer>();
   do {
@@ -744,7 +746,7 @@ int getColStep(int direction) {
 // one step in the given direction
 int getRowStep(int direction) {
   assert(direction>=0 && direction<4);
-  int[] deltas = {0, 1, 0, -1}; // left, up, right, down
+  int[] deltas = {0, -1, 0, 1}; // left, up, right, down
   return deltas[direction];
 }
 
