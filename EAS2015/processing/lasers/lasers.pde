@@ -1,4 +1,4 @@
-import java.util.Comparator; //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>//
+import java.util.Comparator; //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>//
 import java.util.Arrays;
 
 void setup() {
@@ -52,12 +52,12 @@ void setup() {
   int[] laserIds = {11, 5, 7, 13, 6, 14, 10, 8, 12, 15, 3, 9, 1, 2, 4};
 
   //Grid g = genObjects(positions, laserIds);
-  String puzzleText = "JUNE EXPIDITION";
-  Grid g = createDotGrid(13, 16); 
+  String puzzleText = "OXYGEN CARRYING BLOOD CELL";
+  Grid g = createDotGrid(20, 15); //(13, 16); 
   addToGrid(g, puzzleText);
   //randomlyBackUpLasers(g);
   for (int i=0; i<100; i++) {
-    randomlyBackUpLasers(g);
+    //randomlyBackUpLasers(g);
     addRandomMirrors(g);
   }
   drawPaths(g, puzzleText);
@@ -216,7 +216,7 @@ void markCellSpan(Grid g, Cell cFrom, Cell cTo) {
   while (i!=cTo.i || j!=cTo.j) {
     Cell c = g.tryGetCell(i, j);
     if (c==null) {
-      assert(c!=null); //<>//
+      assert(c!=null);
     }
     c.visited=true;
     i+=dI;
@@ -255,12 +255,12 @@ void growLaserPath(Grid g, ArrayList<Cell> path) {
   }
   Cell cLast = path.get(len-1);
   Cell cNext = null;
-  float orientation;
+  int direction=0;
   if (len == 1) {
     // We're just starting out...
     assert(cLast.dObject instanceof Laser);//, "ERROR - starting out with a NON laser");
     Laser l = laserFromCell(cLast);
-    orientation = cLast.orientation;
+    direction = cardinalDirection(cLast.orientation);
     //println("Starting with laser " + l.id);
   } else {
     // We have at least two items in the path. We only get here if
@@ -268,9 +268,10 @@ void growLaserPath(Grid g, ArrayList<Cell> path) {
     Cell cPrev = path.get(len-2);
     assert(cLast.dObject instanceof TwowayMirror); //, "ERROR - last item path is NOT a mirror.");
     float prevOrientation = getCurrentBeamOrientation(cPrev, cLast);
-    orientation = getNextBeamOrientation(prevOrientation, cLast.orientation);
+    direction = cardinalDirection(prevOrientation);
+    direction = getNextBeamDirection(direction, cLast.orientation);
   }
-  cNext = findNextTarget(g, cLast, orientation);
+  cNext = findNextTarget(g, cLast, direction, null, null);
   path.add(cNext); // cNext can be null.
   if (cNext!= null && cNext.dObject instanceof TwowayMirror) {
     // we hit a mirror, so we can keep going...
@@ -282,10 +283,15 @@ void growLaserPath(Grid g, ArrayList<Cell> path) {
 // Find the next target the laser would hit, starting from Cell c and going in direction specified by
 // orientation (in degrees). Return a boundary Dot cell if you hit a boundary. Return null if
 // Cell c is already at the boundary and the laser is leaving the boundary.
-Cell findNextTarget(Grid g, Cell c, float orientation) {
-  int k = (round(orientation/90.0)+4)%4 ; // 0(right), 1(up), 2(right), 3(down)
+// We use dotCount just to pass-by-reference the count of dots back. A bit of a hack.
+Cell findNextTarget(Grid g, Cell c, int direction, ArrayList<Cell>dotList, int[]dotCount) {
+  assert(direction>=0 && direction<4);
+  if (dotCount!=null) {
+      assert( dotCount.length==1);
+      dotCount[0]=0; // int count of dots.
+  }
   int di=0, dj=0;
-  switch (k) {
+  switch (direction) {
   case 0:  // right
     dj=1;
     break;
@@ -308,7 +314,14 @@ Cell findNextTarget(Grid g, Cell c, float orientation) {
   while (i>=0 && j>=0 && i<g.rows && j<g.cols) {
     cNext = g.cells[i][j];
     // If it's null of a Dot, we keep going...
-    if (!(cNext.dObject instanceof Dot)) {
+    if (cNext.dObject instanceof Dot) {
+      if (dotList!=null) {
+        dotList.add(cNext);
+      }
+      if (dotCount!=null) {
+        dotCount[0]+=1;
+      }
+    } else {
       //println("Hit object at " + locationToString(cNext));
       break;
     }
@@ -320,18 +333,17 @@ Cell findNextTarget(Grid g, Cell c, float orientation) {
 
 // Assuming a beam with orientation prevOrientation hits the mirror,
 // compute the new orientation
-float getNextBeamOrientation(float prevOrientation, float mirrorOrientation)
+int getNextBeamDirection(int direction, float mirrorOrientation)
 {
-  int prev = round((prevOrientation+360)/90.0) % 4; // 0=right 1=up 2=left 3=down
-  assert(prev>=0 && prev<4);
+  assert(direction>=0 && direction<4);
   int mO = round(mirrorOrientation); // should be either 45 or -45 - this is the NORMAL of the mirror, NOT the plane of the mirror.
-  int[] m45 = {-90, 180, 90, 0}; // If it was 0 (going right) it would now be -90 (going down), etc.
-  int[] mMinus45 = {90, 0, -90, 180}; // If it was 0 (going right) it will now be 90 (going up), etc.
+  int[] m45 = {3, 2, 1, 0}; // If it was 0 (going right) it would now be -90 (going down), etc.
+  int[] mMinus45 = {1, 0, 3, 2}; // If it was 0 (going right) it will now be 90 (going up), etc.
   if (mO == 45) {
-    return m45[prev];
+    return m45[direction];
   } else {
     assert(mO==-45);
-    return mMinus45[prev];
+    return mMinus45[direction];
   }
 }
 
@@ -472,7 +484,7 @@ int[] getLaserIds (Grid g) {
   for (int i=0; i<cells.length; i++) {
     ids[i] = ((Laser) cells[i].dObject).id;
   }
-  return ids;
+  return ids; //<>//
 }
 
 void printGrid(Grid g) {
@@ -484,7 +496,7 @@ void printGrid(Grid g) {
   }
   println("};");
 
-  print("int[] ids = {"); //<>//
+  print("int[] ids = {");
   for (int i=0; i<ids.length; i++) {
     print(ids[i] + ((i<ids.length-1)?", ":""));
   }
@@ -503,7 +515,7 @@ Cell newOrExistingTextBox(Grid g, String s) {
 }
 
 Cell findViableExistingTextBox(Grid g, String s) {
-  ArrayList<Cell> candidateCells = new ArrayList<Cell>();
+  ArrayList<Cell> candidateCells = new ArrayList<Cell>(); //<>//
   ArrayList<Integer> candidateScores = new ArrayList<Integer>();
   for (int i=0; i<g.rows; i++) {
     for (int j=0; j<g.cols; j++) {
@@ -515,7 +527,7 @@ Cell findViableExistingTextBox(Grid g, String s) {
             candidateCells.add(c);
             candidateScores.add(score);
           }
-        } //<>//
+        }
       }
     }
   }
@@ -545,7 +557,7 @@ Cell pickRandomTopViableCellForTextBox(Grid g, ArrayList<Cell> candidateCells, A
   for (int score : candidateScores) {
     if (score == maxScore) {
       numAtMax++;
-    }
+    } //<>//
   }
   assert(numAtMax>0);
 
@@ -557,7 +569,7 @@ Cell pickRandomTopViableCellForTextBox(Grid g, ArrayList<Cell> candidateCells, A
     if (candidateScores.get(i++)==maxScore) {
       if (maxIndex==chosen) {
         return c; // ******** EARLY RETURN **********
-      } //<>//
+      }
       maxIndex++;
     }
   }
@@ -581,7 +593,9 @@ int computeTextBoxViabilityScore(Grid g, Cell c) {
         int j = c.j + dj;
         Cell cj = getCellIfAvailable(g, i, j);
         if (cj!=null) {
-          if (cj.dObject == null || cj.dObject instanceof Dot) {
+          // Note: TwowayMirror is added because *potentially* there could be a way further by bouncing
+          // off that existing mirror.
+          if (cj.dObject == null || cj.dObject instanceof Dot || cj.dObject instanceof TwowayMirror) {
             score++;
           }
         }
@@ -767,24 +781,16 @@ void addRandomMirrors(Grid g) {
   markAllPaths(g);
   Cell[] lasers  = pickRandomLaserOrder(g);
   for (Cell c : lasers) {
+    //Cell cExistingMirror  = backedAgainstMirror(g, c);
     // 45-degree (normal) mirror adds -90, -45-degree mirror adds 90 (including changing 180 into (180+90)=270=-90.
     float mirrorOrientation = (random(1.0)<0.5) ? 45.0 : -45.0;
     float reverseOrientation = c.orientation+180.0;
-    float newReverseOrientation = getNextBeamOrientation(reverseOrientation, mirrorOrientation);
-    float newLaserOrientation = (newReverseOrientation+180);
-    int reverseDirection = cardinalDirection(newReverseOrientation);
-
-    /*
-    int laserDirection = cardinalDirection(c.orientation);
-     int newLaserDirection = (laserDirection + ((mirrorOrientation==45) ? 3 : 1))%4; // note that 3 == -1 mod 4.
-     float newLaserOrientation = orientationFromCardinalDirection(newLaserDirection);
-     int reverseDirection = (newLaserDirection+2)%4;
-     */
+    int reverseDirection = round((reverseOrientation+360)/90.0) % 4; // 0=right 1=up 2=left 3=down
+    int newReverseDirection = getNextBeamDirection(reverseDirection, mirrorOrientation);
+    float newLaserOrientation = orientationFromCardinalDirection((newReverseDirection+2)%4); // flip directions
 
 
-
-
-    Cell newC = randomlyPickBackedupLaserCell(g, c, reverseDirection);
+    Cell newC = randomlyPickBackedupLaserCell(g, c, newReverseDirection);
     if (newC!=null) {
       // This means that we CAN backup the laser in the new direction.
       // Let's place the mirror here and move the laser to the proposed
@@ -814,6 +820,13 @@ void addRandomMirrors(Grid g) {
     }
   }
 }
+
+// Check and return mirror if the laser cell is
+// backed up against a mirror. Return null otherwise.
+Cell backedAgainstMirror(Grid g, Cell laserCell) {
+  return null;
+}
+
 
 float orientationFromCardinalDirection(int direction) {
   assert(direction>=0 && direction<4);
