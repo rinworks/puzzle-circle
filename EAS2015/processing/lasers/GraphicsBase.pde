@@ -266,7 +266,14 @@ class Grid {
       }
     }
   }
-  
+
+  // Return the cell at [i,j] if i and j
+  // are within bounds, null otherwise.
+  Cell tryGetCell(int i, int j) {
+    return  (i>=0 && i<rows && j>=0 && j<cols) ? cells[i][j] : null;
+  }
+
+  // Clear the "visited" status of all cells
   void clearVisited() {
     for (Cell[] row : cells) {
       for (Cell c : row) {

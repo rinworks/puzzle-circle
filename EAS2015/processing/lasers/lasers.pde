@@ -55,6 +55,7 @@ void setup() {
   String puzzleText = "JUNE EXPIDITION";
   Grid g = createDotGrid(10, 10); 
   addToGrid(g, puzzleText);
+  randomlyBackUpLasers(g);
   drawPaths(g, puzzleText);
   g.draw();
   //println(PFont.list());
@@ -184,7 +185,9 @@ ArrayList<Cell> computeLaserPath(Grid g, Cell c) {
 // Set all path cells visited field to true.
 void markPath(ArrayList<Cell> path) {
   for (Cell c : path) {
-    c.visited = true;
+    if (c!=null) {
+      c.visited = true;
+    }
   }
 }
 
@@ -456,6 +459,7 @@ Cell newOrExistingTextBox(Grid g, String s) {
 
 Cell findViableExistingTextBox(Grid g, String s) {
   ArrayList<Cell> candidateCells = new ArrayList<Cell>();
+  ArrayList<Integer> candidateScores = new ArrayList<Integer>();
   for (int i=0; i<g.rows; i++) {
     for (int j=0; j<g.cols; j++) {
       Cell c = g.cells[i][j];
@@ -464,29 +468,26 @@ Cell findViableExistingTextBox(Grid g, String s) {
           int score = computeTextBoxViabilityScore(g, c);
           if (score>0) {
             candidateCells.add(c);
+            candidateScores.add(score);
           }
         }
       }
     }
   }
 
-  return pickRandomTopViableCellForTextBox(g, candidateCells);
+  return pickRandomTopViableCellForTextBox(g, candidateCells, candidateScores);
 }
 
-// Given a list of candidate cells (all of which are assumed to be viable
+// Given a list of candidate cells (all of which are assumed to be viable)
 // pick a random one amongst the very top scorers
-Cell pickRandomTopViableCellForTextBox(Grid g, ArrayList<Cell> candidateCells) {
-  int[] scores = new int[candidateCells.size()];
+Cell pickRandomTopViableCellForTextBox(Grid g, ArrayList<Cell> candidateCells, ArrayList<Integer> candidateScores) {
   int maxScore = 0;
 
-  // initialize scores array and find the max score
-  int i=0;
-  for (Cell c : candidateCells) {
-    scores[i] = computeTextBoxViabilityScore(g, c);
-    if (scores[i]>maxScore) {
-      maxScore = scores[i]; //<>//
+  // Find the max score
+  for (int score : candidateScores) { //<>//
+    if (score>maxScore) {
+      maxScore = score;
     }
-    i++;
   }
 
   // A score of 0 implies nothing is viable
@@ -496,7 +497,7 @@ Cell pickRandomTopViableCellForTextBox(Grid g, ArrayList<Cell> candidateCells) {
 
   // find count of items with the max score.
   int numAtMax=0;
-  for (int score : scores) {
+  for (int score : candidateScores) {
     if (score == maxScore) {
       numAtMax++;
     }
@@ -506,16 +507,16 @@ Cell pickRandomTopViableCellForTextBox(Grid g, ArrayList<Cell> candidateCells) {
   // Now pick one of these (items with max score) at random...
   int chosen = (int) random(0, numAtMax);
   int maxIndex =0;
-  i=0;
+  int i=0;
   for (Cell c : candidateCells) {
-    if (scores[i++]==maxScore) {
+    if (candidateScores.get(i++)==maxScore) {
       if (maxIndex==chosen) {
         return c; // ******** EARLY RETURN **********
       }
       maxIndex++;
     }
-  }
-  assert(candidateCells.size()==0); //Should only get here if there were no candidate cell.s //<>//
+  } //<>//
+  assert(candidateCells.size()==0); //Should only get here if there were no candidate cell.s
   return null;
 }
 
@@ -549,18 +550,20 @@ Cell placeNewTextBox(Grid g, String s) {
   // We just find the first available one (for now)
   // TODO: pick a random one from the top two scorers.
   ArrayList<Cell> candidateCells = new ArrayList<Cell>();
+  ArrayList<Integer> candidateScores = new ArrayList<Integer>();
   for (int i=0; i<g.rows; i++) {
     for (int j=0; j<g.cols; j++) {
       Cell c = getCellIfAvailable(g, i, j);
       if (c!=null) {
         int score = computeTextBoxViabilityScore(g, c);
         if (score > 0) {
-          candidateCells.add(c);
+          candidateCells.add(c); //<>//
+          candidateScores.add(score);
         }
-      } //<>//
+      }
     }
   }
-  Cell chosenCell = pickRandomTopViableCellForTextBox(g, candidateCells);
+  Cell chosenCell = pickRandomTopViableCellForTextBox(g, candidateCells, candidateScores);
   if (chosenCell!=null) {
     chosenCell.dObject = new TextBox(s, gParams, gParams);
   }
@@ -573,10 +576,10 @@ Cell placeNewTextBox(Grid g, String s) {
 // successfully added. The location is assumed to be a viable location
 // to add a laser (there is a spot for the laser)
 // TODO: pick a spot randomly among available spots.
-Boolean addLaserToTarget(Grid g, Cell textCell, int laserId) {
+Boolean addLaserToTarget(Grid g, Cell textCell, int laserId) { //<>//
   int i, j;
   Cell c;
-  ArrayList<Cell> candidateCells = new ArrayList<Cell>(); //<>//
+  ArrayList<Cell> candidateCells = new ArrayList<Cell>();
   ArrayList<Integer> candidateOrientations = new ArrayList<Integer>();
 
   // Check top...
@@ -616,7 +619,7 @@ Boolean addLaserToTarget(Grid g, Cell textCell, int laserId) {
   }
 
   if (candidateCells.size()>0) {
-    int chosenIndex = (int) random(0,candidateCells.size());
+    int chosenIndex = (int) random(0, candidateCells.size());
     Cell chosenCell = candidateCells.get(chosenIndex);
     chosenCell.dObject = new Laser(laserId, gLaserParams, gLaserParams);
     chosenCell.orientation = candidateOrientations.get(chosenIndex);
@@ -626,14 +629,12 @@ Boolean addLaserToTarget(Grid g, Cell textCell, int laserId) {
   }
 }
 
+// Return the cell if available to place
+// an object without disrupting anything
 Cell getCellIfAvailable(Grid g, int i, int j) {
-  if (i>=0 && i<g.rows && j>=0 && j<g.cols) {
-    Cell cj = g.cells[i][j];
-    if (cj.dObject == null || cj.dObject instanceof Dot) {
-      return cj;
-    }
-  }
-  return null;
+
+  Cell cj = g.tryGetCell(i, j);
+  return (cj !=null && (cj.dObject == null || (cj.dObject instanceof Dot && !cj.visited))) ? cj : null;
 }
 
 // Add more lasers so that the supplied text
@@ -682,32 +683,69 @@ Grid createDotGrid(int rows, int cols) {
 }
 
 // Attempt to back up lasers by varying amounts.
-// g is assumed to be already in a configuration that
-// solves the given puzzleText.
-void randomlyBackUpLasers(Grid g, String puzzleText) {
- markAllPaths(g);
- Cell[] lasers  = pickRandomLaserOrder(g);
- for (Cell c : lasers) {
-   int direction = cardinalDirection(180+c.orientation); // Get the reverse direction
-   Cell newC = pickBackedupLaserCell(g, c, direction);
-   if (newC!=null) {
-     // Back up the laser to here by swapping cell content
-     Drawable dTemp = newC.d;
-     float orientationTemp = newC.orientation;
-     assert(newC.dObject instanceof Dot);
-     assert(newC.visited=false);
-     assert(c.dObject instanceof Laser);
-     newC.dObject = c.dObject;
-     newC.orientation = c.orientation;
-     c.dObject = dTemp;
-     c.orientation = orientationTemp;
-     
-     // Re-do the path - it will backwards-extend
-     // the existing path
-     ArrayList<Cell> path = computeLaserPath(g, newC);
-     markPath(path);
-   }
- }
+// g is assumed to be already in a viable configuration,
+// i.e., it solves the puzzle. This transformation
+// preserves that.
+void randomlyBackUpLasers(Grid g) {
+  markAllPaths(g);
+  Cell[] lasers  = pickRandomLaserOrder(g);
+  for (Cell c : lasers) {
+    int direction = cardinalDirection(180+c.orientation); // Get the reverse direction
+    Cell newC = randomlyPickBackedupLaserCell(g, c, direction);
+    if (newC!=null) {
+      // Back up the laser to here by swapping cell content
+      Drawable dTemp = newC.dObject;
+      float orientationTemp = newC.orientation;
+      assert(newC.dObject instanceof Dot);
+      assert(newC.visited==false);
+      assert(c.dObject instanceof Laser);
+      newC.dObject = c.dObject;
+      newC.orientation = c.orientation;
+      c.dObject = dTemp;
+      c.orientation = orientationTemp;
+
+      // Re-do the path - it will backwards-extend
+      // the existing path
+      ArrayList<Cell> path = computeLaserPath(g, newC);
+      markPath(path);
+    }
+  }
+}
+
+// Attempt to backup from cell c in the specified 
+// cardinal direction. Return the existing cell at
+// this new location if one is found, null otherwise.
+Cell randomlyPickBackedupLaserCell(Grid g, Cell c, int direction) {
+  int dI = getRowStep(direction);
+  int dJ = getColStep(direction);
+  ArrayList<Cell> candidateCells = new ArrayList<Cell>();
+  ArrayList<Integer> candidateScores = new ArrayList<Integer>();
+  do {
+    c = g.tryGetCell(c.i+dI, c.j+dJ);
+    if (c!=null && getCellIfAvailable(g, c.i, c.j)!=null) {
+      // found a candidate slot.
+      candidateCells.add(c);
+      candidateScores.add(computeTextBoxViabilityScore(g, c));
+    }
+  } while (c!=null && (c.dObject==null || c.dObject instanceof Dot));
+
+  return pickRandomTopViableCellForTextBox(g, candidateCells, candidateScores); // could be nothing there
+}
+
+// How much do we increment the col to take
+// one step in the given direction
+int getColStep(int direction) {
+  assert(direction>=0 && direction<4);
+  int[] deltas = {1, 0, -1, 0}; // left, up, right, down
+  return deltas[direction];
+}
+
+// How much do we increment the row to take
+// one step in the given direction
+int getRowStep(int direction) {
+  assert(direction>=0 && direction<4);
+  int[] deltas = {0, 1, 0, -1}; // left, up, right, down
+  return deltas[direction];
 }
 
 // convert orientation in degrees to a number from 1-4
@@ -721,5 +759,16 @@ int cardinalDirection(float orientation) {
 
 // Return the list of lasers in random order.
 Cell[] pickRandomLaserOrder(Grid g) {
-  return null;
+  Cell[] lasers = getLasers(g);
+  for (int i=0; i<lasers.length; i++) {
+    int j = (int) random(i,lasers.length);
+    swapCells(lasers, i, j);
+  }
+  return lasers;
+}
+
+void swapCells(Cell[] cells, int i, int j) {
+  Cell c = cells[i];
+  cells[i] =  cells[j];
+  cells[j] = c;
 }
