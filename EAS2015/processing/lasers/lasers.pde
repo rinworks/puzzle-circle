@@ -715,13 +715,16 @@ void randomlyBackUpLasers(Grid g) {
 // Attempt to backup from cell c in the specified 
 // cardinal direction. Return the existing cell at
 // this new location if one is found, null otherwise.
-Cell randomlyPickBackedupLaserCell(Grid g, Cell c, int direction) {
+Cell randomlyPickBackedupLaserCell(Grid g, Cell cLaser, int direction) {
   int dI = getRowStep(direction);
   int dJ = getColStep(direction);
-  println("randomly backing up laser " + ((Laser) c.dObject).id + "in direction " + direction + "di:" + dI + " dj:"+ dJ);
+  println("randomly backing up laser " + ((Laser) cLaser.dObject).id + "in direction " + direction + "di:" + dI + " dj:"+ dJ);
 
   ArrayList<Cell> candidateCells = new ArrayList<Cell>();
   ArrayList<Integer> candidateScores = new ArrayList<Integer>();
+  candidateCells.add(cLaser);
+  candidateScores.add(computeTextBoxViabilityScore(g, cLaser));
+  Cell c = cLaser;
   do {
     c = g.tryGetCell(c.i+dI, c.j+dJ);
     if (c!=null && getCellIfAvailable(g, c.i, c.j)!=null) {
@@ -731,7 +734,12 @@ Cell randomlyPickBackedupLaserCell(Grid g, Cell c, int direction) {
     }
   } while (c!=null && (c.dObject==null || c.dObject instanceof Dot));
 
-  return pickRandomTopViableCellForTextBox(g, candidateCells, candidateScores); // could be nothing there
+  Cell newC =  pickRandomTopViableCellForTextBox(g, candidateCells, candidateScores); // could be nothing there
+  // If we picked ourself, we return null - indicating we didn't pick any *backed up* cell.
+  if (newC == cLaser) {
+    newC = null;
+  }
+  return newC;
 }
 
 // How much do we increment the col to take
