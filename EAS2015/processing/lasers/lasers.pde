@@ -56,7 +56,7 @@ void setup() {
   Grid g = createDotGrid(13, 16); 
   addToGrid(g, puzzleText);
   //randomlyBackUpLasers(g);
-  for (int i=0; i<10; i++) {
+  for (int i=0; i<100; i++) {
     randomlyBackUpLasers(g);
     addRandomMirrors(g);
   }
@@ -138,9 +138,9 @@ void drawPaths(Grid g, String expectedText) {
   int i = 0;
   for (Cell c : laserCells) {
     Laser l = laserFromCell(c);
-    println("Found laser " + l.id + " at (" + c.i + "," + c.j + ")");
+    //println("Found laser " + l.id + " at (" + c.i + "," + c.j + ")");
     ArrayList<Cell> path = computeLaserPath(g, c);
-    markPath(path);
+    markPath(g, path);
     String s = i<expectedText.length() ? expectedText.substring(i, i+1) : "";
     drawLaserPath(g, path, s);
     //break;
@@ -158,7 +158,7 @@ void markAllPaths(Grid g) {
   for (Cell c : laserCells) {
     Laser l = laserFromCell(c);
     ArrayList<Cell> path = computeLaserPath(g, c);
-    markPath(path);
+    markPath(g, path);
     i++;
   }
 }
@@ -187,13 +187,43 @@ ArrayList<Cell> computeLaserPath(Grid g, Cell c) {
 }
 
 // Set all path cells visited field to true.
-void markPath(ArrayList<Cell> path) {
+void markPath(Grid g, ArrayList<Cell> path) {
+  Cell cPrev = null;
   for (Cell c : path) {
-    if (c!=null) {
-      c.visited = true;
-    }
+    markCellSpan(g, cPrev, c);
+    cPrev = c;
   }
 }
+
+// Marks all the cells between cFrom and cTo,
+// inclusive.
+// Either can be null.
+void markCellSpan(Grid g, Cell cFrom, Cell cTo) {
+  if (cFrom!=null) {
+    cFrom.visited=true;
+  }
+  if (cTo!=null) {
+    cTo.visited=true;
+  }
+  if (cFrom==null || cTo==null) {
+    return;
+  }
+  int iCount = cTo.i-cFrom.i;
+  int jCount = cTo.j-cFrom.j;
+  int dI = iCount < 0 ? -1 : (iCount==0 ? 0 : 1);
+  int dJ = jCount < 0 ? -1 : (jCount==0 ? 0 : 1);
+  int i=cFrom.i, j=cFrom.j;
+  while (i!=cTo.i || j!=cTo.j) {
+    Cell c = g.tryGetCell(i, j);
+    if (c==null) {
+      assert(c!=null); //<>//
+    }
+    c.visited=true;
+    i+=dI;
+    j+=dJ;
+  }
+}
+
 
 // Return all cells with lasers, in order of
 // increasing laserIds.
@@ -218,7 +248,7 @@ String shortClassName(String className) {
 }
 
 void growLaserPath(Grid g, ArrayList<Cell> path) {
-  println("Entering growLaserPath. #elements: " + path.size());
+  //println("Entering growLaserPath. #elements: " + path.size());
   int len = path.size();
   if (len==0) {
     return;
@@ -231,7 +261,7 @@ void growLaserPath(Grid g, ArrayList<Cell> path) {
     assert(cLast.dObject instanceof Laser);//, "ERROR - starting out with a NON laser");
     Laser l = laserFromCell(cLast);
     orientation = cLast.orientation;
-    println("Starting with laser " + l.id);
+    //println("Starting with laser " + l.id);
   } else {
     // We have at least two items in the path. We only get here if
     // the last item is a mirror.
@@ -244,7 +274,7 @@ void growLaserPath(Grid g, ArrayList<Cell> path) {
   path.add(cNext); // cNext can be null.
   if (cNext!= null && cNext.dObject instanceof TwowayMirror) {
     // we hit a mirror, so we can keep going...
-    println("RECURSIVE CALL to growLaserPath");
+    //println("RECURSIVE CALL to growLaserPath");
     growLaserPath(g, path);
   }
 }
@@ -279,7 +309,7 @@ Cell findNextTarget(Grid g, Cell c, float orientation) {
     cNext = g.cells[i][j];
     // If it's null of a Dot, we keep going...
     if (!(cNext.dObject instanceof Dot)) {
-      println("Hit object at [" + cNext.i + "," + cNext.j + "]");
+      //println("Hit object at " + locationToString(cNext));
       break;
     }
     i += di;
@@ -350,13 +380,24 @@ void drawLaserPath(Grid g, ArrayList<Cell> path, String expectedText) {
   }
 
 
-  stroke(laserColor);
-  strokeWeight(weight);
+
   Cell cFinal = null;
   for (Cell c : path) {
     if (cPrev!=null && c!=null) {
+      stroke(laserColor);
+      strokeWeight(weight);
       line(cPrev.center.x, cPrev.center.y, c.center.x, c.center.y);
     }
+    // Draw a white dot if we have NOT visited this cell - we should have!
+    /*
+    if (!c.visited) {
+     fill(255);
+     ellipse(c.center.x, c.center.y, c.iW, c.iH);
+     } else {
+     fill(0);
+     ellipse(c.center.x, c.center.y, c.iW, c.iH);
+     }
+     */
     cPrev = c;
     cFinal = (c==null) ? cFinal : c;
   }
@@ -443,7 +484,7 @@ void printGrid(Grid g) {
   }
   println("};");
 
-  print("int[] ids = {");
+  print("int[] ids = {"); //<>//
   for (int i=0; i<ids.length; i++) {
     print(ids[i] + ((i<ids.length-1)?", ":""));
   }
@@ -474,7 +515,7 @@ Cell findViableExistingTextBox(Grid g, String s) {
             candidateCells.add(c);
             candidateScores.add(score);
           }
-        }
+        } //<>//
       }
     }
   }
@@ -484,7 +525,7 @@ Cell findViableExistingTextBox(Grid g, String s) {
 
 // Given a list of candidate cells (all of which are assumed to be viable)
 // pick a random one amongst the very top scorers
-Cell pickRandomTopViableCellForTextBox(Grid g, ArrayList<Cell> candidateCells, ArrayList<Integer> candidateScores) { //<>//
+Cell pickRandomTopViableCellForTextBox(Grid g, ArrayList<Cell> candidateCells, ArrayList<Integer> candidateScores) {
   int maxScore = 0;
 
   // Find the max score
@@ -515,8 +556,8 @@ Cell pickRandomTopViableCellForTextBox(Grid g, ArrayList<Cell> candidateCells, A
   for (Cell c : candidateCells) {
     if (candidateScores.get(i++)==maxScore) {
       if (maxIndex==chosen) {
-        return c; // ******** EARLY RETURN ********** //<>//
-      }
+        return c; // ******** EARLY RETURN **********
+      } //<>//
       maxIndex++;
     }
   }
@@ -557,7 +598,7 @@ Cell placeNewTextBox(Grid g, String s) {
   ArrayList<Integer> candidateScores = new ArrayList<Integer>();
   for (int i=0; i<g.rows; i++) {
     for (int j=0; j<g.cols; j++) {
-      Cell c = getCellIfAvailable(g, i, j); //<>//
+      Cell c = getCellIfAvailable(g, i, j);
       if (c!=null) {
         int score = computeTextBoxViabilityScore(g, c);
         if (score > 0) {
@@ -576,7 +617,7 @@ Cell placeNewTextBox(Grid g, String s) {
 
 
 
-// Add a laser that targets the specified text cell. Return true if the laser was //<>//
+// Add a laser that targets the specified text cell. Return true if the laser was
 // successfully added. The location is assumed to be a viable location
 // to add a laser (there is a spot for the laser)
 // TODO: pick a spot randomly among available spots.
@@ -711,7 +752,7 @@ void randomlyBackUpLasers(Grid g) {
       // Re-do the path - it will backwards-extend
       // the existing path
       ArrayList<Cell> path = computeLaserPath(g, newC);
-      markPath(path);
+      markPath(g, path);
     }
   }
 }
@@ -757,6 +798,8 @@ void addRandomMirrors(Grid g) {
       newC.orientation = newLaserOrientation;
 
       // Insert mirror!
+      println("Inserting mirror at location " + locationToString(c) + " with orientation " + mirrorOrientation);
+
       TwowayMirror m = new TwowayMirror(gParams, gParams);
       dTemp = m;
       orientationTemp = mirrorOrientation;
@@ -767,7 +810,7 @@ void addRandomMirrors(Grid g) {
       // Re-do the path - it will backwards-extend
       // the existing path
       ArrayList<Cell> path = computeLaserPath(g, newC);
-      markPath(path);
+      markPath(g, path);
     }
   }
 }
@@ -786,7 +829,7 @@ float orientationFromCardinalDirection(int direction) {
 Cell randomlyPickBackedupLaserCell(Grid g, Cell cLaser, int direction) {
   int dI = getRowStep(direction);
   int dJ = getColStep(direction);
-  println("randomly backing up laser " + ((Laser) cLaser.dObject).id + "in direction " + direction + "di:" + dI + " dj:"+ dJ);
+  println("randomly backing up laser " + ((Laser) cLaser.dObject).id + " in direction " + direction + "di:" + dI + " dj:"+ dJ);
 
   ArrayList<Cell> candidateCells = new ArrayList<Cell>();
   ArrayList<Integer> candidateScores = new ArrayList<Integer>();
@@ -807,9 +850,16 @@ Cell randomlyPickBackedupLaserCell(Grid g, Cell cLaser, int direction) {
   if (newC == cLaser) {
     newC = null;
   }
+  if (newC!=null) {
+    println("   Backed from location " + locationToString(cLaser) + " to location " + locationToString(newC));
+  } else {
+  }
   return newC;
 }
 
+String locationToString(Cell c) {
+  return "["+c.i+","+c.j+"]";
+}
 // How much do we increment the col to take
 // one step in the given direction
 int getColStep(int direction) {
