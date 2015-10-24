@@ -220,7 +220,7 @@ String shortClassName(String className) {
 // orientation (in degrees). Return a boundary Dot cell if you hit a boundary. Return null if
 // Cell c is already at the boundary and the laser is leaving the boundary.
 // We use dotCount just to pass-by-reference the count of dots back. A bit of a hack.
-Cell findNextTarget(Grid g, Cell c, int direction, ArrayList<Cell>dotList, int[]dotCount, Boolean mark) {
+Cell findNextTarget(Grid g, Cell c, int direction, ArrayList<TraceCellInfo>dotInfoList, int[]dotCount, Boolean mark) {
   assert(direction>=0 && direction<4);
   if (dotCount!=null) {
     assert( dotCount.length==1);
@@ -254,8 +254,8 @@ Cell findNextTarget(Grid g, Cell c, int direction, ArrayList<Cell>dotList, int[]
     }
     // If it's null of a Dot, we keep going...
     if (cNext.dObject instanceof Dot) {
-      if (dotList!=null) {
-        dotList.add(cNext);
+      if (dotInfoList!=null) {
+        dotInfoList.add(new TraceCellInfo(cNext, direction));
       }
       if (dotCount!=null) {
         dotCount[0]+=1;
