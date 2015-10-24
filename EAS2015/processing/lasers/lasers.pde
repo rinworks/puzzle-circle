@@ -183,8 +183,6 @@ void highlightUnvisitedObjects(Grid g) {
 
 ArrayList<Cell> computeLaserPath(Grid g, Cell c, Boolean mark) {
   ArrayList<Cell> path = new ArrayList<Cell>();
-  //path.add(c);
-  //growLaserPath(g, path);
   LaserHelper lh = new LaserHelper(g);
   if (mark) {
     c.visited=true;
@@ -216,38 +214,7 @@ String shortClassName(String className) {
   return className.substring(className.indexOf("$")+1); // relise of indexOf returning -1 if not found.
 }
 
-void growLaserPath(Grid g, ArrayList<Cell> path) {
-  //println("Entering growLaserPath. #elements: " + path.size());
-  int len = path.size();
-  if (len==0) {
-    return;
-  }
-  Cell cLast = path.get(len-1);
-  Cell cNext = null;
-  int direction=0;
-  if (len == 1) {
-    // We're just starting out...
-    assert(cLast.dObject instanceof Laser);//, "ERROR - starting out with a NON laser");
-    Laser l = laserFromCell(cLast);
-    direction = cardinalDirection(cLast.orientation);
-    //println("Starting with laser " + l.id);
-  } else {
-    // We have at least two items in the path. We only get here if
-    // the last item is a mirror.
-    Cell cPrev = path.get(len-2);
-    assert(cLast.dObject instanceof TwowayMirror); //, "ERROR - last item path is NOT a mirror.");
-    float prevOrientation = getCurrentBeamOrientation(cPrev, cLast);
-    direction = cardinalDirection(prevOrientation);
-    direction = getNextBeamDirection(direction, cLast.orientation);
-  }
-  cNext = findNextTarget(g, cLast, direction, null, null, false);
-  path.add(cNext); // cNext can be null.
-  if (cNext!= null && cNext.dObject instanceof TwowayMirror) {
-    // we hit a mirror, so we can keep going...
-    //println("RECURSIVE CALL to growLaserPath");
-    growLaserPath(g, path);
-  }
-}
+
 
 // Find the next target the laser would hit, starting from Cell c and going in direction specified by
 // orientation (in degrees). Return a boundary Dot cell if you hit a boundary. Return null if
@@ -484,7 +451,7 @@ Cell newOrExistingTextBox(Grid g, String s) {
     c = placeNewTextBox(g, s);
   }
   return c;
-} //<>//
+}
 
 Cell findViableExistingTextBox(Grid g, String s) {
   ArrayList<Cell> candidateCells = new ArrayList<Cell>();
@@ -515,9 +482,9 @@ Cell pickRandomTopViableCellForTextBox(Grid g, ArrayList<Cell> candidateCells, A
   // Find the max score
   for (int score : candidateScores) {
     if (score>maxScore) {
-      maxScore = score; //<>//
+      maxScore = score;
     }
-  }
+  } //<>//
 
   // A score of 0 implies nothing is viable
   if (maxScore==0) {
@@ -548,7 +515,7 @@ Cell pickRandomTopViableCellForTextBox(Grid g, ArrayList<Cell> candidateCells, A
   assert(candidateCells.size()==0); //Should only get here if there were no candidate cell.s
   return null;
 }
-
+ //<>//
 
 // Compute the viability for this (TextBox) cell to be
 // the target for a new laser. Positive score means it's viable.
@@ -557,7 +524,7 @@ int computeTextBoxViabilityScore(Grid g, Cell c) {
   int score = 0;
   // We count the number of places a laser can be placed
   // in the immediate neighborhood
-  for (int di = -1; di < 2; di++) { //<>//
+  for (int di = -1; di < 2; di++) {
     for (int dj = -1; dj < 2; dj++) {
       // We wan't to skip diagonals and center!
       if ((di+dj) % 2 != 0) {
@@ -590,7 +557,7 @@ Cell placeNewTextBox(Grid g, String s) {
         if (score > 0) {
           candidateCells.add(c);
           candidateScores.add(score);
-        }
+        } //<>//
       }
     }
   }
