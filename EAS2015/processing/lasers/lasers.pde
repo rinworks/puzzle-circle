@@ -49,19 +49,22 @@ void setup() {
   // with increasing i going downwards.
   // Angles: normal interpration (0 == going right; 90== going up, etc.)
   boolean synthPuzzles = true;
-  String puzzleText = "JUNE EXPEDITION"; //"123456789"; //"OXYGEN CARRYING BLOOD CELL";
+  String puzzleText = "JUNE EXPEDITION";
   Grid g;
   if (!synthPuzzles) {
     int[] laserIds = {11, 5, 7, 13, 6, 14, 10, 8, 12, 15, 3, 9, 1, 2, 4};
 
     g = genObjects(positionsGood, laserIds);
   } else {
-    g = createDotGrid(20, 15); //(13, 16); 
+    g = createDotGrid(13, 16); 
+    puzzleText = "PARSLEY";
+    LaserHelper lh = new LaserHelper(g);
     addToGrid(g, puzzleText);
     //randomlyBackUpLasers(g);
-    for (int i=0; i<100; i++) {
+    for (int i=0; i<1; i++) {
       //randomlyBackUpLasers(g);
-      addRandomMirrors(g);
+      //addRandomMirrors(g);
+      //lh.addToPathComplexity();
     }
   }
   drawPaths(g, puzzleText);
@@ -184,9 +187,6 @@ void highlightUnvisitedObjects(Grid g) {
 ArrayList<Cell> computeLaserPath(Grid g, Cell c, Boolean mark) {
   ArrayList<Cell> path = new ArrayList<Cell>();
   LaserHelper lh = new LaserHelper(g);
-  if (mark) {
-    c.visited=true;
-  }
   path.add(c);
   lh.tracePath(c, cardinalDirection(c.orientation), path, null, mark);
   return path;

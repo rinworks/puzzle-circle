@@ -31,10 +31,13 @@ class LaserHelper {
   int tracePath(Cell startCell, int direction, ArrayList<Cell> hardObjects, ArrayList<TraceCellInfo>dotInfo, Boolean mark) {
     int[] dotCounts = {0};
     assert(direction>=0 && direction< DIRECTION_LIMIT);
+    if (mark) {
+      startCell.visited = true;
+    }
     //println("Entering growLaserPath. #elements: " + path.size());
     Cell cNext = findNextTarget(g, startCell, direction, dotInfo, dotCounts, mark);
     if (cNext!= null) {
-      assert(cNext.dObject!=null && !(cNext.dObject instanceof Dot));
+      assert(cNext.dObject!=null); // It CAN be a dot object if it was the last object before exiting the grid!
       if (hardObjects!=null) {
         hardObjects.add(cNext);
       }
@@ -52,62 +55,116 @@ class LaserHelper {
     markAllPaths(g);
     Cell[] lasers  = pickRandomLaserOrder(g);
     for (Cell c : lasers) {
-
-      // We decide if we insert a new mirror or not. Then we shoot a a ray backwards and
-      // pick a new location amongs available locations.
-      Boolean newMirror = false; // random(1.0)<0.5;
       int laserDirection = cardinalDirection(c.orientation);
-      int backtraceDirection = (laserDirection+2)%4; // opposite direction to laser.
-      if (newMirror) {
-        // do something, including updating backtraceDirection
+      int[] backtraceDirections = new int[3];
+      int[] dotCounts = new int[3];
+      int maxDots = 0;
+      int maxDotsDir = -1;
+      float mirrorOrientation = 0;
+      TwowayMirror mirror = null;
+      Laser laser = (Laser) c.dObject;
+      println("addComplexity: laser " + laser.id + " at location " + locationToString(c) + " direction: " + laserDirection);
+      for (int i=0; i<3; i++) {
+        int backtraceDir = (laserDirection+i+1)%4; // +1, +2 or +3 %4.
+        int nDots = tracePath(c, backtraceDir, null, null, false);
+        println("  dir:" +  backtraceDir + "nDots: " + nDots);
+        backtraceDirections[i] = backtraceDir;
+        if (nDots > maxDots) {
+          maxDots = nDots;
+          maxDotsDir = backtraceDir;
+        }
       }
+      println("  maxDotsDir:" + maxDotsDir);
+      if (maxDotsDir==-1) {
+        //assert(false);
+        assert(maxDots==0);
+        continue; // **************** continue to next laser
+      }
+      assert (maxDots>=1);
+      int incomingDir = (maxDotsDir + 2) % 4; // the direction of the beam coming *towards* cell c
+      if (incomingDir==laserDirection) {
+        // We will not insert a mirror - rather the laser will keep its direction
+        // but move backwards
+        println("  Backing up...");
+      } else {
+        // Add a mirror.
+        mirrorOrientation = computeMirrorOrientation(incomingDir, laserDirection);
+        println("  Adding mirror. Mirror orientation: " + mirrorOrientation);
+        mirror = new TwowayMirror(gParams, gParams);
+       }
+
 
       ArrayList<TraceCellInfo> dotInfo = new ArrayList<TraceCellInfo>();
-      tracePath(c, backtraceDirection, null, dotInfo, false);
-      //Cell newCell = pickRandomDot(dotInfo);
-      //if (newCell!=null) {
+      tracePath(c, maxDotsDir, null, dotInfo, false);
+      TraceCellInfo cellInfo = pickRandomDot(dotInfo);
+      if (cellInfo!=null) {
         // We move laser here!
-        //moveLaser(c, newCell);
-      //}
+        Cell newLaserCell = moveLaser(c, cellInfo);
 
-
-
-      //Cell cExistingMirror  = backedAgainstMirror(g, c);
-      // 45-degree (normal) mirror adds -90, -45-degree mirror adds 90 (including changing 180 into (180+90)=270=-90.
-      float mirrorOrientation = (random(1.0)<0.5) ? 45.0 : -45.0;
-      float reverseOrientation = c.orientation+180.0;
-      int reverseDirection = round((reverseOrientation+360)/90.0) % 4; // 0=right 1=up 2=left 3=down
-      int newReverseDirection = getNextBeamDirection(reverseDirection, mirrorOrientation);
-      float newLaserOrientation = orientationFromCardinalDirection((newReverseDirection+2)%4); // flip directions
-
-
-      Cell newC = randomlyPickBackedupLaserCell(g, c, newReverseDirection);
-      if (newC!=null) {
-        // This means that we CAN backup the laser in the new direction.
-        // Let's place the mirror here and move the laser to the proposed
-        // backed-up location.
-        Drawable dTemp = newC.dObject;
-        float orientationTemp = newC.orientation;
-        assert(newC.dObject instanceof Dot);
-        assert(newC.visited==false);
-        assert(c.dObject instanceof Laser);
-        newC.dObject = c.dObject;
-        newC.orientation = newLaserOrientation;
-
-        // Insert mirror!
-        println("Inserting mirror at location " + locationToString(c) + " with orientation " + mirrorOrientation);
-
-        TwowayMirror m = new TwowayMirror(gParams, gParams);
-        dTemp = m;
-        orientationTemp = mirrorOrientation;
-
-        c.dObject = dTemp;
-        c.orientation = orientationTemp;
-
-        // Re-do the path - it will backwards-extend
-        // the existing path
-        computeLaserPath(g, newC, true);
+        // If we have a mirror, we put it under C.
+        if (mirror!=null) {
+          c.dObject = mirror;
+          c.orientation = mirrorOrientation;
+        }
+        
+        // We mark all cells, starting with the newly-moved laser
+        tracePath(cellInfo.c, cardinalDirection(newLaserCell.orientation), null, null, true);
       }
     }
+  }
+
+  // Compute the orientation of a mirror that will bend a ray headed towards
+  // incomingDir into one headed towards outgoingDir
+  float computeMirrorOrientation(int incomingDir, int outgoingDir) {
+        int change = (4+outgoingDir-incomingDir) %4;
+        assert(change==1 || change==3);
+        int orientation = -45;
+        if (change == 3) {
+          orientation = 45;
+        }
+        // we're not quite done yet - this is *relative* to incoming direction.
+        // let's make it absolute...
+        int[] rotationAmount = {0,90,180,270};
+        orientation = (orientation + rotationAmount[incomingDir]) % 360;
+        // Now we normalize the rotation taking into account that this is a two-way mirror.
+        if (orientation == (45+180)) {
+          orientation = 45;
+        } else if (orientation == (-45+180)) {
+          orientation = -45;
+        } else if (orientation == (360-45)) {
+          orientation = -45;
+        }
+        return orientation;
+  }
+  
+  
+  // TODO
+  TraceCellInfo pickRandomDot(ArrayList<TraceCellInfo> dotInfo) {
+    // For now pick first available dot!
+    for (TraceCellInfo info : dotInfo) {
+      if (!info.c.visited) {
+        return info;
+      }
+    }
+    return null;
+  }
+
+  Cell moveLaser(Cell laserCell, TraceCellInfo dotCellInfo) {
+    Cell newC = dotCellInfo.c;
+    assert(laserCell.dObject instanceof Laser);
+    assert(newC.dObject instanceof Dot);
+    assert(newC.visited==false);
+    Drawable dTemp = newC.dObject;
+    float orientationTemp = newC.orientation; 
+
+    // Move laser to new location
+    newC.dObject = laserCell.dObject;
+    int newLaserDirection = (dotCellInfo.direction+2)%4; // opposite direction of trace.
+    newC.orientation = orientationFromCardinalDirection(newLaserDirection);
+
+    // Old laser location becomes dot.
+    laserCell.dObject = dTemp;
+    laserCell.orientation = orientationTemp;
+    return laserCell;
   }
 }
