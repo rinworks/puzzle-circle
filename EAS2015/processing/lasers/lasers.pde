@@ -56,18 +56,18 @@ void setup() {
 
     g = genObjects(positionsGood, laserIds);
   } else {
-    g = createDotGrid(13, 16); 
-    puzzleText = "PARSLEY";
+    g = createDotGrid(25,20); 
+    puzzleText = "HOW NOW BROWN COW";
     LaserHelper lh = new LaserHelper(g);
     addToGrid(g, puzzleText);
     //randomlyBackUpLasers(g);
-    for (int i=0; i<1; i++) {
+    for (int i=0; i<100; i++) {
       //randomlyBackUpLasers(g);
-      //addRandomMirrors(g);
-      //lh.addToPathComplexity();
+      // addRandomMirrors(g);
+      lh.addToPathComplexity();
     }
   }
-  drawPaths(g, puzzleText);
+  //drawPaths(g, puzzleText);
   g.draw();
   //println(PFont.list());
   printGrid(g);
@@ -249,7 +249,8 @@ Cell findNextTarget(Grid g, Cell c, int direction, ArrayList<TraceCellInfo>dotIn
   int j=c.j + dj;
   while (i>=0 && j>=0 && i<g.rows && j<g.cols) {
     cNext = g.cells[i][j];
-    if (mark) {
+    Boolean visited = cNext.visited;
+    if (!visited && mark) {
       cNext.visited=true;
     }
     // If it's null of a Dot, we keep going...
@@ -257,7 +258,7 @@ Cell findNextTarget(Grid g, Cell c, int direction, ArrayList<TraceCellInfo>dotIn
       if (dotInfoList!=null) {
         dotInfoList.add(new TraceCellInfo(cNext, direction));
       }
-      if (dotCount!=null) {
+      if (!visited &&/* BOO !visited && */dotCount!=null) {
         dotCount[0]+=1;
       }
     } else {

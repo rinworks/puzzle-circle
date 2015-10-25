@@ -8,6 +8,7 @@
 class TraceCellInfo {
   public final Cell c;
   public final int direction;
+  public int viabilityScore=0; // used to track suitability of cell for (re)placement of objects.
   public TraceCellInfo(Cell c, int direction) {
     this.c = c;
     this.direction=direction;
@@ -56,8 +57,7 @@ class LaserHelper {
     Cell[] lasers  = pickRandomLaserOrder(g);
     for (Cell c : lasers) {
       int laserDirection = cardinalDirection(c.orientation);
-      int[] backtraceDirections = new int[3];
-      int[] dotCounts = new int[3];
+      //int[] backtraceDirections = new int[3];
       int maxDots = 0;
       int maxDotsDir = -1;
       float mirrorOrientation = 0;
@@ -68,7 +68,6 @@ class LaserHelper {
         int backtraceDir = (laserDirection+i+1)%4; // +1, +2 or +3 %4.
         int nDots = tracePath(c, backtraceDir, null, null, false);
         println("  dir:" +  backtraceDir + "nDots: " + nDots);
-        backtraceDirections[i] = backtraceDir;
         if (nDots > maxDots) {
           maxDots = nDots;
           maxDotsDir = backtraceDir;
@@ -91,13 +90,15 @@ class LaserHelper {
         mirrorOrientation = computeMirrorOrientation(incomingDir, laserDirection);
         println("  Adding mirror. Mirror orientation: " + mirrorOrientation);
         mirror = new TwowayMirror(gParams, gParams);
-       }
+      }
 
 
       ArrayList<TraceCellInfo> dotInfo = new ArrayList<TraceCellInfo>();
       tracePath(c, maxDotsDir, null, dotInfo, false);
+      setViabilityScore(dotInfo);
       TraceCellInfo cellInfo = pickRandomDot(dotInfo);
       if (cellInfo!=null) {
+        assert(!cellInfo.c.visited);
         // We move laser here!
         Cell newLaserCell = moveLaser(c, cellInfo);
 
@@ -106,9 +107,9 @@ class LaserHelper {
           c.dObject = mirror;
           c.orientation = mirrorOrientation;
         }
-        
+
         // We mark all cells, starting with the newly-moved laser
-        tracePath(cellInfo.c, cardinalDirection(newLaserCell.orientation), null, null, true);
+        tracePath(newLaserCell, cardinalDirection(newLaserCell.orientation), null, null, true);
       }
     }
   }
@@ -116,39 +117,91 @@ class LaserHelper {
   // Compute the orientation of a mirror that will bend a ray headed towards
   // incomingDir into one headed towards outgoingDir
   float computeMirrorOrientation(int incomingDir, int outgoingDir) {
-        int change = (4+outgoingDir-incomingDir) %4;
-        assert(change==1 || change==3);
-        int orientation = -45;
-        if (change == 3) {
-          orientation = 45;
-        }
-        // we're not quite done yet - this is *relative* to incoming direction.
-        // let's make it absolute...
-        int[] rotationAmount = {0,90,180,270};
-        orientation = (orientation + rotationAmount[incomingDir]) % 360;
-        // Now we normalize the rotation taking into account that this is a two-way mirror.
-        if (orientation == (45+180)) {
-          orientation = 45;
-        } else if (orientation == (-45+180)) {
-          orientation = -45;
-        } else if (orientation == (360-45)) {
-          orientation = -45;
-        }
-        return orientation;
+    int change = (4+outgoingDir-incomingDir) %4;
+    assert(change==1 || change==3);
+    int orientation = -45;
+    if (change == 3) {
+      orientation = 45;
+    }
+    // we're not quite done yet - this is *relative* to incoming direction.
+    // let's make it absolute...
+    int[] rotationAmount = {0, 90, 180, 270};
+    orientation = (orientation + rotationAmount[incomingDir]) % 360;
+    // Now we normalize the rotation taking into account that this is a two-way mirror.
+    if (orientation == (45+180)) {
+      orientation = 45;
+    } else if (orientation == (-45+180)) {
+      orientation = -45;
+    } else if (orientation == (360-45)) {
+      orientation = -45;
+    }
+    return orientation;
   }
-  
-  
-  // TODO
+
+  // Sets the viability score for all cells in the list - indicating
+  // how suitable that location is for (re)placement of lasers
+  // and/or placement of mirrors.
+  void setViabilityScore(ArrayList<TraceCellInfo> infoList) {
+    for (TraceCellInfo info : infoList) {
+      info.viabilityScore = computeViabiliyScore(info);
+    }
+  }
+
+  int computeViabiliyScore(TraceCellInfo info) {
+    Cell c = info.c;
+    assert(c.dObject instanceof Dot);
+    if (c.visited) {
+      return 0;
+    }
+    int leftDir = (info.direction+1)%4;
+    int rightDir = (info.direction+3)%4;
+    int leftDots = tracePath(c, leftDir, null, null, false);
+    int rightDots = tracePath(c, rightDir, null, null, false);
+    return 1+leftDots+rightDots;
+  }
+
+  // Given  a list of dots, pick a dot at random from
+  // "among the more promising ones" - based on the viabilityScore
+  // (already set) of each element.
   TraceCellInfo pickRandomDot(ArrayList<TraceCellInfo> dotInfo) {
-    // For now pick first available dot!
+
+    // Compute the max score
+    int maxScore = 0;
     for (TraceCellInfo info : dotInfo) {
-      if (!info.c.visited) {
-        return info;
+      if (info.viabilityScore>maxScore) {
+        maxScore = info.viabilityScore;
+      }
+    }
+
+    // Compute the number of items with this max score
+    int maxCount = 0; // number of items with the max score.
+    if (maxScore>0) {
+      for (TraceCellInfo info : dotInfo) {
+        if (info.viabilityScore==maxScore) {
+          maxCount++;
+        }
+      }
+    }
+    assert(maxScore==0 || maxCount>0);
+    println("pickDot: maxScore: " + maxScore + " maxCount:" + maxCount);
+    if (maxCount>0) {
+      // Pick a random one from this list...
+      int chosenIndex = (int) random(0, maxCount);
+      int i=0;
+      for (TraceCellInfo info : dotInfo) {
+        if (info.viabilityScore==maxScore) {
+          if (i==chosenIndex) {
+            return info; // ***************** EARLY RETURN
+          }
+          i++;
+        }
       }
     }
     return null;
   }
 
+  // Move laser to dotCellInfo. Returns the new cell containing
+  // the laser (i.e., dotCellInf)
   Cell moveLaser(Cell laserCell, TraceCellInfo dotCellInfo) {
     Cell newC = dotCellInfo.c;
     assert(laserCell.dObject instanceof Laser);
@@ -165,6 +218,6 @@ class LaserHelper {
     // Old laser location becomes dot.
     laserCell.dObject = dTemp;
     laserCell.orientation = orientationTemp;
-    return laserCell;
+    return dotCellInfo.c;
   }
 }

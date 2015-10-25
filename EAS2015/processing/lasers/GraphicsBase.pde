@@ -98,7 +98,8 @@ class Laser implements  Drawable {
 
   void draw(float x, float y, float orientation, ShapeState state) {
     GraphicsParams params = (state==ShapeState.HILIGHTED)?hilightedGraphicsParams:graphicsParams;
-    int a = 30, b=10;
+    int a = 22, b=10;
+    int aDelta = 0;
     pushMatrix();
     translate(x, y);
     rotate(radians(-orientation));
@@ -115,8 +116,10 @@ class Laser implements  Drawable {
     // Don't have upside-down text
     if (abs(orientation % 360)>90) {
       rotate(radians(180));
+      aDelta = a/5;
     }
-    text(label, -a/4, -a/10);
+    textMode(CENTER);
+    text(label, aDelta-a/10, -4*b/10);
     popMatrix();
   }
 }
@@ -144,6 +147,7 @@ class TextBox implements  Drawable {
     rectMode(CENTER);
     rect(0, 0, 30, 30);
     gUtils.setTextParams(params);
+    textMode(CENTER);
     text(label, 0, -b/4.0);
     popMatrix();
   }
