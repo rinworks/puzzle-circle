@@ -118,7 +118,6 @@ class Laser implements  Drawable {
       rotate(radians(180));
       aDelta = a/5;
     }
-    textMode(CENTER);
     text(label, aDelta-a/10, -4*b/10);
     popMatrix();
   }
@@ -147,7 +146,6 @@ class TextBox implements  Drawable {
     rectMode(CENTER);
     rect(0, 0, 30, 30);
     gUtils.setTextParams(params);
-    textMode(CENTER);
     text(label, 0, -b/4.0);
     popMatrix();
   }

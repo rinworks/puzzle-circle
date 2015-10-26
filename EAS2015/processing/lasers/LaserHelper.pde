@@ -15,10 +15,33 @@ class TraceCellInfo {
   }
 }
 
+class Stats {
+
+  public int n;
+  public int min;
+  public int max;
+  public float avg;
+  public float sd;
+
+  public String toString() {
+    return "N:" + n + " min:" + min + " max:" + max + " avg:" + avg + " sd: " + sd;
+  }
+}
+
+class PuzzleStats {
+  public Stats mirrorCount; // Number of mirrors in path.
+  public Stats ssDistance;  // Manhattan distance between source and sink.
+  public Stats maxSpan; // Max distance between adjacent mirrors.
+
+  public String toString() {
+    return "  mirrorCount:" + mirrorCount + "\n   ssDist:" + ssDistance + "\n  maxSpan:" + maxSpan + "\n";
+  }
+}
 
 class LaserHelper {
   int DIRECTION_LIMIT = 4; // 1 more than max allowed value.
   public Grid g;
+  public Boolean hasError=false; // If there was an internal error while computing puzzle patterns.
   public  LaserHelper(Grid g) {
     this.g = g;
   }
@@ -31,12 +54,40 @@ class LaserHelper {
   // Either or both lists can be null. In all cases the correct count of dot cells is returned.
   int tracePath(Cell startCell, int direction, ArrayList<Cell> hardObjects, ArrayList<TraceCellInfo>dotInfo, Boolean mark) {
     int[] dotCounts = {0};
+    Cell cNext = startCell;
+    Boolean hitMirror=false;
+    do {
+      hitMirror=false;
+      assert(direction>=0 && direction< DIRECTION_LIMIT);
+      if (mark) {
+        cNext.visited = true;
+      }
+      //println("Entering growLaserPath. #elements: " + path.size());
+      cNext = findNextTarget(g, startCell, cNext, direction, dotInfo, dotCounts, mark);
+      if (cNext!= null) {
+        assert(cNext.dObject!=null); // It CAN be a dot object if it was the last object before exiting the grid!
+        if (hardObjects!=null) {
+          hardObjects.add(cNext);
+        }
+        if (cNext.dObject instanceof TwowayMirror) {
+          // we hit a mirror, so we can keep going...
+          hitMirror=true;
+          direction = getNextBeamDirection(direction, cNext.orientation);
+          //dotCounts[0]+= tracePath(cNext, direction, hardObjects, dotInfo, mark);
+        }
+      }
+    } while (hitMirror);
+    return dotCounts[0];
+  }
+
+  int tracePathRecursiveObsolete(Cell startCell, int direction, ArrayList<Cell> hardObjects, ArrayList<TraceCellInfo>dotInfo, Boolean mark) {
+    int[] dotCounts = {0};
     assert(direction>=0 && direction< DIRECTION_LIMIT);
     if (mark) {
       startCell.visited = true;
     }
     //println("Entering growLaserPath. #elements: " + path.size());
-    Cell cNext = findNextTarget(g, startCell, direction, dotInfo, dotCounts, mark);
+    Cell cNext = findNextTarget(g, startCell, startCell, direction, dotInfo, dotCounts, mark);
     if (cNext!= null) {
       assert(cNext.dObject!=null); // It CAN be a dot object if it was the last object before exiting the grid!
       if (hardObjects!=null) {
@@ -63,17 +114,17 @@ class LaserHelper {
       float mirrorOrientation = 0;
       TwowayMirror mirror = null;
       Laser laser = (Laser) c.dObject;
-      println("addComplexity: laser " + laser.id + " at location " + locationToString(c) + " direction: " + laserDirection);
+      //println("addComplexity: laser " + laser.id + " at location " + locationToString(c) + " direction: " + laserDirection);
       for (int i=0; i<3; i++) {
         int backtraceDir = (laserDirection+i+1)%4; // +1, +2 or +3 %4.
         int nDots = tracePath(c, backtraceDir, null, null, false);
-        println("  dir:" +  backtraceDir + "nDots: " + nDots);
+        //println("  dir:" +  backtraceDir + "nDots: " + nDots);
         if (nDots > maxDots) {
           maxDots = nDots;
           maxDotsDir = backtraceDir;
         }
       }
-      println("  maxDotsDir:" + maxDotsDir);
+      //println("  maxDotsDir:" + maxDotsDir);
       if (maxDotsDir==-1) {
         //assert(false);
         assert(maxDots==0);
@@ -84,11 +135,11 @@ class LaserHelper {
       if (incomingDir==laserDirection) {
         // We will not insert a mirror - rather the laser will keep its direction
         // but move backwards
-        println("  Backing up...");
+        //println("  Backing up...");
       } else {
         // Add a mirror.
         mirrorOrientation = computeMirrorOrientation(incomingDir, laserDirection);
-        println("  Adding mirror. Mirror orientation: " + mirrorOrientation);
+        //println("  Adding mirror. Mirror orientation: " + mirrorOrientation);
         mirror = new TwowayMirror(gParams, gParams);
       }
 
@@ -152,7 +203,7 @@ class LaserHelper {
     assert(c.dObject instanceof Dot);
     if (c.visited) {
       return 0;
-    }
+    } 
     int leftDir = (info.direction+1)%4;
     int rightDir = (info.direction+3)%4;
     int leftDots = tracePath(c, leftDir, null, null, false);
@@ -167,10 +218,20 @@ class LaserHelper {
 
     // Compute the max score
     int maxScore = 0;
+    int maxStraightRunLength=3;
+    TraceCellInfo prevInfo=null;
+    int straightRunLength=0;
     for (TraceCellInfo info : dotInfo) {
+      straightRunLength = adjacentDot(prevInfo, info) ? straightRunLength+1 : 0;
+      // Check if we've got too long of a straight run...
+      if (maxScore>0 && straightRunLength>maxStraightRunLength) {
+        // Let's torpedoe this cell's viability score.
+        info.viabilityScore=0;
+      }
       if (info.viabilityScore>maxScore) {
         maxScore = info.viabilityScore;
       }
+      prevInfo = info;
     }
 
     // Compute the number of items with this max score
@@ -183,7 +244,7 @@ class LaserHelper {
       }
     }
     assert(maxScore==0 || maxCount>0);
-    println("pickDot: maxScore: " + maxScore + " maxCount:" + maxCount);
+    //println("pickDot: maxScore: " + maxScore + " maxCount:" + maxCount);
     if (maxCount>0) {
       // Pick a random one from this list...
       int chosenIndex = (int) random(0, maxCount);
@@ -200,6 +261,29 @@ class LaserHelper {
     return null;
   }
 
+  // returns true iff the two dots are adjacent in a straight path
+  Boolean adjacentDot(TraceCellInfo info1, TraceCellInfo info2) {
+    if (info1==null || info2==null) {
+      return false;
+    }
+    Cell c1 = info1.c;
+    Cell c2 = info2.c;
+    if ((abs(c1.i-c2.i)+abs(c1.j-c2.j))>1) {
+      return false;
+    }
+    //assert(info1.direction == info2.direction);
+
+    int dir1 = info1.direction;
+    int dir2 = info2.direction;
+
+    if (dir1==dir2) {
+      // same directions
+      if ((dir1%2 == 0&&c1.j!=c2.j) || (dir1%2 == 1&&c1.i!=c2.i)) {
+        return true;
+      }
+    }
+    return false;
+  }
   // Move laser to dotCellInfo. Returns the new cell containing
   // the laser (i.e., dotCellInf)
   Cell moveLaser(Cell laserCell, TraceCellInfo dotCellInfo) {
@@ -219,5 +303,105 @@ class LaserHelper {
     laserCell.dObject = dTemp;
     laserCell.orientation = orientationTemp;
     return dotCellInfo.c;
+  }
+
+  // public Stats mirrorCount; // Number of mirrors in path.
+  //public Stats ssDistance;  // Manhattan distance between source and sink.
+  //public Stats maxSpan; // Max distance between adjacent mirrors.
+
+  PuzzleStats computePuzzleStats() {
+    Cell[]laserCells =  getLasers(g);
+    PuzzleStats pStats = new PuzzleStats();
+    int[]mirrorCounts = new int[laserCells.length];
+    int[]ssDistances  =  new int[laserCells.length];
+    int[]maxSpan  =  new int[laserCells.length];
+
+    for (int i=0; i<laserCells.length; i++) {
+      Cell lc = laserCells[i];
+      ArrayList<Cell> objects = new ArrayList<Cell>();
+      tracePath(lc, cardinalDirection(lc.orientation), objects, null, false);
+      mirrorCounts[i] = computeMirrorCount(objects);
+      ssDistances[i] = computeManhattanDistance(lc, objects.size()>0 ? objects.get(objects.size()-1) : lc);
+      maxSpan[i] = computeMaxSpan(objects);
+    } 
+    pStats.mirrorCount = computeStats(mirrorCounts);
+    pStats.ssDistance = computeStats(ssDistances);
+    pStats.maxSpan = computeStats(maxSpan);
+
+    return pStats;
+  }
+
+  int computeMirrorCount(ArrayList<Cell> objects) {
+    int count = 0;
+    for (Cell c : objects) {
+      if (c.dObject !=null && c.dObject instanceof TwowayMirror) {
+        count++;
+      }
+    }
+    return count;
+  }
+
+  // return manhattan distance between the two objects
+  int computeManhattanDistance(Cell c1, Cell c2) {
+    return (abs(c1.i-c2.i)+abs(c1.j-c2.j));
+  }
+
+  int computeMaxSpan(ArrayList<Cell> objects) {
+    int maxSpan = 0;
+    Cell cPrev=null;
+    for (Cell c : objects) {
+      if (cPrev!=null) {
+        int span = computeManhattanDistance(cPrev, c);
+        if (maxSpan < span) {
+          maxSpan=span;
+        }
+      }
+      cPrev = c;
+    }
+    return maxSpan;
+  }
+
+  Stats computeStats(int[] data) {
+    int min=Integer.MAX_VALUE, max=Integer.MIN_VALUE;
+    float avg=0;
+    float sum=0;
+    float sumSquared=0;
+    Stats s = new Stats();
+    s.n=data.length;
+    if (data.length==0) {
+      return s; // ** early return *******
+    }
+    for (int d : data) {
+      if (min>d) {
+        min=d;
+      }
+      if (max<d) {
+        max=d;
+      }
+      sum+=d;
+    }
+    avg = sum/data.length;
+    for (int d : data) {
+      sumSquared += (d-avg)*(d-avg);
+    }
+    s.min = min;
+    s.max = max;
+    s.avg = avg;
+    s.sd = sqrt(sumSquared/data.length);
+    return s;
+  }
+
+
+  // Return the number of dots in the grid
+  int dotCount() {
+    int n=0;
+    for (Cell[] row : g.cells) {
+      for (Cell c : row) {
+        if (c.dObject!=null && c.dObject instanceof Dot) {
+          n++;
+        }
+      }
+    }
+    return n;
   }
 }

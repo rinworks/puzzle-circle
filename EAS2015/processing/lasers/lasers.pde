@@ -1,10 +1,13 @@
-import java.util.Comparator; //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>//
+import java.util.Comparator; //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>//
 import java.util.Arrays;
 
 void setup() {
   size(750, 1080);
 
-
+  if (true) {
+    runTest();
+    return;
+  }
   // ;==v and :==/
   String[] positionsGood = {
     ".............", 
@@ -51,26 +54,23 @@ void setup() {
   boolean synthPuzzles = true;
   String puzzleText = "JUNE EXPEDITION";
   Grid g;
+
   if (!synthPuzzles) {
     int[] laserIds = {11, 5, 7, 13, 6, 14, 10, 8, 12, 15, 3, 9, 1, 2, 4};
 
     g = genObjects(positionsGood, laserIds);
   } else {
-    g = createDotGrid(25,20); 
-    puzzleText = "HOW NOW BROWN COW";
-    LaserHelper lh = new LaserHelper(g);
-    addToGrid(g, puzzleText);
-    //randomlyBackUpLasers(g);
-    for (int i=0; i<100; i++) {
-      //randomlyBackUpLasers(g);
-      // addRandomMirrors(g);
-      lh.addToPathComplexity();
-    }
+    puzzleText = "US PRESIDENT ABOLISHED SLAVERY";
+    g = generateGoodPuzzle(25, 20, puzzleText);
   }
-  //drawPaths(g, puzzleText);
+  drawPaths(g, puzzleText);
   g.draw();
   //println(PFont.list());
-  printGrid(g);
+  printGrid(g, null);
+  LaserHelper lh = new LaserHelper(g);
+  PuzzleStats pStats = lh.computePuzzleStats();
+  println("Puzzle Stats:");
+  println(pStats);
 }
 
 GraphicsParams gParams = new GraphicsParams();
@@ -103,7 +103,7 @@ Grid genObjects(String[] spec, int[] laserIds) {
         d = new Dot(gParams, gParams);
       } else if (c=='<'||c=='>'||c=='^'||c==';') {
         d = new Laser(laserIds[laserCount], gLaserParams, gLaserParams);
-        println("Laser " + laserIds[laserCount] + " at ["+i+","+j+"]");
+        //println("Laser " + laserIds[laserCount] + " at ["+i+","+j+"]");
         laserCount++;
       } else if  (c=='|'||c=='-'||c=='/'||c==':') {
         d = new TwowayMirror(gParams, gParams);
@@ -220,7 +220,9 @@ String shortClassName(String className) {
 // orientation (in degrees). Return a boundary Dot cell if you hit a boundary. Return null if
 // Cell c is already at the boundary and the laser is leaving the boundary.
 // We use dotCount just to pass-by-reference the count of dots back. A bit of a hack.
-Cell findNextTarget(Grid g, Cell c, int direction, ArrayList<TraceCellInfo>dotInfoList, int[]dotCount, Boolean mark) {
+// NOTE: cStart is the start of the path - it is to detect cycles in the path, which
+// can happen.
+Cell findNextTarget(Grid g, Cell cStart, Cell c, int direction, ArrayList<TraceCellInfo>dotInfoList, int[]dotCount, Boolean mark) {
   assert(direction>=0 && direction<4);
   if (dotCount!=null) {
     assert( dotCount.length==1);
@@ -249,11 +251,17 @@ Cell findNextTarget(Grid g, Cell c, int direction, ArrayList<TraceCellInfo>dotIn
   int j=c.j + dj;
   while (i>=0 && j>=0 && i<g.rows && j<g.cols) {
     cNext = g.cells[i][j];
+    if (cNext == cStart) {
+      // Oops, we've encountered a cycle!
+      //println("CYCLE DETECTED AT " + locationToString(cNext)); // *************** EARLY RETURN **************
+      dotCount[0] = 0;
+      return null;
+    }
     Boolean visited = cNext.visited;
     if (!visited && mark) {
       cNext.visited=true;
     }
-    // If it's null of a Dot, we keep going...
+    // If it's null or a Dot, we keep going...
     if (cNext.dObject instanceof Dot) {
       if (dotInfoList!=null) {
         dotInfoList.add(new TraceCellInfo(cNext, direction));
@@ -427,20 +435,27 @@ int[] getLaserIds (Grid g) {
   return ids;
 }
 
-void printGrid(Grid g) {
+void printGrid(Grid g, String path) {
   String[] spec = specFromGrid(g);
   int[] ids = getLaserIds(g);
-  println("String[] spec = {");
+  String output = "";
+  output +="String[] spec = {\n";
   for (int i=0; i<spec.length; i++) {
-    println("   \"" + spec[i] + "\"" + ((i<spec.length-1)?",":""));
+    output += "   \"" + spec[i] + "\"" + ((i<spec.length-1)?",":"") + "\n";
   }
-  println("};");
+  output +="};\n";
 
-  print("int[] ids = {");
+  output +="int[] ids = {";
   for (int i=0; i<ids.length; i++) {
-    print(ids[i] + ((i<ids.length-1)?", ":""));
+    output +=(ids[i] + ((i<ids.length-1)?", ":""));
   }
-  println("};");
+  output +="};\n";
+  if (path==null) {
+    print(output);
+  } else {
+    String[] strings = {output};
+    saveStrings(path, strings);
+  }
 }
 
 // Find an available text box (one that can serve
@@ -485,7 +500,7 @@ Cell pickRandomTopViableCellForTextBox(Grid g, ArrayList<Cell> candidateCells, A
     if (score>maxScore) {
       maxScore = score;
     }
-  } //<>//
+  }
 
   // A score of 0 implies nothing is viable
   if (maxScore==0) {
@@ -516,7 +531,7 @@ Cell pickRandomTopViableCellForTextBox(Grid g, ArrayList<Cell> candidateCells, A
   assert(candidateCells.size()==0); //Should only get here if there were no candidate cell.s
   return null;
 }
- //<>//
+
 
 // Compute the viability for this (TextBox) cell to be
 // the target for a new laser. Positive score means it's viable.
@@ -558,7 +573,7 @@ Cell placeNewTextBox(Grid g, String s) {
         if (score > 0) {
           candidateCells.add(c);
           candidateScores.add(score);
-        } //<>//
+        }
       }
     }
   }
@@ -841,7 +856,7 @@ Cell[] pickRandomLaserOrder(Grid g) {
   Cell[] lasers = getLasers(g);
   for (int i=0; i<lasers.length; i++) {
     int j = (int) random(i, lasers.length);
-    swapCells(lasers, i, j);
+    swapCells(lasers, i, min(j, lasers.length-1)); // Sometimes (very rarely) j turns out to be lases.length!
   }
   return lasers;
 }
@@ -850,4 +865,168 @@ void swapCells(Cell[] cells, int i, int j) {
   Cell c = cells[i];
   cells[i] =  cells[j];
   cells[j] = c;
+}
+
+Grid generateGoodPuzzle(int rows, int cols, String puzzleText) {
+
+  int NUM_TRIALS=100000;
+  PuzzleStats[] puzzleStats = new PuzzleStats[NUM_TRIALS];
+  String[][] puzzleSpecs = new String[NUM_TRIALS][];
+  int[][]laserIds = new int[NUM_TRIALS][];
+  Boolean[] qualifiedPuzzles = new Boolean[NUM_TRIALS];
+
+  for (int i=0; i<NUM_TRIALS; i++) {
+    LaserHelper lh = createRandomPuzzle(rows, cols, puzzleText, 100);
+    qualifiedPuzzles[i] = !disqualifyPuzzle(lh);
+    puzzleStats[i] = lh.computePuzzleStats();
+    puzzleSpecs[i] = specFromGrid(lh.g);
+    laserIds[i] = getLaserIds(lh.g);
+    if (lh.hasError) {
+      return lh.g; // ******* EARLY RETURN WITH BAD PUZZLE
+    }
+  }
+
+  // Lets compute the average of the averages (they all have the same weight - number of lasers per puzzle)
+  float mirrorCountAvg=0;
+  float ssDAvg=0;
+  float maxSpanAvg=0;
+  for (PuzzleStats ps : puzzleStats) {
+    mirrorCountAvg += ps.mirrorCount.avg;
+    ssDAvg += ps.ssDistance.avg;
+    maxSpanAvg += ps.maxSpan.avg;
+  }
+  mirrorCountAvg/=puzzleStats.length;
+  ssDAvg/=puzzleStats.length;
+  maxSpanAvg /= puzzleStats.length;
+  println("mcAvg:" + mirrorCountAvg + " ssDAvg:" + ssDAvg + " maxSpanAvg:" + maxSpanAvg);
+
+  // Now let's pick the one puzzle with the max(min/avg value for every stat.
+
+  float bestPrimaryScore = -1;
+  for (int i=0; i<puzzleStats.length; i++) {
+    if (qualifiedPuzzles[i]) {
+      float score = primaryCompositeScore(puzzleStats[i], mirrorCountAvg, ssDAvg, maxSpanAvg);
+      if (bestPrimaryScore < score) {
+        bestPrimaryScore = score;
+      }
+    }
+  }
+
+  float bestSecondaryScore = -1;
+  int bestIndex = -1;
+  for (int i=0; i<puzzleStats.length; i++) {
+    if (qualifiedPuzzles[i]) {
+      float score1 = primaryCompositeScore(puzzleStats[i], mirrorCountAvg, ssDAvg, maxSpanAvg);
+      float score2 = secondaryCompositeScore(puzzleStats[i], mirrorCountAvg, ssDAvg, maxSpanAvg);
+      if (score1>=bestPrimaryScore && bestSecondaryScore < score2) {
+        bestSecondaryScore = score2;
+        bestIndex=i;
+      }
+    }
+  }
+
+  println("BEST SCORE: " + bestPrimaryScore +  "-" + bestSecondaryScore);
+  Grid bestGrid = genObjects(puzzleSpecs[bestIndex], laserIds[bestIndex]);
+  return bestGrid;
+}
+
+Boolean disqualifyPuzzle(LaserHelper lh) {
+  // Check if any two lasers are back-to-back.
+  Cell[] laserCells = getLasers(lh.g);
+  for (int i=0; i<laserCells.length; i++) {
+    Cell lcI = laserCells[i];
+    for (int j=0; j<i; j++) {
+      Cell lcJ = laserCells[j];
+      if (abs(lcI.i-lcJ.i)+abs(lcI.j-lcJ.j) == 1) { // adjacent
+        int dirI = cardinalDirection(lcI.orientation);
+        int dirJ = cardinalDirection(lcJ.orientation);
+        if ((4+dirI-dirJ)%4==2) {
+          // opposite directions
+          if ((dirI%2 == 0 && lcI.j!=lcJ.j) || (dirI%2 == 1&&lcI.i!=lcJ.i)) {
+            return true;
+          }
+        }
+      }
+    }
+  }
+  return false;
+}
+
+// We return the min of the min after normalizing each by dividing by the supplied population average.
+float primaryCompositeScore(PuzzleStats ps, float mirrorCountAvg, float ssDAvg, float maxSpanAvg) {
+  float min1 = ps.mirrorCount.min/mirrorCountAvg;
+  float min2 = ps.ssDistance.min/ssDAvg;
+  float min3 = ps.maxSpan.min/maxSpanAvg;
+  return min(min1, min2, min3);
+  //return min(min2, min3);
+}
+
+float secondaryCompositeScore(PuzzleStats ps, float mirrorCountAvg, float ssDAvg, float maxSpanAvg) {
+  //float min1 = ps.mirrorCount.min/mirrorCountAvg;
+  float min2 = ps.ssDistance.min/ssDAvg;
+  float min3 = ps.maxSpan.min/maxSpanAvg;
+  //return min(min1, min2, min3);
+  return min(min2, min3);
+}
+
+
+LaserHelper createRandomPuzzle(int rows, int cols, String puzzleText, int iterations) {
+  Grid g = createDotGrid(rows, cols); 
+  LaserHelper lh = new LaserHelper(g);
+  addToGrid(g, puzzleText);
+  int prevDotCount=-1;
+  for (int i=0; i<iterations; i++) {
+    lh.addToPathComplexity();
+    int dotCount = lh.dotCount();
+    if (dotCount==prevDotCount) {
+      //println("STOPPING AFTER " + i + " ITERATIONS!");
+      break;
+    }
+    prevDotCount = dotCount;
+  }
+  return lh;
+}
+
+void  runTest() {
+String[] spec = {
+   ";/.:/...:/<;/:;;;/:;",
+   ":.:.V>:/........:.//",
+   ">/..../S:...:..:/..<",
+   "/.:...::...........:",
+   ":/......:....:.:/...",
+   ";.../.:......:/../..",
+   ":..:.../..::/T../<..",
+   ">.../../.../...::../",
+   ">:/.........:;...U..",
+   ">./:......:......:/.",
+   ";../........./.H....",
+   "....:A:...:..:..:::.",
+   "../..:..../.:E//:.:<",
+   "....N:<B.:......:..<",
+   ":..:.../..::...::I/<",
+   "......P./...::.....:",
+   "....L:.......:Y:../.",
+   "/..:.....::.../..:;.",
+   "...:..././.::...:.:/",
+   ":.....:O.:.....R:..:",
+   "..:....... :.::.//..",
+   ">:.././.:./.>./.../.",
+   "/:...:......:.D/.../",
+   ":..:^:......../....:",
+   ">/.:......./^^^^:../"
+};
+int[] ids = {12, 18, 27, 7, 19, 21, 1, 4, 24, 8, 28, 2, 14, 17, 15, 6, 16, 26, 3, 22, 20, 10, 9, 11, 30, 13, 25, 29, 5, 23};
+
+
+  
+  String puzzleText = "US PRESIDENT ABOLISHED SLAVERY";
+  Grid g = genObjects(spec, ids);
+  background(200);
+  g.draw();
+  save("output\\ouput-noPaths.png");
+  background(200);
+  drawPaths(g, puzzleText);
+  g.draw();
+  save("output\\ouput-withPaths.png");
+  printGrid(g, sketchPath("output\\output-spec.txt")); //<>//
 }
