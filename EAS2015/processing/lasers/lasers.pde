@@ -2,14 +2,15 @@ import java.util.Comparator; //<>// //<>// //<>// //<>// //<>// //<>// //<>// //
 import java.util.Arrays;
 
 void setup() {
-  size(750, 1080);
+  //size(770, 1100);
+  size(1300,1300);
 
-  if (true) {
+  if (false) {
     runTest();
     return;
   }
   // ;==v and :==/
-  String[] positionsGood = {
+  String[] positions = {
     ".............", 
     ".../.....:...", 
     ".....>...::..", 
@@ -28,26 +29,6 @@ void setup() {
     "............."
   };
 
-  String[] positions = {
-    ".....////....", 
-    ".../.....:...", 
-    ".Y...>..Z ....", 
-    ".....;>..:::.", 
-    "..>/E:.. ....", 
-    "./.:../...:I.", 
-    "..>./...J....", 
-    "...T.../...<.", 
-    "...P...OD....", 
-    "...:....:..<.", 
-    "...U../X^....", 
-    ".^//.::..//<.", 
-    ".>./.N..:^...", 
-    "..:.:..<:./..", 
-    "....^.^..X...", 
-    "............."
-  };
-
-
   // Grid coordinates: (i, j) are like rows of an array/matrix. So i is vertical,
   // with increasing i going downwards.
   // Angles: normal interpration (0 == going right; 90== going up, etc.)
@@ -58,10 +39,10 @@ void setup() {
   if (!synthPuzzles) {
     int[] laserIds = {11, 5, 7, 13, 6, 14, 10, 8, 12, 15, 3, 9, 1, 2, 4};
 
-    g = genObjects(positionsGood, laserIds);
+    g = genObjects(positions, laserIds);
   } else {
     puzzleText = "US PRESIDENT ABOLISHED SLAVERY";
-    g = generateGoodPuzzle(25, 20, puzzleText);
+    g = generateGoodPuzzle(25, 25, puzzleText, 1000);
   }
   drawPaths(g, puzzleText);
   g.draw();
@@ -867,15 +848,14 @@ void swapCells(Cell[] cells, int i, int j) {
   cells[j] = c;
 }
 
-Grid generateGoodPuzzle(int rows, int cols, String puzzleText) {
+Grid generateGoodPuzzle(int rows, int cols, String puzzleText, int numTrials) {
 
-  int NUM_TRIALS=100000;
-  PuzzleStats[] puzzleStats = new PuzzleStats[NUM_TRIALS];
-  String[][] puzzleSpecs = new String[NUM_TRIALS][];
-  int[][]laserIds = new int[NUM_TRIALS][];
-  Boolean[] qualifiedPuzzles = new Boolean[NUM_TRIALS];
+  PuzzleStats[] puzzleStats = new PuzzleStats[numTrials];
+  String[][] puzzleSpecs = new String[numTrials][];
+  int[][]laserIds = new int[numTrials][];
+  Boolean[] qualifiedPuzzles = new Boolean[numTrials];
 
-  for (int i=0; i<NUM_TRIALS; i++) {
+  for (int i=0; i<numTrials; i++) {
     LaserHelper lh = createRandomPuzzle(rows, cols, puzzleText, 100);
     qualifiedPuzzles[i] = !disqualifyPuzzle(lh);
     puzzleStats[i] = lh.computePuzzleStats();
