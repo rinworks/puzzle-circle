@@ -1,9 +1,9 @@
-import java.util.Comparator; //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>//
+import java.util.Comparator; //<>// //<>// //<>// //<>// //<>//
 import java.util.Arrays;
 
 void setup() {
   //size(770, 1100);
-  size(1300,1300);
+  size(1300, 1300);
 
   if (false) {
     runTest();
@@ -955,12 +955,24 @@ LaserHelper createRandomPuzzle(int rows, int cols, String puzzleText, int iterat
   LaserHelper lh = new LaserHelper(g);
   addToGrid(g, puzzleText);
   int prevDotCount=-1;
+  int noProgressCount=0;
+  int MAX_NO_PROGRESS_COUNT = 10;
   for (int i=0; i<iterations; i++) {
     lh.addToPathComplexity();
     int dotCount = lh.dotCount();
     if (dotCount==prevDotCount) {
       //println("STOPPING AFTER " + i + " ITERATIONS!");
-      break;
+      noProgressCount++;
+      if (noProgressCount>MAX_NO_PROGRESS_COUNT) {
+        break;
+      }
+    } else {
+      //Had this code to check if we would have made progress - doesn't hit for the current max count we set of 10.
+      //if (noProgressCount>MAX_NO_PROGRESS_COUNT) {
+      //  println("Hmm, PROGRESS *AFTER* we would have stopped. DC: " + dotCount + " prevDC: " + prevDotCount + " NPCount:" + noProgressCount);
+      //}
+      //assert(!hitBreak);
+      noProgressCount=0;
     }
     prevDotCount = dotCount;
   }
@@ -968,37 +980,38 @@ LaserHelper createRandomPuzzle(int rows, int cols, String puzzleText, int iterat
 }
 
 void  runTest() {
-String[] spec = {
-   ";/.:/...:/<;/:;;;/:;",
-   ":.:.V>:/........:.//",
-   ">/..../S:...:..:/..<",
-   "/.:...::...........:",
-   ":/......:....:.:/...",
-   ";.../.:......:/../..",
-   ":..:.../..::/T../<..",
-   ">.../../.../...::../",
-   ">:/.........:;...U..",
-   ">./:......:......:/.",
-   ";../........./.H....",
-   "....:A:...:..:..:::.",
-   "../..:..../.:E//:.:<",
-   "....N:<B.:......:..<",
-   ":..:.../..::...::I/<",
-   "......P./...::.....:",
-   "....L:.......:Y:../.",
-   "/..:.....::.../..:;.",
-   "...:..././.::...:.:/",
-   ":.....:O.:.....R:..:",
-   "..:....... :.::.//..",
-   ">:.././.:./.>./.../.",
-   "/:...:......:.D/.../",
-   ":..:^:......../....:",
-   ">/.:......./^^^^:../"
-};
-int[] ids = {12, 18, 27, 7, 19, 21, 1, 4, 24, 8, 28, 2, 14, 17, 15, 6, 16, 26, 3, 22, 20, 10, 9, 11, 30, 13, 25, 29, 5, 23};
+  String[] spec = {
+    ";/..:.;>.....:..;;/....:;", 
+    "../.../;;/..:..//...:.;..", 
+    ":.../..::.:H........:.../", 
+    ".:...:.I...:^.O:../.....<", 
+    ">.:...://...././...:./..:", 
+    ".//V.....:.:..../..:..:./", 
+    "/...:/......;.;./:..../.<", 
+    ":::.../...:../:...:./...:", 
+    ">/...:/..:...:::.:.../...", 
+    ">:...........:...../../..", 
+    "/............S../.:./.../", 
+    ".:::...::....//..:P../..:", 
+    "././.^./././/...:.....L/.", 
+    "..:..././.../.....B......", 
+    ":.......:.:.N..:.......<.", 
+    ";././../..../:..::.....:.", 
+    ".../....:...:...../:..//.", 
+    ".....//./..//:....:.../Y.", 
+    ":...../.D/....:R/..:.:T..", 
+    "....../......././:..:..//", 
+    "/:E/.: .............:...:", 
+    "..:./.././:......A.:..<..", 
+    ":................/^U..///", 
+    "/::..:............./...::", 
+    "^:/^:.<:..<^..:...../^:<^"
+  };
+  int[] ids = {8, 27, 24, 25, 4, 18, 23, 16, 19, 9, 20, 10, 22, 30, 17, 6, 28, 7, 29, 21, 13, 15, 14, 1, 11, 3, 2, 5, 12, 26};
 
 
-  
+
+
   String puzzleText = "US PRESIDENT ABOLISHED SLAVERY";
   Grid g = genObjects(spec, ids);
   background(200);
@@ -1008,5 +1021,5 @@ int[] ids = {12, 18, 27, 7, 19, 21, 1, 4, 24, 8, 28, 2, 14, 17, 15, 6, 16, 26, 3
   drawPaths(g, puzzleText);
   g.draw();
   save("output\\ouput-withPaths.png");
-  printGrid(g, sketchPath("output\\output-spec.txt")); //<>//
+  printGrid(g, sketchPath("output\\output-spec.txt"));
 }
