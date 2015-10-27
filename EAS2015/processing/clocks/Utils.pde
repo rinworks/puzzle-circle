@@ -90,7 +90,7 @@ Time semaphoreEncode(char c) {
 }
 
 
-void drawClock(int x, int y, int r, int hour, int minute) {
+void drawClock(int x, int y, int r, int hour, int minute, String label) {
   fill(220);
   strokeWeight(5);
   stroke(50);
@@ -98,6 +98,18 @@ void drawClock(int x, int y, int r, int hour, int minute) {
   stroke(0);
   ellipse(x, y, 2*r, 2*r);
 
+  // Draw Label (if present)
+  println("LABEL: " + label);
+  pushMatrix();
+  translate(x, y);
+  if (label!=null) {
+    int fontSize = 64;
+    textAlign(CENTER, CENTER);
+    fill(255, 0, 0);
+    textSize(fontSize);
+    text(label, 0, fontSize);
+  }
+  popMatrix();
 
   // draw hour hand
   float hourAngle = 2*PI*(hour/12.0 + minute/(12*60.0))   - PI/2;
@@ -109,13 +121,14 @@ void drawClock(int x, int y, int r, int hour, int minute) {
   float newDelta = delta/3; // Increase the denominator to do more clamping to semaphore directions.
   hourAngleDegrees = (round(fraction)+newDelta)*360/8;
   hourAngle = radians(hourAngleDegrees);
+
+  // Draw hour hand
   pushMatrix();
   translate(x, y); 
   rotate(hourAngle);
   strokeWeight(6);
   line(0, 0, 0.6*r, 0);
   popMatrix();
-
 
 
   // draw minute hand
@@ -131,6 +144,8 @@ void drawClock(int x, int y, int r, int hour, int minute) {
   noStroke();
   ellipse(0, 0, 0.07*r, 0.07*r);
   popMatrix();
+
+
 
   // Draw glass
   pushMatrix();
