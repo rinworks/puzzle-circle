@@ -16,7 +16,7 @@ int[] randomPartition1(Random rand, String puzzleString, String[] partitions ) {
   }
   int charCount = puzzleString.length();
   int[] ordering = new int[charCount];
-  
+
   // Allocate the total count of characters among
   // the partitions. Note that the number of characters
   // may be greater/less than/equal to the number of
@@ -25,7 +25,7 @@ int[] randomPartition1(Random rand, String puzzleString, String[] partitions ) {
   ArrayList<Integer>partitionIds = new ArrayList<Integer>(numPartitions);
   int factor = charCount/numPartitions; // could be 0;
   int remainder  = charCount % numPartitions;
-  println("factor:" + factor + " remainder: " + remainder);
+  //println("factor:" + factor + " remainder: " + remainder);
   if (factor>0) {
     for (int i=0; i<numPartitions; i++) {
       counts.add(factor);
@@ -40,7 +40,7 @@ int[] randomPartition1(Random rand, String puzzleString, String[] partitions ) {
       partitionIds.add(i);
     }
   }
-  
+
   // Create random ordering by picking one of
   // the partitions at random to "host" each
   // successive puzzle string character. Once
@@ -52,7 +52,7 @@ int[] randomPartition1(Random rand, String puzzleString, String[] partitions ) {
     assert(k<numPartitions);
     int id = partitionIds.get(k);
     ordering[i]=id;
-    partitions[id] += puzzleString.substring(i,i+1);
+    partitions[id] += puzzleString.substring(i, i+1);
     int countK = counts.get(k);
     if (countK>1) {
       counts.set(k, countK-1);
@@ -63,14 +63,14 @@ int[] randomPartition1(Random rand, String puzzleString, String[] partitions ) {
     }
   }
   assert(counts.size()==0);
-  
+
   // Finally, let's verify that we did partition things properly!
   // If there is a mismatch we throw an exception!
   {
     String testString = "";
     int[] partitionOffsets = new int[partitions.length];// initialized to zeros
 
-    for (int i=0;i<ordering.length;i++) {
+    for (int i=0; i<ordering.length; i++) {
       int id = ordering[i];
       int offset = partitionOffsets[id];
       assert(offset<partitions[id].length());
@@ -79,8 +79,6 @@ int[] randomPartition1(Random rand, String puzzleString, String[] partitions ) {
     }
     if (!testString.equals(puzzleString)) {
       throw new RuntimeException("Fatal internal error!");
-    } else {
-      println("CORRECT! Regenerated string:["+testString+"]");
     }
   }
   return ordering;
@@ -134,10 +132,11 @@ String[] genBricks(String text) {
 
 // Given an array of rows of blocks,
 // lays them out, one below the other.
-String[] layoutBlockRows(String[][]rows) {
+String[] layoutBlockRows(String[][]rows, int dY, String[] text) {
   ArrayList<String> code = new ArrayList<String>();
   for (int i=0; i<rows.length; i++) {
-    code.add("V_TRANSLATE("+i + "){");
+    //code.add("V_TRANSLATE("+i + "){ // Chars: " + text[i]);
+    code.add(emitTranslate(0,i*dY,0) + " { // Chars: " + text[i]);
     for (String s : rows[i]) {
       code.add("  " + s);
     }
@@ -150,28 +149,41 @@ String[] layoutBlockRows(String[][]rows) {
 
 // Generates OpenSCAD code that color the specified bricks (which are themselves openScad snippets)
 // and lay them out in a row, slightly jiggling each one.
-String[] wigglyColoredRow(String[] bricks, MyColor c) {
-  String[] res = new String[bricks.length];
+String[] wigglyColoredRow(String text, MyColor c, int dX) {
+  int charCount = text.length();
+  String[] bricks = genBricks(text);
+  assert(charCount == bricks.length);
+  String[] res = new String[charCount+2];// +2 for initial and final code
   String sColor = "";
+  println("COLOR: " + c);
   switch(c) {
   case RED: 
-    sColor = "RED";
-    break;
-  case BLUE: 
-    sColor = "BLUE";
+    sColor = "[1.00, 0.25, 0.25]";
     break;
   case GREEN: 
-    sColor = "GREEN";
+    sColor = "[0.25, 1.00, 0.25]";
+    break;
+  case BLUE: 
+    sColor = "[0.25, 0.25, 1.00]";
     break;
   default:
     assert(false);
     break;
   }
-  for (int i=0; i<res.length; i++) {
-    res[i] = "WIGGLE("+i+",H_TRANSLATE("+i+", COLOR("+sColor+","+bricks[i]+")))";
+  res[0] = "color("+sColor+") { // Color " + c.toString();
+  for (int i=0; i<charCount; i++) {
+    res[i+1] = "    " + emitTranslate(i*dX,0,0) + " " + bricks[i] + "; // " + text.substring(i, i+1);
+    //res[i] = "WIGGLE("+i+",H_TRANSLATE("+i+", COLOR("+sColor+","+bricks[i]+")))";
   }
+  res[res.length-1] = "}";
   return res;
 }
+
+String emitTranslate(int dX, int dY, int dZ) {
+  return "translate(["+dX+","+dY+","+dZ+"])";
+}
+
+
 
 // Writes the code, presumed to be 
 // Output is written to <sketchdir>\output\<name>.scad,
@@ -199,8 +211,8 @@ String[] addPreamble(String[] code) {
   return ret;
 }
 String genBrick(char c) {
-  return "BRICK(\""+c+")";
-  //return genBrick(braille(c), c);
+  //return "BRICK(\""+c+")";
+  return genBrick(braille(c), c);
 }
 
 
@@ -217,7 +229,7 @@ String genBrick(int[] arr, char c) {
       s+=",";
     }
   }
-  s+="]); // "+c;
+  s+="])";
   return s;
 }
 
