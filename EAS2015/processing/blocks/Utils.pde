@@ -136,7 +136,7 @@ String[] layoutBlockRows(String[][]rows, int dY, String[] text) {
   ArrayList<String> code = new ArrayList<String>();
   for (int i=0; i<rows.length; i++) {
     //code.add("V_TRANSLATE("+i + "){ // Chars: " + text[i]);
-    code.add(emitTranslate(0,i*dY,0) + " { // Chars: " + text[i]);
+    code.add(emitTranslate(0, i*dY, 0) + " { // Chars: " + text[i]);
     for (String s : rows[i]) {
       code.add("  " + s);
     }
@@ -172,7 +172,7 @@ String[] wigglyColoredRow(String text, MyColor c, int dX) {
   }
   res[0] = "color("+sColor+") { // Color " + c.toString();
   for (int i=0; i<charCount; i++) {
-    res[i+1] = "    " + emitTranslate(i*dX,0,0) + " " + bricks[i] + "; // " + text.substring(i, i+1);
+    res[i+1] = "    " + emitTranslate(i*dX, 0, 0) + " " + bricks[i] + "; // " + text.substring(i, i+1);
     //res[i] = "WIGGLE("+i+",H_TRANSLATE("+i+", COLOR("+sColor+","+bricks[i]+")))";
   }
   res[res.length-1] = "}";
@@ -246,64 +246,94 @@ int[] braille(char c) {
 }
 
 Hashtable genBrailleMap() {
-  // yrtb zivjmneq
-  // beijmnqrtvyz
-  int [][] patterns  = {
+
+  int [][] alphaPatterns  = {
     {
-      1, 1, 0, 0, 0, 0 // b
-    }
-    , 
+      1, 0, 0, 0, 0, 0 // A
+    }, 
     {
-      1, 0, 0, 0, 1, 0 // e
-    }
-    , 
+      1, 1, 0, 0, 0, 0 // B
+    }, 
     {
-      0, 1, 0, 1, 0, 0 // i
-    }
-    , 
+      1, 0, 0, 1, 0, 0 // C
+    }, 
     {
-      0, 1, 0, 1, 1, 0 // j
-    }
-    , 
+      1, 0, 0, 1, 1, 0 // D
+    }, 
     {
-      1, 0, 1, 1, 0, 0 // m
-    }
-    , 
+      1, 0, 0, 0, 1, 0 // E
+    }, 
     {
-      1, 0, 1, 1, 1, 0 // n
-    }
-    , 
+      1, 1, 0, 1, 0, 0 // F
+    }, 
     {
-      1, 1, 1, 1, 1, 0 // q
-    }
-    , 
+      1, 1, 0, 1, 1, 0 // G
+    }, 
     {
-      1, 1, 1, 0, 1, 0 // r
-    }
-    , 
+      1, 0, 0, 0, 1, 0 // H
+    }, 
     {
-      0, 1, 1, 1, 1, 0 // t
-    }
-    , 
+      0, 1, 0, 1, 0, 0 // I
+    }, 
     {
-      1, 1, 1, 0, 0, 1 // v
-    }
-    , 
+      0, 1, 0, 1, 1, 0 // J
+    }, 
     {
-      1, 0, 1, 1, 1, 1 // y
-    }
-    , 
+      1, 0, 1, 0, 0, 0 // K
+    }, 
     {
-      1, 0, 1, 0, 1, 1 // z
+      1, 1, 1, 0, 0, 0 // L
+    }, 
+    {
+      1, 0, 1, 1, 0, 0 // M
+    }, 
+    {
+      1, 0, 1, 1, 1, 0 // N
+    }, 
+    {
+      1, 0, 1, 0, 1, 0 // O
+    }, 
+    {
+      1, 1, 1, 1, 0, 0 // P
+    }, 
+    {
+      1, 1, 1, 1, 1, 0 // Q
+    }, 
+    {
+      1, 1, 1, 0, 1, 0 // R
+    }, 
+    {
+      0, 1, 1, 1, 1, 0 // S
+    }, 
+    {
+      0, 1, 1, 1, 1, 0 // T
+    }, 
+    {
+      1, 0, 1, 0, 0, 1 // U
+    }, 
+    {
+      1, 1, 1, 0, 0, 1 // V
+    }, 
+    {
+      0, 1, 0, 1, 1, 1 // W
+    }, 
+    {
+      1, 0, 1, 1, 0, 1 // X
+    }, 
+    {
+      1, 0, 1, 1, 1, 1 // Y
+    }, 
+    {
+      1, 0, 1, 0, 1, 1 // Z
     }
 
   };
-  char[] keys = {
-    'b', 'e', 'i', 'j', 'm', 'n', 'q', 'r', 't', 'v', 'y', 'z'//beijmnqrtvyz
-  };
+
   Hashtable ht =  new Hashtable();
-  for (int i=0; i<keys.length; i++) {
-    ht.put(keys[i], patterns[i]);
+  assert(alphaPatterns.length==26); // better be exactly # alphabets!
+  for (int i=0; i<alphaPatterns.length; i++) {
+    char k = (char) ('A'+i);
+    ht.put(k, alphaPatterns[i]);
   }
   return ht;
 }
