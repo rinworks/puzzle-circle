@@ -5,7 +5,7 @@ void setup() {
   noLoop();
   background(150);
   String[] puzzleText = {
-    "ABC ", 
+    "MINU", 
     "TES ", 
     "IN A", 
     "WEEK"
