@@ -35,7 +35,7 @@ int[] makePuzzle(Random rand, String puzzleText, String puzzleName) {
   }
   println("Order:");
   println(order);
-  int DX = 30; // how much to translate each block.
+  int DX = 20; // how much to translate each block.
   int DY = 50;
   String[] redBricks = wigglyColoredRow(partitions[0], MyColor.RED, DX);
   String[] blueBricks = wigglyColoredRow(partitions[1], MyColor.BLUE, DX);

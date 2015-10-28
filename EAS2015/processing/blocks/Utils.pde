@@ -171,18 +171,25 @@ String[] wigglyColoredRow(String text, MyColor c, int dX) {
     break;
   }
   res[0] = "color("+sColor+") { // Color " + c.toString();
+  float jiggle = 1/30.0;
   for (int i=0; i<charCount; i++) {
-    res[i+1] = "    " + emitTranslate(i*dX, 0, 0) + " " + bricks[i] + "; // " + text.substring(i, i+1);
+    float rZ = random(-4.0, 4.0);
+    float ddX = random(-dX*jiggle, dX*jiggle);
+    float ddY = random(-dX*jiggle, dX*jiggle);
+    res[i+1] = "    " + emitTranslate(i*dX+ddX, ddY, 0) + " " + emitRotate(0, 0, rZ) + " " +  bricks[i] + "; // " + text.substring(i, i+1);
     //res[i] = "WIGGLE("+i+",H_TRANSLATE("+i+", COLOR("+sColor+","+bricks[i]+")))";
   }
   res[res.length-1] = "}";
   return res;
 }
 
-String emitTranslate(int dX, int dY, int dZ) {
+String emitTranslate(float dX, float dY, float dZ) {
   return "translate(["+dX+","+dY+","+dZ+"])";
 }
 
+String emitRotate(float rX, float rY, float rZ) {
+  return "rotate(["+rX+","+rY+","+rZ+"])";
+}
 
 
 // Writes the code, presumed to be 
