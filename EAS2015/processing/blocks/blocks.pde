@@ -6,6 +6,7 @@ import java.util.*;
 
 
 void setup() {
+  size(1000,100);
   noLoop();  
   long seed = (long) random(100000);
   Random rand = new Random(seed);
@@ -20,9 +21,16 @@ void setup() {
    println("Order:");
    println(order);
    */
-  MyColor[] colors = {MyColor.RED, MyColor.GREEN, MyColor.BLUE, MyColor.YELLOW};
-  int[] order = makePuzzle(rand, "ABCDEFGHIJKLMNOPQRSTUVWXYZ", colors, "bricksPuzzle");
+  String puzzleName = "bricksPuzzle";
+  String puzzleText = "A BCDEFGHIJKLMNOPQRSTUVWXY Z";
+  int[] blankPositions = findBlankPositions(puzzleText); // insert a blank after these positions in the de-blanked puzzle text.
+  String puzzleTextNoBlanks = puzzleName.replace(" ", "");
+  MyColor[] colors = {MyColor.RED, MyColor.GREEN, MyColor.YELLOW}; // BLUE tends to be too dark, plus the pastel version looks too much like green
+  int[] order = makePuzzle(rand, puzzleTextNoBlanks, colors, puzzleName);
   //println(order);
+
+  
+  renderHintPanel(order, colors, blankPositions, puzzleName + "HintPanel");
 }
 
 
@@ -40,7 +48,7 @@ int[] makePuzzle(Random rand, String puzzleText, MyColor[] colors, String puzzle
   int DY = 50;
   String[][] rows = new String[colors.length][];
   for (int i=0; i<colors.length; i++) {
-   rows[i] = wigglyColoredRow(partitions[i], colors[i], DX);
+    rows[i] = wigglyColoredRow(partitions[i], colors[i], DX);
   }
   String[] code = layoutBlockRows(rows, DY, partitions);
   writeOpenScadFile(code, puzzleName);

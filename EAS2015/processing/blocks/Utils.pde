@@ -121,6 +121,7 @@ int[] randomPartition2(int seed, String puzzleString, String[] partitions ) {
 // represents each of the letters. One string per brick.
 String[] genBricks(String text) {
   int len = text.length();
+  text = text.toUpperCase();
   String[] bricks = new String[len];
   for (int i=0; i<len; i++) {
     char c = text.charAt(i);
@@ -346,4 +347,83 @@ Hashtable genBrailleMap() {
     ht.put(k, alphaPatterns[i]);
   }
   return ht;
+}
+
+
+void renderHintPanel(int[] order, MyColor[] colors, int[] blankPositions, String panelName) {
+  int cW = 20; // width of letter cell
+  int cH = 30; // height of letter cell
+  int gap = 5;
+  int imgW = (order.length+blankPositions.length)*(cW + gap) + gap;
+  int imgH = 2*gap + cH;
+  PGraphics pg = createGraphics(imgW, imgH);
+  pg.beginDraw();
+  pg.background(255);
+
+  int blankIndex = 0;
+  int baseIntensity = 175; // to generate pastel colors.
+  int y = gap;
+  int x = gap;
+  pg.rectMode(CORNER);
+  for (int i=0; i<order.length; i++) {
+    // Render current cell
+    int partition = order[i];
+    int c = mapColor(colors[partition], baseIntensity);
+    pg.fill(c);
+    pg.noStroke();
+    pg.rect(x, y, cW, cH);
+    pg.strokeWeight(2);
+    pg.stroke(0);
+    pg.line(x, y+cH, x+cW, y+cH);
+    x += cW+gap;
+    if (blankIndex<blankPositions.length) {
+      int nextBlank = blankPositions[blankIndex];
+      if (i==nextBlank) {
+        // Add a blank.
+        x += (cW+gap);
+        blankIndex++;
+      }
+    }
+  }
+
+  pg.endDraw();
+  pg.save(sketchPath() + "\\output\\"  + panelName + ".png");
+  image(pg, 10, 10);
+}
+
+int mapColor(MyColor c, int base) {
+  int ret=0;
+  switch(c) {
+  case RED: 
+    ret = color(255, base, base);
+    break;
+  case GREEN: 
+    ret = color(base, 255, base);
+    break;
+  case BLUE: 
+    ret = color(base, base, 255);
+    break;
+  case YELLOW: 
+    ret = color(255, 255, base/4); // we ignore base as yellow is pretty pale
+    break;
+  default:
+    assert(false);
+    break;
+  }
+  return ret;
+}
+
+// Return an array containing the offsets to where to *insert* all
+// blanks in the string, were the blanks removed.
+int[] findBlankPositions(String text) {
+
+  int nBlanks= text.length() - text.replace(" ", "").length(); // from stackOverflow
+  int positions[] = new int[nBlanks];
+  int pos=-1;
+  for (int i=0; i < positions.length; i++) {
+    pos = text.indexOf(pos+1, ' '); // ok to call indexOf(-1,string);
+    positions[i] = pos-i; // subtract the number of blanks we've seen before.
+    assert( positions[i]>=0);
+  }
+  return positions;
 }
