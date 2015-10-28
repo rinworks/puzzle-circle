@@ -1,2 +1,6 @@
 # Processing output files
-processing/*/output/*
+# I could not get it to match this pattern:
+# 	processing/**/output/
+# So for now it's all directories called output wherever
+# they occur...
+output/
