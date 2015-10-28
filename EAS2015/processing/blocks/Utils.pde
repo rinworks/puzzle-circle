@@ -3,7 +3,7 @@ import java.util.Random;
 Hashtable brailleMap = null;
 
 enum MyColor {
-  RED, GREEN, BLUE
+  RED, GREEN, BLUE, YELLOW
 };
 
   // Partitions chars in puzzleString into numPartition ordered partions,
@@ -166,6 +166,9 @@ String[] wigglyColoredRow(String text, MyColor c, int dX) {
   case BLUE: 
     sColor = "[0.25, 0.25, 1.00]";
     break;
+  case YELLOW: 
+    sColor = "[1.00, 1.00, 0.00]";
+    break;
   default:
     assert(false);
     break;
@@ -173,7 +176,7 @@ String[] wigglyColoredRow(String text, MyColor c, int dX) {
   res[0] = "color("+sColor+") { // Color " + c.toString();
   float jiggle = 1/30.0;
   for (int i=0; i<charCount; i++) {
-    float rZ = random(-4.0, 4.0);
+    float rZ = random(-5.0, 5.0);
     float ddX = random(-dX*jiggle, dX*jiggle);
     float ddY = random(-dX*jiggle, dX*jiggle);
     res[i+1] = "    " + emitTranslate(i*dX+ddX, ddY, 0) + " " + emitRotate(0, 0, rZ) + " " +  bricks[i] + "; // " + text.substring(i, i+1);

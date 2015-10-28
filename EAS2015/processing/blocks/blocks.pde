@@ -20,16 +20,17 @@ void setup() {
    println("Order:");
    println(order);
    */
-  int[] order = makePuzzle(rand, "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "bricksPuzzle");
+  MyColor[] colors = {MyColor.RED, MyColor.GREEN, MyColor.BLUE, MyColor.YELLOW};
+  int[] order = makePuzzle(rand, "ABCDEFGHIJKLMNOPQRSTUVWXYZ", colors, "bricksPuzzle");
   //println(order);
 }
 
 
 
-int[] makePuzzle(Random rand, String puzzleText, String puzzleName) {
-  String[] partitions = new String[3];
+int[] makePuzzle(Random rand, String puzzleText, MyColor[] colors, String puzzleName) {
+  String[] partitions = new String[colors.length];
   int[] order = randomPartition1(rand, puzzleText, partitions);
-  
+
   for (int i=0; i<partitions.length; i++) {
     println("row["+i+"]="+partitions[i]);
   }
@@ -37,10 +38,10 @@ int[] makePuzzle(Random rand, String puzzleText, String puzzleName) {
   println(order);
   int DX = 20; // how much to translate each block.
   int DY = 50;
-  String[] redBricks = wigglyColoredRow(partitions[0], MyColor.RED, DX);
-  String[] blueBricks = wigglyColoredRow(partitions[1], MyColor.BLUE, DX);
-  String[] greenBricks = wigglyColoredRow(partitions[2], MyColor.GREEN, DX);
-  String[][] rows = {redBricks, blueBricks, greenBricks};
+  String[][] rows = new String[colors.length][];
+  for (int i=0; i<colors.length; i++) {
+   rows[i] = wigglyColoredRow(partitions[i], colors[i], DX);
+  }
   String[] code = layoutBlockRows(rows, DY, partitions);
   writeOpenScadFile(code, puzzleName);
   return order;
