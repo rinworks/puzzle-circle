@@ -24,8 +24,8 @@ void setup() {
   String puzzleName = "bricksPuzzle";
   String puzzleText = "A BCDEFGHIJKLMNOPQRSTUVWXY Z";
   int[] blankPositions = findBlankPositions(puzzleText); // insert a blank after these positions in the de-blanked puzzle text.
-  String puzzleTextNoBlanks = puzzleName.replace(" ", "");
-  MyColor[] colors = {MyColor.RED, MyColor.GREEN, MyColor.YELLOW}; // BLUE tends to be too dark, plus the pastel version looks too much like green
+  String puzzleTextNoBlanks = puzzleText.replace(" ", "");
+  MyColor[] colors = {MyColor.RED, MyColor.GREEN, MyColor.YELLOW }; // BLUE tends to be too dark, plus the pastel version looks too much like green
   int[] order = makePuzzle(rand, puzzleTextNoBlanks, colors, puzzleName);
   //println(order);
 

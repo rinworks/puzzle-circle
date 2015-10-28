@@ -1,4 +1,4 @@
-import java.util.Random;
+import java.util.Random; //<>//
 
 Hashtable brailleMap = null;
 
@@ -368,14 +368,7 @@ void renderHintPanel(int[] order, MyColor[] colors, int[] blankPositions, String
   for (int i=0; i<order.length; i++) {
     // Render current cell
     int partition = order[i];
-    int c = mapColor(colors[partition], baseIntensity);
-    pg.fill(c);
-    pg.noStroke();
-    pg.rect(x, y, cW, cH);
-    pg.strokeWeight(2);
-    pg.stroke(0);
-    pg.line(x, y+cH, x+cW, y+cH);
-    x += cW+gap;
+
     if (blankIndex<blankPositions.length) {
       int nextBlank = blankPositions[blankIndex];
       if (i==nextBlank) {
@@ -384,6 +377,14 @@ void renderHintPanel(int[] order, MyColor[] colors, int[] blankPositions, String
         blankIndex++;
       }
     }
+    int c = mapColor(colors[partition], baseIntensity);
+    pg.fill(c);
+    pg.noStroke();
+    pg.rect(x, y, cW, cH);
+    pg.strokeWeight(2);
+    pg.stroke(0);
+    pg.line(x, y+cH, x+cW, y+cH);
+    x += cW+gap;
   }
 
   pg.endDraw();
@@ -421,7 +422,7 @@ int[] findBlankPositions(String text) {
   int positions[] = new int[nBlanks];
   int pos=-1;
   for (int i=0; i < positions.length; i++) {
-    pos = text.indexOf(pos+1, ' '); // ok to call indexOf(-1,string);
+    pos = text.indexOf(' ', pos+1); // ok to call indexOf(-1,string);
     positions[i] = pos-i; // subtract the number of blanks we've seen before.
     assert( positions[i]>=0);
   }
