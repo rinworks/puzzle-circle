@@ -20,7 +20,7 @@ void setup() {
    println("Order:");
    println(order);
    */
-  int[] order = makePuzzle(rand, "BOWMANBAY", "bricksPuzzle");
+  int[] order = makePuzzle(rand, "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "bricksPuzzle");
   //println(order);
 }
 
