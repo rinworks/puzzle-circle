@@ -77,7 +77,6 @@ int[] randomPartition1(Random rand, String puzzleString, String[] partitions ) {
       testString += partitions[id].substring(offset, offset+1);
       partitionOffsets[id]++;
     }
-    testString = "foo";
     if (!testString.equals(puzzleString)) {
       throw new RuntimeException("Fatal internal error!");
     } else {
