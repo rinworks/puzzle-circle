@@ -131,9 +131,9 @@ String[] genBricks(String text) {
 }
 
 
-// Given an array of rows of blocks,
+// Given an array of rows of bricks,
 // lays them out, one below the other.
-String[] layoutBlockRows(String[][]rows, int dY, String[] text) {
+String[] layoutBrickRows(String[][]rows, int dY, String[] text) {
   ArrayList<String> code = new ArrayList<String>();
   for (int i=0; i<rows.length; i++) {
     //code.add("V_TRANSLATE("+i + "){ // Chars: " + text[i]);

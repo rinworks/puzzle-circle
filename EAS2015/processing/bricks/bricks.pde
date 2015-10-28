@@ -44,13 +44,13 @@ int[] makePuzzle(Random rand, String puzzleText, MyColor[] colors, String puzzle
   }
   println("Order:");
   println(order);
-  int DX = 20; // how much to translate each block.
+  int DX = 20; // how much to translate each brick.
   int DY = 50;
   String[][] rows = new String[colors.length][];
   for (int i=0; i<colors.length; i++) {
     rows[i] = wigglyColoredRow(partitions[i], colors[i], DX);
   }
-  String[] code = layoutBlockRows(rows, DY, partitions);
+  String[] code = layoutBrickRows(rows, DY, partitions);
   writeOpenScadFile(code, puzzleName);
   return order;
 }
