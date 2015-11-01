@@ -9,6 +9,7 @@ void setup() {
   size(1000,100);
   noLoop();  
   long seed = (long) random(100000);
+  println("SEED: " + seed);
   Random rand = new Random(seed);
   /* Testing randomPartition
    String[] p = new String[3];
@@ -22,7 +23,7 @@ void setup() {
    println(order);
    */
   String puzzleName = "bricksPuzzle";
-  String puzzleText = "A BCDEFGHIJKLMNOPQRSTUVWXY Z";
+  String puzzleText = "declaration of independence author";
   int[] blankPositions = findBlankPositions(puzzleText); // insert a blank after these positions in the de-blanked puzzle text.
   String puzzleTextNoBlanks = puzzleText.replace(" ", "");
   MyColor[] colors = {MyColor.RED, MyColor.GREEN, MyColor.YELLOW }; // BLUE tends to be too dark, plus the pastel version looks too much like green

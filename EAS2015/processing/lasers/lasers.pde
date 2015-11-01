@@ -5,7 +5,7 @@ void setup() {
   //size(770, 1100);
   size(1300, 1300);
 
-  if (false) {
+  if (true) {
     runTest();
     return;
   }
@@ -41,8 +41,8 @@ void setup() {
 
     g = genObjects(positions, laserIds);
   } else {
-    puzzleText = "US PRESIDENT ABOLISHED SLAVERY";
-    g = generateGoodPuzzle(25, 25, puzzleText, 1000);
+    puzzleText = "HOW PLANTS USE SUNLIGHT";
+    g = generateGoodPuzzle(25, 25, puzzleText, 10000);
   }
   drawPaths(g, puzzleText);
   g.draw();
@@ -134,6 +134,22 @@ void drawPaths(Grid g, String expectedText) {
     i++;
   }
   highlightUnvisitedObjects(g);
+}
+
+// Draw the laser paths for the specific ID using appropriate styling
+// depending on whether there are discrepancies
+// with the expected puzzle text.
+void drawLaserPath(Grid g, int id, String expectedText) {
+  Cell[] laserCells = getLasers(g);
+  for (Cell c : laserCells) {
+    Laser l = laserFromCell(c);
+    if (l.id==id) {
+      //println("Found laser " + l.id + " at (" + c.i + "," + c.j + ")");
+      ArrayList<Cell> path = computeLaserPath(g, c, true);
+      drawLaserPath(g, path, expectedText);
+      break;
+    }
+  }
 }
 
 // Set exactly those cells that are touched by
@@ -316,8 +332,8 @@ void drawLaserPath(Grid g, ArrayList<Cell> path, String expectedText) {
   int laserColor = color(255, 0, 0);
   int weight = 2;
   if (!success) {
-    laserColor = color(255, 153, 0); // orange
-    weight = 10;
+    laserColor = color(255, 153, 0); // orange (comment out to have it a red path)
+    weight = 10; // reduce to 4 to be thinner so that it doesn't extend behind the mirror.
   }
 
 
@@ -980,44 +996,45 @@ LaserHelper createRandomPuzzle(int rows, int cols, String puzzleText, int iterat
 }
 
 void  runTest() {
-  String[] spec = {
-    ";/..:.;>.....:..;;/....:;", 
-    "../.../;;/..:..//...:.;..", 
-    ":.../..::.:H........:.../", 
-    ".:...:.I...:^.O:../.....<", 
-    ">.:...://...././...:./..:", 
-    ".//V.....:.:..../..:..:./", 
-    "/...:/......;.;./:..../.<", 
-    ":::.../...:../:...:./...:", 
-    ">/...:/..:...:::.:.../...", 
-    ">:...........:...../../..", 
-    "/............S../.:./.../", 
-    ".:::...::....//..:P../..:", 
-    "././.^./././/...:.....L/.", 
-    "..:..././.../.....B......", 
-    ":.......:.:.N..:.......<.", 
-    ";././../..../:..::.....:.", 
-    ".../....:...:...../:..//.", 
-    ".....//./..//:....:.../Y.", 
-    ":...../.D/....:R/..:.:T..", 
-    "....../......././:..:..//", 
-    "/:E/.: .............:...:", 
-    "..:./.././:......A.:..<..", 
-    ":................/^U..///", 
-    "/::..:............./...::", 
-    "^:/^:.<:..<^..:...../^:<^"
-  };
-  int[] ids = {8, 27, 24, 25, 4, 18, 23, 16, 19, 9, 20, 10, 22, 30, 17, 6, 28, 7, 29, 21, 13, 15, 14, 1, 11, 3, 2, 5, 12, 26};
+
+String[] spec = {
+   ">...:....../:..;/..:/...:",
+   "/.........../..:.:/.::/<.",
+   "./...:./.:/...:+.:../:.:.",
+   "../.....:....3:.../...:/.",
+   "...=...:........:.....:<.",
+   ":.../.............:/...:.",
+   ">....:../...../...././...",
+   "//./.:.../..:..:.........",
+   "././...:.........:.......",
+   "^....:..../..../.....A...",
+   "/...:......:..........:/.",
+   "....^5........:.:....:...",
+   ".:........./:.././.......",
+   "./...:.......0:...//../..",
+   "....B./........:..:...:..",
+   "....:..........:.:.......",
+   "..:...:......./:.../.....",
+   "../..//.////.2...:../....",
+   ".......:...../....:.:....",
+   "...:././....:.......:.../",
+   ".../.........../....:...:",
+   ".:....:///:..........//6/",
+   ":../..:.:...../:../1:..:.",
+   "/./.....:.../^..:../.:..:",
+   "^......:.............../^"
+};
+int[] ids = {5, 9, 6, 7, 8, 4, 3, 2, 1, 10};
 
 
 
-
-  String puzzleText = "US PRESIDENT ABOLISHED SLAVERY";
+  String puzzleText = "3A+2B=1650";
   Grid g = genObjects(spec, ids);
   background(200);
   g.draw();
   save("output\\ouput-noPaths.png");
   background(200);
+  //drawLaserPath(g, 1, "a"); // To draw a specific path for the answer doc.
   drawPaths(g, puzzleText);
   g.draw();
   save("output\\ouput-withPaths.png");
