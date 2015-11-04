@@ -350,40 +350,47 @@ Hashtable genBrailleMap() {
 }
 
 
-void renderHintPanel(int[] order, MyColor[] colors, int[] blankPositions, String panelName) {
+// puzzleText chars that match SPECIAL_CHAR_PATTERN are rendered as black text on a white backgruond.
+// Other chars are rendered simply as appropriately colored rectangles with black underline.
+void renderHintPanel(int[] order, MyColor[] colors, String puzzleText, Boolean addText, String panelName) {
   int cW = 20; // width of letter cell
   int cH = 30; // height of letter cell
   int gap = 5;
-  int imgW = (order.length+blankPositions.length)*(cW + gap) + gap;
+  int imgW = puzzleText.length()*(cW + gap) + gap;
   int imgH = 2*gap + cH;
   PGraphics pg = createGraphics(imgW, imgH);
   pg.beginDraw();
   pg.background(255);
 
-  int blankIndex = 0;
+  int brickIndex = 0;
   int baseIntensity = 175; // to generate pastel colors.
   int y = gap;
   int x = gap;
   pg.rectMode(CORNER);
-  for (int i=0; i<order.length; i++) {
-    // Render current cell
-    int partition = order[i];
-
-    if (blankIndex<blankPositions.length) {
-      int nextBlank = blankPositions[blankIndex];
-      if (i==nextBlank) {
-        // Add a blank.
-        x += (cW+gap);
-        blankIndex++;
-      }
+  pg.textSize(cH);
+  pg.textAlign(LEFT, TOP);
+  for (int i=0; i<puzzleText.length(); i++) {
+    String curChar = puzzleText.substring(i, i+1);
+    Boolean specialChar = curChar.matches(SPECIAL_CHAR_PATTERN);
+    if (!specialChar) {
+      // Render colored cell
+      int colorIndex = order[brickIndex];
+      int c = mapColor(colors[colorIndex], baseIntensity);
+      pg.fill(c);
+      pg.noStroke();
+      pg.rect(x, y, cW, cH);
+      pg.strokeWeight(2);
+      pg.stroke(0);
+      pg.line(x, y+cH, x+cW, y+cH);
+      brickIndex++;
     }
-    int c = mapColor(colors[partition], baseIntensity);
-    pg.fill(c);
-    pg.noStroke();
-    pg.rect(x, y, cW, cH);
-    pg.strokeWeight(2);
-    pg.stroke(0);
-    pg.line(x, y+cH, x+cW, y+cH);
+    if (specialChar || addText) {
+      // Render special cell
+      pg.fill(0);
+      int rise = 3; // bump up text a bit so it is better vertically centered in the panel.
+      pg.text(curChar, x, y-rise);
+    } 
+
     x += cW+gap;
   }
 

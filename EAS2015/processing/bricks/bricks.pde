@@ -4,6 +4,8 @@
 
 import java.util.*;
 
+String SPECIAL_CHAR_PATTERN  ="[^A-Z]"; // Chars that do NOT map to Braille
+
 
 void setup() {
   size(1000,100);
@@ -23,15 +25,14 @@ void setup() {
    println(order);
    */
   String puzzleName = "bricksPuzzle";
-  String puzzleText = "declaration of independence author";
-  int[] blankPositions = findBlankPositions(puzzleText); // insert a blank after these positions in the de-blanked puzzle text.
-  String puzzleTextNoBlanks = puzzleText.replace(" ", "");
+  String puzzleText = "DECLARATION OF INDEPENDENCE AUTHOR";
+  String supportedText = puzzleText.replaceAll(SPECIAL_CHAR_PATTERN, "");
   MyColor[] colors = {MyColor.RED, MyColor.GREEN, MyColor.YELLOW }; // BLUE tends to be too dark, plus the pastel version looks too much like green
-  int[] order = makePuzzle(rand, puzzleTextNoBlanks, colors, puzzleName);
+  int[] order = makePuzzle(rand, supportedText, colors, puzzleName);
   //println(order);
 
   
-  renderHintPanel(order, colors, blankPositions, puzzleName + "HintPanel");
+  renderHintPanel(order, colors, puzzleText, true, puzzleName + "HintPanel");
 }
 
 
