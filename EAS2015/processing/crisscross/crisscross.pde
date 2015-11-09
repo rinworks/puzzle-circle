@@ -14,12 +14,12 @@ void setup() {
 
 void drawPuzzle() {
 
-  
+
   // Set this to specific values to create repeatable
   // puzzles.
-  long randomSeed = floor(random(0,1000));
+  long randomSeed = floor(random(0, 1000));
   randomSeed(randomSeed);
-  
+
   // Create four locations that are roughly
   // North, East, South West.
   // We do this by creating for precice locations and then
@@ -40,7 +40,7 @@ void drawPuzzle() {
   for (int i=0; i<polygon.length; i++) {
     polygon[i] = pickRandomPointInDisk(diskCenters[i], DISK_RADIUS);
   }
-  
+
   // Actually draw the criscross pattern
   // (black on white background)
   background(255);
@@ -92,8 +92,10 @@ void drawCrisscross(Point[] points) {
   assert(points.length > 1);
   for (int i=0; i<points.length; i++) {
     int nextIndex = (i + 1) % points.length;
-    Point p1 = points[i];
+    Point p0 = points[i];
     Point p2 = points[nextIndex];
+    Point p1 = extendPoint(p0, p2, -100.0);
+    p2 = extendPoint(p0, p2, 100.0);
     float x1=p1.x;
     float x2=p2.x;
     float y1=p1.y;
@@ -102,7 +104,14 @@ void drawCrisscross(Point[] points) {
   }
 }
 
-// Draw a label indicating the degrees (or simply the supplied label) at the specified 
+// Extend point by reaching "amount" amount.
+Point extendPoint(Point p1, Point p2, float amount) {
+  float x = p1.x + amount * (p2.x-p1.x);
+  float y = p1.y + amount * (p2.y-p1.y);
+  return new Point(x, y);
+}
+
+  // Draw a label indicating the degrees (or simply the supplied label) at the specified 
 // a "quadrant" at specified point. (null == label drawn is actual degrees.)
 //  directionIndex: 
 //      0==interior
