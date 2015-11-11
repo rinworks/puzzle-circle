@@ -45,7 +45,7 @@ void drawPuzzle() {
   // Text fill color and size.
   textSize(20);
   fill(0);
-  
+
   // Actually draw the criscross pattern
   // (black on white background)
   background(255);
@@ -99,9 +99,9 @@ float computeAngle(Point p1, Point p2) {
     angle = asin(dY/hyp);
     if (dX<0) {
       angle = PI-angle; // flip across the y axis, equivalent to
-                         // rotating 90, flipping across x and rotating back 90,
-                         // which is: 90-(angle-90).
-    }   
+      // rotating 90, flipping across x and rotating back 90,
+      // which is: 90-(angle-90).
+    }
   }
   float deg =  degrees(angle);
   return (360+deg)%360.0;
@@ -124,7 +124,7 @@ void drawCrisscross(Point[] points) {
     float y1=p1.y;
     float y2=p2.y;
     line(x1, y1, x2, y2);
-    labelPoint(p0, i);
+    //labelPoint(p0, i);
   }
 }
 
@@ -148,25 +148,29 @@ Point extendPoint(Point p1, Point p2, float amount) {
 //      2==exterior
 //      3==1st CW from exterior (or 1st CCW from interior)
 // TODO
-void drawAnnotation(Point[] points, int pointIndex, int directionIndex, String label) {
+void drawAnnotation( Point[] points, int pointIndex, int directionIndex, String label) {
   Point p = points[pointIndex];
   Point pPrev = points[(points.length + pointIndex-1) % points.length];
   Point pNext  = points[(points.length + pointIndex+1) % points.length];
   float angle1 = computeAngle(p, pPrev);
   float angle2 = computeAngle(p, pNext);
-  float interiorAngle = (360+angle2-angle1)%360.0;
-  //assert(interiorAngle<179.0); // Polygon is expected to be sufficiently convex at the point. 
-  float complimentaryAngle  = 180.0-interiorAngle;
-  float angle = (directionIndex%2)==0 ? interiorAngle : complimentaryAngle;
-  pushMatrix();
-  translate(p.x, p.y);
   float avg = (angle1+angle2)/2;
   if (abs(angle1-angle2)>180.0) {
     avg  = avg-180; // flip it around because want the acute angle direction.
   }
-  rotate(radians(avg));
+  float interiorAngle = avg;
+  //assert(interiorAngle<179.0); // Polygon is expected to be sufficiently convex at the point. 
+  float complimentaryAngle  = 90.0+interiorAngle;
+  float angle = (directionIndex%2)==0 ? interiorAngle : complimentaryAngle;
+  pushMatrix();
+  translate(p.x, p.y);
+
+  rotate(radians(angle));
   //translate(10.0,0.0); // depends on point size.
-  text(""+avg, 0, 0);
+  translate(50,0);
+  rotate(-radians(angle));
+  textAlign(CENTER, CENTER);
+  text(label==null?""+round(avg):label, 0, 0);
 
   popMatrix();
   //arc(0,0);
