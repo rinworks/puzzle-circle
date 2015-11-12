@@ -8,7 +8,7 @@ class Point {
 }
 
 void setup() {
-  size(1000, 1000);
+  size(1300, 1300);
   drawPuzzle();
 }
 
@@ -35,7 +35,7 @@ void drawPuzzle() {
     new Point(width/2, Sy), // South
     new Point(Wx, height/2)  // West
   };
-  float DISK_RADIUS  = min(width, height)/10.0;
+  float DISK_RADIUS  = min(width, height)/8.0;
   Point [] polygon = new Point[diskCenters.length];
   for (int i=0; i<polygon.length; i++) {
     polygon[i] = pickRandomPointInDisk(diskCenters[i], DISK_RADIUS);
@@ -58,22 +58,26 @@ void drawPuzzle() {
   // and draw annnotation "X"
   int xIndex = floor(random(0, polygon.length));
   assert(xIndex<polygon.length);
-  drawAnnotation(polygon, xIndex, 0, "X"); // 0 == "exterior"
+  int xAngle = drawAnnotation(polygon, xIndex, 0, "X"); // 0 == "exterior"
 
   // Pick index of y, the interior angle that must be computerd.
   // x and y should not be the same point!
   int yIndex = (xIndex + 1 + floor(random(0, polygon.length-1))) % polygon.length;
   assert(yIndex!=xIndex);
-  drawAnnotation(polygon, yIndex, 2, "Y"); // 2 == "interior"
+  int yAngle = drawAnnotation(polygon, yIndex, 2, "Y"); // 2 == "interior"
 
   // Pick complementary angles for all but xIndex.
+  int compAngleSum = 0;
   for (int i=0; i<polygon.length-1; i++) {
     int cIndex = (xIndex+1+i) % polygon.length;
     assert(cIndex!=xIndex);
     int direction = (random(1.0)<0.5)? 1 : 3; // specify one of two possible complementary directions (0== interior, 2==exterior).
-    drawAnnotation(polygon, cIndex, direction, null); // null == draw label as actual degrees.
+    compAngleSum +=drawAnnotation(polygon, cIndex, direction, null); // null == draw label as actual degrees.
     // drawAnnotation(Point[] points, int pointIndex, int directionIndex, String label); (null == label is actual degrees.)
   }
+  save("output\\output.png");
+  int xEst = compAngleSum-180;
+  println("seed=" + randomSeed + " X=" + xAngle  + " Y=" + yAngle + " xEst" + xEst +  " X+Y=" + (xAngle+yAngle) + "   ANSWER(XEst+Y)=" + (xEst+yAngle));
 }
 
 // Return a random point within the specified disk
@@ -148,20 +152,19 @@ Point extendPoint(Point p1, Point p2, float amount) {
 //      2==interior
 //      3==1st CW from exterior (or 1st CCW from interior)
 // RETURN: the angle of the specified "quadrant"
-float drawAnnotation( Point[] points, int pointIndex, int directionIndex, String label) {
+int drawAnnotation( Point[] points, int pointIndex, int directionIndex, String label) {
   Point p = points[pointIndex];
   Point pPrev = points[(points.length + pointIndex-1) % points.length];
   Point pNext  = points[(points.length + pointIndex+1) % points.length];
-  float angle1 = computeAngle(p, pPrev);
+  float angle1 = computeAngle(p, pPrev); //<>//
   float angle2 = computeAngle(p, pNext);
   float avg = (angle1+angle2)/2;
   float diff = abs(angle1-angle2);
   if (diff>180.0) {
-    diff -= 180; // compute the acute-angle difference.
+    diff = 360-diff; // compute the acute-angle difference.
     avg  -=  180; // flip it around because want the acute angle direction.
   }
-  float interiorAngle = diff;
-  assert(interiorAngle<179.0); // Polygon is expected to be sufficiently convex at the point. 
+  assert(diff<179.0); // Polygon is expected to be sufficiently convex at the point. 
   float midAngle=0.0;
   switch(directionIndex) {
     case 0: midAngle = avg+180; // exterior angle. diff stays the same.
@@ -185,9 +188,10 @@ float drawAnnotation( Point[] points, int pointIndex, int directionIndex, String
   translate(40,0);
   rotate(-radians(midAngle));
   textAlign(CENTER, CENTER);
-  text((label==null?""+round(diff):label)+"°", 0, 0);
+  int iDiff = round(diff); // we just want to display and return integer values.
+  text((label==null?""+iDiff:label)+"°", 0, 0); // Watch out for that little degree unicode character!
 
   popMatrix();
   //arc(0,0);
-  return diff;
+  return iDiff;
 }
