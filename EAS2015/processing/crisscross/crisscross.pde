@@ -58,13 +58,13 @@ void drawPuzzle() {
   // and draw annnotation "X"
   int xIndex = floor(random(0, polygon.length));
   assert(xIndex<polygon.length);
-  drawAnnotation(polygon, xIndex, 0, "X"); // 0 == "interior"
+  drawAnnotation(polygon, xIndex, 0, "X"); // 0 == "exterior"
 
   // Pick index of y, the interior angle that must be computerd.
   // x and y should not be the same point!
   int yIndex = (xIndex + 1 + floor(random(0, polygon.length-1))) % polygon.length;
   assert(yIndex!=xIndex);
-  drawAnnotation(polygon, yIndex, 2, "Y"); // 2 == "exterior"
+  drawAnnotation(polygon, yIndex, 2, "Y"); // 2 == "interior"
 
   // Pick complementary angles for all but xIndex.
   for (int i=0; i<polygon.length-1; i++) {
@@ -143,35 +143,51 @@ Point extendPoint(Point p1, Point p2, float amount) {
 // Draw a label indicating the degrees (or simply the supplied label) at the specified 
 // a "quadrant" at specified point. (null == label drawn is actual degrees.)
 //  directionIndex: 
-//      0==interior
+//      0==exterior
 //      1== 1st CW from interior
-//      2==exterior
+//      2==interior
 //      3==1st CW from exterior (or 1st CCW from interior)
-// TODO
-void drawAnnotation( Point[] points, int pointIndex, int directionIndex, String label) {
+// RETURN: the angle of the specified "quadrant"
+float drawAnnotation( Point[] points, int pointIndex, int directionIndex, String label) {
   Point p = points[pointIndex];
   Point pPrev = points[(points.length + pointIndex-1) % points.length];
   Point pNext  = points[(points.length + pointIndex+1) % points.length];
   float angle1 = computeAngle(p, pPrev);
   float angle2 = computeAngle(p, pNext);
   float avg = (angle1+angle2)/2;
-  if (abs(angle1-angle2)>180.0) {
-    avg  = avg-180; // flip it around because want the acute angle direction.
+  float diff = abs(angle1-angle2);
+  if (diff>180.0) {
+    diff -= 180; // compute the acute-angle difference.
+    avg  -=  180; // flip it around because want the acute angle direction.
   }
-  float interiorAngle = avg;
-  //assert(interiorAngle<179.0); // Polygon is expected to be sufficiently convex at the point. 
-  float complimentaryAngle  = 90.0+interiorAngle;
-  float angle = (directionIndex%2)==0 ? interiorAngle : complimentaryAngle;
+  float interiorAngle = diff;
+  assert(interiorAngle<179.0); // Polygon is expected to be sufficiently convex at the point. 
+  float midAngle=0.0;
+  switch(directionIndex) {
+    case 0: midAngle = avg+180; // exterior angle. diff stays the same.
+    break;
+    case 1: midAngle = 90+avg;
+            diff  =180-diff; // complementary angle
+    break;
+    case 2: midAngle = avg;
+    break;
+    case 3: midAngle = 270+avg;
+            diff = 180-diff; // complimentary angle
+    break;
+    default:
+    assert(false);
+  }
   pushMatrix();
   translate(p.x, p.y);
 
-  rotate(radians(angle));
+  rotate(radians(midAngle));
   //translate(10.0,0.0); // depends on point size.
-  translate(50,0);
-  rotate(-radians(angle));
+  translate(40,0);
+  rotate(-radians(midAngle));
   textAlign(CENTER, CENTER);
-  text(label==null?""+round(avg):label, 0, 0);
+  text((label==null?""+round(diff):label)+"°", 0, 0);
 
   popMatrix();
   //arc(0,0);
+  return diff;
 }
