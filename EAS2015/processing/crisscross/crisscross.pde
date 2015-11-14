@@ -35,7 +35,7 @@ void drawPuzzle() {
     new Point(width/2, Sy), // South
     new Point(Wx, height/2)  // West
   };
-  float DISK_RADIUS  = min(width, height)/8.0;
+  float DISK_RADIUS  = min(width, height)/6.0;
   Point [] polygon = new Point[diskCenters.length];
   for (int i=0; i<polygon.length; i++) {
     polygon[i] = pickRandomPointInDisk(diskCenters[i], DISK_RADIUS);
@@ -185,11 +185,12 @@ int drawAnnotation( Point[] points, int pointIndex, int directionIndex, String l
 
   rotate(radians(midAngle));
   //translate(10.0,0.0); // depends on point size.
-  translate(40,0);
+  float transDist = (diff<70.0)? 50: 40; // need a little more space if it's narrow.
+  translate(transDist,0);
   rotate(-radians(midAngle));
   textAlign(CENTER, CENTER);
   int iDiff = round(diff); // we just want to display and return integer values.
-  text((label==null?""+iDiff:label)+"°", 0, 0); // Watch out for that little degree unicode character!
+  text((label==null?""+iDiff:label)+"°", 0, -3); // Watch out for that little degree unicode character!
 
   popMatrix();
   //arc(0,0);
