@@ -2,56 +2,44 @@ import java.util.Comparator; //<>// //<>// //<>// //<>// //<>//
 import java.util.Arrays;
 
 void setup() {
-  //size(770, 1100);
-  size(1300, 1300);
-
-  if (true) {
-    runTest();
-    return;
-  }
-  // ;==v and :==/
-  String[] positions = {
-    ".............", 
-    ".../.....:...", 
-    ".....>...::..", 
-    ".....;>..:::.", 
-    "..>/E:.. ....", 
-    "./.:......:I.", 
-    "..>./...J....", 
-    "...T.../...<.", 
-    "...P...OD....", 
-    "...:....:..<.", 
-    "...U../X^....", 
-    ".^//.::..//<.", 
-    ".>./.N..:^...", 
-    "..:.:..<:./..", 
-    "....^.^......", 
-    "............."
-  };
+  //size(1300, 1300);
+  size(800, 800);
 
   // Grid coordinates: (i, j) are like rows of an array/matrix. So i is vertical,
   // with increasing i going downwards.
   // Angles: normal interpration (0 == going right; 90== going up, etc.)
-  boolean synthPuzzles = true;
-  String puzzleText = "JUNE EXPEDITION";
-  Grid g;
 
-  if (!synthPuzzles) {
-    int[] laserIds = {11, 5, 7, 13, 6, 14, 10, 8, 12, 15, 3, 9, 1, 2, 4};
 
-    g = genObjects(positions, laserIds);
-  } else {
-    puzzleText = "HOW PLANTS USE SUNLIGHT";
-    g = generateGoodPuzzle(25, 25, puzzleText, 10000);
+  Boolean runTest = false;
+  if (runTest) {
+    runTest();
+  } else { 
+    String puzzleText = "1";
+    Boolean bestOfMany = false;
+    Grid g;
+    LaserHelper lh;
+    int rows = 2;
+    int cols = 2;
+    if (bestOfMany) {
+      // This code picks the "best" puzzle out of 1000 random puzzles
+      g = generateGoodPuzzle(rows, cols, puzzleText, 1000);  
+      lh = new LaserHelper(g);
+    } else {
+      // Create a random puzzle with 25 rows and 25 columns, 
+      // and 100 iterations (attempt to grow the laser paths
+      // up to a 100 times).
+      lh = createRandomPuzzle(rows, cols, puzzleText, 100);
+      g = lh.g;
+    }
+
+
+    drawPaths(g, puzzleText);
+    g.draw();
+    printGrid(g, null);
+    PuzzleStats pStats = lh.computePuzzleStats();
+    println("Puzzle Stats:");
+    println(pStats);
   }
-  drawPaths(g, puzzleText);
-  g.draw();
-  //println(PFont.list());
-  printGrid(g, null);
-  LaserHelper lh = new LaserHelper(g);
-  PuzzleStats pStats = lh.computePuzzleStats();
-  println("Puzzle Stats:");
-  println(pStats);
 }
 
 GraphicsParams gParams = new GraphicsParams();
@@ -74,6 +62,8 @@ Grid genObjects(String[] spec, int[] laserIds) {
   int GRID_HEIGHT = height;
   int GRID_PADDING = 10;
   Grid g = new Grid(rows, cols, GRID_WIDTH, GRID_HEIGHT, GRID_PADDING);
+  String laserChars = ">}^{<[;]";
+  String mirrorChars = "/|:-";
   for (int i=0; i<rows; i++) {
     String row = spec[i];
     for (int j=0; j<cols; j++) {
@@ -82,27 +72,38 @@ Grid genObjects(String[] spec, int[] laserIds) {
       char c = row.charAt(j);
       if (c=='.') {
         d = new Dot(gParams, gParams);
-      } else if (c=='<'||c=='>'||c=='^'||c==';') {
+        //} else if (c=='<'||c=='>'||c=='^'||c==';') {
+      } else if (laserChars.indexOf(c)!=-1) {
         d = new Laser(laserIds[laserCount], gLaserParams, gLaserParams);
         //println("Laser " + laserIds[laserCount] + " at ["+i+","+j+"]");
+        int k = laserChars.indexOf(c);
+        orientation = 45*k;
+        if (orientation>180) {
+          orientation = orientation-360; // convert 270 to -90, etc.
+        }
         laserCount++;
-      } else if  (c=='|'||c=='-'||c=='/'||c==':') {
+        //} else if  (c=='|'||c=='-'||c=='/'||c==':') {
+      } else if  (mirrorChars.indexOf(c)!=-1) {
         d = new TwowayMirror(gParams, gParams);
+        int k = mirrorChars.indexOf(c);
+        orientation = 45*k-45; // Sequence: -45, 0, 45, 90
       } else {
         d = new TextBox(""+c, gParams, gParams);
       }
-
+      /*
       if (c=='<') {
-        orientation = 180; // left facing
-      } else if (c=='^'||c=='-') {
-        orientation = 90; // upwards facing
-      } else if (c==';') {
-        orientation = -90; // downwards facing
-      } else if (c=='/') {
-        orientation = -45;
-      } else if (c==':') { // equivalent to backslash
-        orientation = 45;
-      }
+       orientation = 180; // left facing
+       } else if (c=='^'||c=='-') {
+       orientation = 90; // upwards facing
+       } else if (c==';') {
+       orientation = -90; // downwards facing
+       } else if (c=='/') {
+       orientation = -45;
+       } else if (c==':') { // equivalent to backslash
+       orientation = 45;
+       }
+       */
+
       if (d!=null) {
         Cell cl = g.cells[i][j];
         cl.dObject = d;
@@ -382,12 +383,20 @@ String[] specFromGrid(Grid g) {
       if (d instanceof Dot) {
         row += ".";
       } else if (d instanceof Laser) {
-        char[] laserChars = {'>', '^', '<', ';'}; // right, up, left, down
-        int k = ((orientation+360)/90)%4; // 0, 1, 2, 3
-        assert(k>=0 && k<4);
+        //char[] laserChars = {'>', '^', '<', ';'}; // right, up, left, down
+        //int k = ((orientation+360)/90)%4; // 0, 1, 2, 3
+        //int k = ((orientation+360)/90)%4; // 0, 1, 2, 3
+        //assert(k>=0 && k<4);
+        char[] laserChars = {'>', '}', '^', '{', '<', '[', ';', ']'}; // right>  NE}  up^  NW{  left<  SW[  down;  SE]
+        int k = ((orientation+360)/45)%8; // 0, 1, 2, 3, 4, 5, 6, 7
+        assert(k>=0 && k<8);
         row += laserChars[k];
       } else if (d instanceof TwowayMirror) {
-        if (orientation == 45) {
+        if (orientation == 0) {
+          row += "|";
+        } else if (orientation == 90) {
+          row += "-";
+        } else if (orientation == 45) {
           row += ":";
         } else {
           assert(orientation == -45);
@@ -997,46 +1006,28 @@ LaserHelper createRandomPuzzle(int rows, int cols, String puzzleText, int iterat
 
 void  runTest() {
 
-String[] spec = {
-   ">...:....../:..;/..:/...:",
-   "/.........../..:.:/.::/<.",
-   "./...:./.:/...:+.:../:.:.",
-   "../.....:....3:.../...:/.",
-   "...=...:........:.....:<.",
-   ":.../.............:/...:.",
-   ">....:../...../...././...",
-   "//./.:.../..:..:.........",
-   "././...:.........:.......",
-   "^....:..../..../.....A...",
-   "/...:......:..........:/.",
-   "....^5........:.:....:...",
-   ".:........./:.././.......",
-   "./...:.......0:...//../..",
-   "....B./........:..:...:..",
-   "....:..........:.:.......",
-   "..:...:......./:.../.....",
-   "../..//.////.2...:../....",
-   ".......:...../....:.:....",
-   "...:././....:.......:.../",
-   ".../.........../....:...:",
-   ".:....:///:..........//6/",
-   ":../..:.:...../:../1:..:.",
-   "/./.....:.../^..:../.:..:",
-   "^......:.............../^"
-};
-int[] ids = {5, 9, 6, 7, 8, 4, 3, 2, 1, 10};
+  String[] spec = {
+    "];[", 
+    ">.<", 
+    "}^{", 
+    "/.:", 
+    "...", 
+    "|.-"
+  };
+  int[] ids = {0, 1, 2, 3, 4, 5, 6, 7};
 
 
 
-  String puzzleText = "3A+2B=1650";
+  String puzzleText = "1";
   Grid g = genObjects(spec, ids);
   background(200);
   g.draw();
   save("output\\ouput-noPaths.png");
   background(200);
   //drawLaserPath(g, 1, "a"); // To draw a specific path for the answer doc.
-  drawPaths(g, puzzleText);
+  //drawPaths(g, puzzleText);
   g.draw();
   save("output\\ouput-withPaths.png");
-  printGrid(g, sketchPath("output\\output-spec.txt"));
+  //printGrid(g, sketchPath("output\\output-spec.txt"));
+  printGrid(g, null);
 }
