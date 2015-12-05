@@ -39,13 +39,60 @@ class PuzzleStats {
 }
 
 class LaserHelper {
-  int DIRECTION_LIMIT = 4; // 1 more than max allowed value.
+  int[] DIRECTIONS = {0, 1, 2, 3};
+  int[] REVERSE_DIRECTIONS = {2, 3, 0, 1};
+  int DIRECTION_LIMIT = DIRECTIONS.length; // 1 more than max allowed value
+  int RIGHT_ANGLE_INCREMENT = 1; // how much to increment a direction to get one that is 90 degrees rotratded.
+  int[] ANGLES = {0, 90, 180, 270}; // CW from 0 in 45 degree increments, within range of +/180.
+  int[][] NEXT_CELL = { // By how much to increment i(row) and j(col) to get to the next cell
+    {0,1}, // Going E
+    {-1,0}, // Going N
+    {0,-1}, // Going W
+    {1,0}   // Going S
+  };
+  int[] CW90_MIRROR_ANGLE = {-45, 45, -45, 45}; // mirror angle to turn each incoming dir clockwise (CW) by 90 degrees.
+  int[] CCW90_MIRROR_ANGLE = {45, -45, 45, -45}; // mirror angle to turn each incoming dir COUNTER-clockwise (CCW) by 90 degrees.
+
+
   public Grid g;
   public Boolean hasError=false; // If there was an internal error while computing puzzle patterns.
   public  LaserHelper(Grid g) {
     this.g = g;
   }
 
+  // Add a laser that targets the specified text cell. Return true if the laser was
+  // successfully added.
+  // TODO: Add additional directions
+  Boolean addLaserToTarget(Cell textCell, int laserId) { //<>//
+    ArrayList<Cell> candidateCells = new ArrayList<Cell>(); //<>//
+    ArrayList<Integer> candidateOrientations = new ArrayList<Integer>(); //<>//
+
+    for (int direction = 0; direction < DIRECTION_LIMIT; direction++) { //<>//
+      int[]increments = NEXT_CELL[direction]; //<>//
+      int i = textCell.i + increments[0]; //<>//
+      int j = textCell.j + increments[1]; //<>//
+      Cell c = getCellIfAvailable(g, i, j);
+      if (c!=null) {
+        candidateCells.add(c);
+        int orientation = ANGLES[REVERSE_DIRECTIONS[direction]];
+        //println("ADD LASER: dir="+direction+"; angle="+orientation);
+        candidateOrientations.add(orientation); // pointing in the opposite direction.
+      }
+    }
+
+
+    // Now add a laser in a randome orientation among the available
+    // orientations.
+    if (candidateCells.size()>0) {
+      int chosenIndex = (int) random(0, candidateCells.size());
+      Cell chosenCell = candidateCells.get(chosenIndex);
+      chosenCell.dObject = new Laser(laserId, gLaserParams, gLaserParams);
+      chosenCell.orientation = candidateOrientations.get(chosenIndex);
+      return true;
+    } else {
+      return false;
+    }
+  }
   // Return a count of dot-cells that are hit if a hypothetical beam is traced from the start cell
   // heading in the specified direction. The current cell does not need to be a laser.
   // All hard (non-dot) cells visited are added (NOT including the first cell) to hardObjects. All
@@ -80,35 +127,36 @@ class LaserHelper {
     return dotCounts[0];
   }
 
+  /*
   int tracePathRecursiveObsolete(Cell startCell, int direction, ArrayList<Cell> hardObjects, ArrayList<TraceCellInfo>dotInfo, Boolean mark) {
-    int[] dotCounts = {0};
-    assert(direction>=0 && direction< DIRECTION_LIMIT);
-    if (mark) {
-      startCell.visited = true;
-    }
-    //println("Entering growLaserPath. #elements: " + path.size());
-    Cell cNext = findNextTarget(g, startCell, startCell, direction, dotInfo, dotCounts, mark);
-    if (cNext!= null) {
-      assert(cNext.dObject!=null); // It CAN be a dot object if it was the last object before exiting the grid!
-      if (hardObjects!=null) {
-        hardObjects.add(cNext);
-      }
-      if (cNext.dObject instanceof TwowayMirror) {
-        // we hit a mirror, so we can keep going...
-        //println("RECURSIVE CALL to growLaserPath");
-        int newDirection = getNextBeamDirection(direction, cNext.orientation);
-        dotCounts[0]+= tracePath(cNext, newDirection, hardObjects, dotInfo, mark);
-      }
-    }
-    return dotCounts[0];
-  }
+   int[] dotCounts = {0};
+   assert(direction>=0 && direction< DIRECTION_LIMIT);
+   if (mark) {
+   startCell.visited = true;
+   }
+   //println("Entering growLaserPath. #elements: " + path.size());
+   Cell cNext = findNextTarget(g, startCell, startCell, direction, dotInfo, dotCounts, mark);
+   if (cNext!= null) {
+   assert(cNext.dObject!=null); // It CAN be a dot object if it was the last object before exiting the grid!
+   if (hardObjects!=null) {
+   hardObjects.add(cNext);
+   }
+   if (cNext.dObject instanceof TwowayMirror) {
+   // we hit a mirror, so we can keep going...
+   //println("RECURSIVE CALL to growLaserPath");
+   int newDirection = getNextBeamDirection(direction, cNext.orientation);
+   dotCounts[0]+= tracePath(cNext, newDirection, hardObjects, dotInfo, mark);
+   }
+   }
+   return dotCounts[0];
+   }
+   */
 
   void addToPathComplexity() {
     markAllPaths(g);
     Cell[] lasers  = pickRandomLaserOrder(g);
     for (Cell c : lasers) {
       int laserDirection = cardinalDirection(c.orientation);
-      //int[] backtraceDirections = new int[3];
       int maxDots = 0;
       int maxDotsDir = -1;
       float mirrorOrientation = 0;
@@ -116,7 +164,7 @@ class LaserHelper {
       Laser laser = (Laser) c.dObject;
       //println("addComplexity: laser " + laser.id + " at location " + locationToString(c) + " direction: " + laserDirection);
       for (int i=0; i<3; i++) {
-        int backtraceDir = (laserDirection+i+1)%4; // +1, +2 or +3 %4.
+        int backtraceDir = (laserDirection+i+RIGHT_ANGLE_INCREMENT)%DIRECTION_LIMIT; // (if just 4 cardinal directions: +1, +2 or +3 %4. If 8: +2, +4, +6
         int nDots = tracePath(c, backtraceDir, null, null, false);
         //println("  dir:" +  backtraceDir + "nDots: " + nDots);
         if (nDots > maxDots) {
@@ -131,7 +179,8 @@ class LaserHelper {
         continue; // **************** continue to next laser
       }
       assert (maxDots>=1);
-      int incomingDir = (maxDotsDir + 2) % 4; // the direction of the beam coming *towards* cell c
+      //OBSOLETE int incomingDir = (maxDotsDir + 2) % 4; // the direction of the beam coming *towards* cell c
+      int incomingDir = REVERSE_DIRECTIONS[maxDotsDir];
       if (incomingDir==laserDirection) {
         // We will not insert a mirror - rather the laser will keep its direction
         // but move backwards
@@ -167,8 +216,9 @@ class LaserHelper {
 
   // Compute the orientation of a mirror that will bend a ray headed towards
   // incomingDir into one headed towards outgoingDir
-  float computeMirrorOrientation(int incomingDir, int outgoingDir) {
-    int change = (4+outgoingDir-incomingDir) %4;
+  float computeMirrorOrientation_OBSOLETE(int incomingDir, int outgoingDir) {
+    int change = (DIRECTION_LIMIT+outgoingDir-incomingDir) %DIRECTION_LIMIT;
+    change /=  RIGHT_ANGLE_INCREMENT;
     assert(change==1 || change==3);
     int orientation = -45;
     if (change == 3) {
@@ -176,7 +226,7 @@ class LaserHelper {
     }
     // we're not quite done yet - this is *relative* to incoming direction.
     // let's make it absolute...
-    int[] rotationAmount = {0, 90, 180, 270};
+    int[] rotationAmount = ANGLES ; // OBSOLETE {0, 90, 180, 270};
     orientation = (orientation + rotationAmount[incomingDir]) % 360;
     // Now we normalize the rotation taking into account that this is a two-way mirror.
     if (orientation == (45+180)) {
@@ -186,6 +236,18 @@ class LaserHelper {
     } else if (orientation == (360-45)) {
       orientation = -45;
     }
+    return orientation;
+  }
+
+  // Compute the orientation of a mirror that will bend a ray headed towards
+  // incomingDir into one headed towards outgoingDir
+  float computeMirrorOrientation(int incomingDir, int outgoingDir) {
+    int change = (DIRECTION_LIMIT+outgoingDir-incomingDir) %DIRECTION_LIMIT;
+    change /=  RIGHT_ANGLE_INCREMENT;
+    assert(change==1 || change==3); // we should only be called when incoming is at rightangles to outgoing...
+    // This is *relative* to incoming direction.
+    // let's make it absolute...
+    float orientation = (change ==1 ) ? CW90_MIRROR_ANGLE[incomingDir] : CCW90_MIRROR_ANGLE[incomingDir];
     return orientation;
   }
 
@@ -262,7 +324,33 @@ class LaserHelper {
   }
 
   // returns true iff the two dots are adjacent in a straight path
+  // with info1 preceeding info2.
   Boolean adjacentDot(TraceCellInfo info1, TraceCellInfo info2) {
+    if (info1==null || info2==null) {
+      return false;
+    }
+    Cell c1 = info1.c;
+    Cell c2 = info2.c;
+
+    int dir1 = info1.direction;
+    int dir2 = info2.direction;
+
+    if (dir1!=dir2) {
+      return false;
+    }
+
+    // same directions...
+    // Now let's check that info2 follows info1
+    int[] increments = NEXT_CELL[dir1];
+    if (c2.i!=c1.i+increments[0] && c2.j!=c1.j+increments[1]) {
+      return false;
+    }
+
+    return true;
+  }
+
+  // returns true iff the two dots are adjacent in a straight path
+  Boolean adjacentDot_OBSOLETE(TraceCellInfo info1, TraceCellInfo info2) {
     if (info1==null || info2==null) {
       return false;
     }
@@ -284,6 +372,8 @@ class LaserHelper {
     }
     return false;
   }
+
+
   // Move laser to dotCellInfo. Returns the new cell containing
   // the laser (i.e., dotCellInf)
   Cell moveLaser(Cell laserCell, TraceCellInfo dotCellInfo) {
@@ -296,7 +386,8 @@ class LaserHelper {
 
     // Move laser to new location
     newC.dObject = laserCell.dObject;
-    int newLaserDirection = (dotCellInfo.direction+2)%4; // opposite direction of trace.
+    // OBSOLETE int newLaserDirection = (dotCellInfo.direction+2)%4; // opposite direction of trace.
+    int newLaserDirection  = REVERSE_DIRECTIONS[dotCellInfo.direction]; // opposite direction of trace
     newC.orientation = orientationFromCardinalDirection(newLaserDirection);
 
     // Old laser location becomes dot.

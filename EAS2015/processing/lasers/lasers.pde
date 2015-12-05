@@ -14,12 +14,12 @@ void setup() {
   if (runTest) {
     runTest();
   } else { 
-    String puzzleText = "1";
+    String puzzleText = "112233";
     Boolean bestOfMany = false;
     Grid g;
     LaserHelper lh;
-    int rows = 2;
-    int cols = 2;
+    int rows = 25;
+    int cols = 25;
     if (bestOfMany) {
       // This code picks the "best" puzzle out of 1000 random puzzles
       g = generateGoodPuzzle(rows, cols, puzzleText, 1000);  
@@ -220,6 +220,7 @@ String shortClassName(String className) {
 // We use dotCount just to pass-by-reference the count of dots back. A bit of a hack.
 // NOTE: cStart is the start of the path - it is to detect cycles in the path, which
 // can happen.
+// TODO: Add directions...
 Cell findNextTarget(Grid g, Cell cStart, Cell c, int direction, ArrayList<TraceCellInfo>dotInfoList, int[]dotCount, Boolean mark) {
   assert(direction>=0 && direction<4);
   if (dotCount!=null) {
@@ -567,8 +568,8 @@ int computeTextBoxViabilityScore(Grid g, Cell c) {
 }
 
 Cell placeNewTextBox(Grid g, String s) {
-  // We just find the first available one (for now)
-  // TODO: pick a random one from the top two scorers.
+  // Place the text box by computing viable locations and then picking
+  // randomly among the top scorers.
   ArrayList<Cell> candidateCells = new ArrayList<Cell>();
   ArrayList<Integer> candidateScores = new ArrayList<Integer>();
   for (int i=0; i<g.rows; i++) {
@@ -593,10 +594,9 @@ Cell placeNewTextBox(Grid g, String s) {
 
 
 // Add a laser that targets the specified text cell. Return true if the laser was
-// successfully added. The location is assumed to be a viable location
-// to add a laser (there is a spot for the laser)
-// TODO: pick a spot randomly among available spots.
-Boolean addLaserToTarget(Grid g, Cell textCell, int laserId) {
+// successfully added.
+// TODO: Add additional directions
+Boolean addLaserToTarget_OBSOLETE(Grid g, Cell textCell, int laserId) {
   int i, j;
   Cell c;
   ArrayList<Cell> candidateCells = new ArrayList<Cell>();
@@ -638,6 +638,8 @@ Boolean addLaserToTarget(Grid g, Cell textCell, int laserId) {
     candidateOrientations.add(180); // pointing right.
   }
 
+  // Now add a laser in a randome orientation among the available
+  // orientations.
   if (candidateCells.size()>0) {
     int chosenIndex = (int) random(0, candidateCells.size());
     Cell chosenCell = candidateCells.get(chosenIndex);
@@ -661,7 +663,8 @@ Cell getCellIfAvailable(Grid g, int i, int j) {
 // is *appended* to the existing answer text.
 // Laser Ids start with one more than the max Id
 // already in the system, (or 1 if none exists)
-Boolean addToGrid(Grid g, String text) {
+Boolean addToGrid(LaserHelper lh, String text) {
+  Grid g = lh.g;
   int[] existingIds = getLaserIds(g);
   int prevMax = 0;
   for (int id : existingIds) {
@@ -676,7 +679,7 @@ Boolean addToGrid(Grid g, String text) {
     Cell textCell = newOrExistingTextBox(g, s);
     Boolean ok = false;
     if (textCell!=null) {
-      ok = addLaserToTarget(g, textCell, startId + i);
+      ok = lh.addLaserToTarget(textCell, startId + i); //<>//
     }
     if (!ok) {
       assert(false);
@@ -978,7 +981,7 @@ float secondaryCompositeScore(PuzzleStats ps, float mirrorCountAvg, float ssDAvg
 LaserHelper createRandomPuzzle(int rows, int cols, String puzzleText, int iterations) {
   Grid g = createDotGrid(rows, cols); 
   LaserHelper lh = new LaserHelper(g);
-  addToGrid(g, puzzleText);
+  addToGrid(lh, puzzleText);
   int prevDotCount=-1;
   int noProgressCount=0;
   int MAX_NO_PROGRESS_COUNT = 10;
