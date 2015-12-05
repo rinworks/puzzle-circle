@@ -220,8 +220,7 @@ String shortClassName(String className) {
 // We use dotCount just to pass-by-reference the count of dots back. A bit of a hack.
 // NOTE: cStart is the start of the path - it is to detect cycles in the path, which
 // can happen.
-// TODO: Add directions...
-Cell findNextTarget(Grid g, Cell cStart, Cell c, int direction, ArrayList<TraceCellInfo>dotInfoList, int[]dotCount, Boolean mark) {
+Cell findNextTarget_OBSOLETE(Grid g, Cell cStart, Cell c, int direction, ArrayList<TraceCellInfo>dotInfoList, int[]dotCount, Boolean mark) {
   assert(direction>=0 && direction<4);
   if (dotCount!=null) {
     assert( dotCount.length==1);
@@ -595,7 +594,6 @@ Cell placeNewTextBox(Grid g, String s) {
 
 // Add a laser that targets the specified text cell. Return true if the laser was
 // successfully added.
-// TODO: Add additional directions
 Boolean addLaserToTarget_OBSOLETE(Grid g, Cell textCell, int laserId) {
   int i, j;
   Cell c;

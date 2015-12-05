@@ -110,7 +110,7 @@ class LaserHelper {
         cNext.visited = true;
       }
       //println("Entering growLaserPath. #elements: " + path.size());
-      cNext = findNextTarget(g, startCell, cNext, direction, dotInfo, dotCounts, mark);
+      cNext = findNextTarget(startCell, cNext, direction, dotInfo, dotCounts, mark);
       if (cNext!= null) {
         assert(cNext.dObject!=null); // It CAN be a dot object if it was the last object before exiting the grid!
         if (hardObjects!=null) {
@@ -250,6 +250,53 @@ class LaserHelper {
     float orientation = (change ==1 ) ? CW90_MIRROR_ANGLE[incomingDir] : CCW90_MIRROR_ANGLE[incomingDir];
     return orientation;
   }
+  
+  // Find the next target the laser would hit, starting from Cell c and going in direction specified by
+// orientation (in degrees). Return a boundary Dot cell if you hit a boundary. Return null if
+// Cell c is already at the boundary and the laser is leaving the boundary.
+// We use dotCount just to pass-by-reference the count of dots back. A bit of a hack.
+// NOTE: cStart is the start of the path - it is to detect cycles in the path, which
+// can happen.
+Cell findNextTarget(Cell cStart, Cell c, int direction, ArrayList<TraceCellInfo>dotInfoList, int[]dotCount, Boolean mark) {
+  assert(direction>=0 && direction<4);
+  if (dotCount!=null) {
+    assert( dotCount.length==1);
+    dotCount[0]=0; // int count of dots.
+  }
+  int di = NEXT_CELL[direction][0];
+  int dj = NEXT_CELL[direction][1];
+  Cell cNext = null;
+  int i=c.i + di;
+  int j=c.j + dj;
+  while (i>=0 && j>=0 && i<g.rows && j<g.cols) {
+    cNext = g.cells[i][j];
+    if (cNext == cStart) {
+      // Oops, we've encountered a cycle!
+      //println("CYCLE DETECTED AT " + locationToString(cNext)); // *************** EARLY RETURN **************
+      dotCount[0] = 0;
+      return null;
+    }
+    Boolean visited = cNext.visited;
+    if (!visited && mark) {
+      cNext.visited=true;
+    }
+    // If it's null or a Dot, we keep going...
+    if (cNext.dObject instanceof Dot) {
+      if (dotInfoList!=null) {
+        dotInfoList.add(new TraceCellInfo(cNext, direction));
+      }
+      if (!visited &&/* BOO !visited && */dotCount!=null) {
+        dotCount[0]+=1;
+      }
+    } else {
+      //println("Hit object at " + locationToString(cNext));
+      break;
+    }
+    i += di;
+    j += dj;
+  }
+  return cNext;
+}
 
   // Sets the viability score for all cells in the list - indicating
   // how suitable that location is for (re)placement of lasers
