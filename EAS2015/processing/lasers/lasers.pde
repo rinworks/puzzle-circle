@@ -1,4 +1,4 @@
-import java.util.Comparator; //<>// //<>// //<>// //<>// //<>//
+import java.util.Comparator; //<>// //<>// //<>// //<>// //<>// //<>//
 import java.util.Arrays;
 
 void setup() {
@@ -14,12 +14,12 @@ void setup() {
   if (runTest) {
     runTest();
   } else { 
-    String puzzleText = "112233";
-    Boolean bestOfMany = false;
+    String puzzleText = "1111122222333445";
+    Boolean bestOfMany = true;
     Grid g;
     LaserHelper lh;
-    int rows = 25;
-    int cols = 25;
+    int rows = 20;
+    int cols = 20;
     if (bestOfMany) {
       // This code picks the "best" puzzle out of 1000 random puzzles
       g = generateGoodPuzzle(rows, cols, puzzleText, 1000);  
@@ -279,7 +279,8 @@ Cell findNextTarget_OBSOLETE(Grid g, Cell cStart, Cell c, int direction, ArrayLi
 
 // Assuming a beam with orientation prevOrientation hits the mirror,
 // compute the new orientation
-int getNextBeamDirection(int direction, float mirrorOrientation)
+// : add additional directions
+int getNextBeamDirection_OBSOLETE(int direction, float mirrorOrientation)
 {
   assert(direction>=0 && direction<4);
   int mO = round(mirrorOrientation); // should be either 45 or -45 - this is the NORMAL of the mirror, NOT the plane of the mirror.
@@ -296,7 +297,8 @@ int getNextBeamDirection(int direction, float mirrorOrientation)
 // Compute the beam orientation for a beam coming
 // from cPrev and hitting Cell c.
 // Return value is in degrees.
-float getCurrentBeamOrientation(Cell cPrev, Cell c) {
+// : add additional directions
+float getCurrentBeamOrientation_OBSOLETE(Cell cPrev, Cell c) {
   // We assume direction is only in the cardinal directions for now.
   float ret = 0; 
   if (cPrev.j<c.j) {
@@ -548,17 +550,19 @@ int computeTextBoxViabilityScore(Grid g, Cell c) {
   // in the immediate neighborhood
   for (int di = -1; di < 2; di++) {
     for (int dj = -1; dj < 2; dj++) {
-      // We wan't to skip diagonals and center!
-      if ((di+dj) % 2 != 0) {
-        int i  = c.i + di;
-        int j = c.j + dj;
-        Cell cj = getCellIfAvailable(g, i, j);
-        if (cj!=null) {
-          // Note: TwowayMirror is added because *potentially* there could be a way further by bouncing
-          // off that existing mirror.
-          if (cj.dObject == null || cj.dObject instanceof Dot || cj.dObject instanceof TwowayMirror) {
-            score++;
-          }
+      // We wan't to skip center!
+      // NEW if (di==0 && dj==0) {
+      if ((di+dj) % 2 == 0) {
+        continue;
+      }
+      int i  = c.i + di;
+      int j = c.j + dj;
+      Cell cj = getCellIfAvailable(g, i, j);
+      if (cj!=null) {
+        // Note: TwowayMirror is added because *potentially* there could be a way further by bouncing
+        // off that existing mirror.
+        if (cj.dObject == null || cj.dObject instanceof Dot || cj.dObject instanceof TwowayMirror) {
+          score++;
         }
       }
     }
@@ -677,7 +681,7 @@ Boolean addToGrid(LaserHelper lh, String text) {
     Cell textCell = newOrExistingTextBox(g, s);
     Boolean ok = false;
     if (textCell!=null) {
-      ok = lh.addLaserToTarget(textCell, startId + i); //<>//
+      ok = lh.addLaserToTarget(textCell, startId + i);
     }
     if (!ok) {
       assert(false);
@@ -707,12 +711,12 @@ Grid createDotGrid(int rows, int cols) {
 // g is assumed to be already in a viable configuration,
 // i.e., it solves the puzzle. This transformation
 // preserves that.
-void randomlyBackUpLasers(Grid g) {
+void randomlyBackUpLasers_OBSOLETE(Grid g) {
   markAllPaths(g);
   Cell[] lasers  = pickRandomLaserOrder(g);
   for (Cell c : lasers) {
     int direction = cardinalDirection(180+c.orientation); // Get the reverse direction
-    Cell newC = randomlyPickBackedupLaserCell(g, c, direction);
+    Cell newC = randomlyPickBackedupLaserCell_OBSOLETE(g, c, direction);
     if (newC!=null) {
       // Back up the laser to here by swapping cell content
       Drawable dTemp = newC.dObject;
@@ -732,58 +736,11 @@ void randomlyBackUpLasers(Grid g) {
   }
 }
 
-// Visit each laser in random order and
-// attempt to add a random mirror where the laser was.
-// Move the laser by one step (it will be next to the
-// mirror that was just added.) The configuration
-// is assumed to be viable on entry and it will remain
-// vaible on exit.
-void addRandomMirrors(Grid g) {
-  markAllPaths(g);
-  Cell[] lasers  = pickRandomLaserOrder(g);
-  for (Cell c : lasers) {
-    //Cell cExistingMirror  = backedAgainstMirror(g, c);
-    // 45-degree (normal) mirror adds -90, -45-degree mirror adds 90 (including changing 180 into (180+90)=270=-90.
-    float mirrorOrientation = (random(1.0)<0.5) ? 45.0 : -45.0;
-    float reverseOrientation = c.orientation+180.0;
-    int reverseDirection = round((reverseOrientation+360)/90.0) % 4; // 0=right 1=up 2=left 3=down
-    int newReverseDirection = getNextBeamDirection(reverseDirection, mirrorOrientation);
-    float newLaserOrientation = orientationFromCardinalDirection((newReverseDirection+2)%4); // flip directions
 
-
-    Cell newC = randomlyPickBackedupLaserCell(g, c, newReverseDirection);
-    if (newC!=null) {
-      // This means that we CAN backup the laser in the new direction.
-      // Let's place the mirror here and move the laser to the proposed
-      // backed-up location.
-      Drawable dTemp = newC.dObject;
-      float orientationTemp = newC.orientation;
-      assert(newC.dObject instanceof Dot);
-      assert(newC.visited==false);
-      assert(c.dObject instanceof Laser);
-      newC.dObject = c.dObject;
-      newC.orientation = newLaserOrientation;
-
-      // Insert mirror!
-      println("Inserting mirror at location " + locationToString(c) + " with orientation " + mirrorOrientation);
-
-      TwowayMirror m = new TwowayMirror(gParams, gParams);
-      dTemp = m;
-      orientationTemp = mirrorOrientation;
-
-      c.dObject = dTemp;
-      c.orientation = orientationTemp;
-
-      // Re-do the path - it will backwards-extend
-      // the existing path
-      computeLaserPath(g, newC, true);
-    }
-  }
-}
 
 // Check and return mirror if the laser cell is
 // backed up against a mirror. Return null otherwise.
-Cell backedAgainstMirror(Grid g, Cell laserCell) {
+Cell backedAgainstMirror_OBSOLETE(Grid g, Cell laserCell) {
   return null;
 }
 
@@ -799,7 +756,7 @@ float orientationFromCardinalDirection(int direction) {
 // NOTE: orientation MAY NOT be compatible with cLaser - this 
 // happens when we are contemplating adding a mirror at the current
 // laser's position!
-Cell randomlyPickBackedupLaserCell(Grid g, Cell cLaser, int direction) {
+Cell randomlyPickBackedupLaserCell_OBSOLETE(Grid g, Cell cLaser, int direction) {
   int dI = getRowStep(direction);
   int dJ = getColStep(direction);
   println("randomly backing up laser " + ((Laser) cLaser.dObject).id + " in direction " + direction + "di:" + dI + " dj:"+ dJ);

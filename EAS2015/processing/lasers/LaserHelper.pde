@@ -1,4 +1,4 @@
-
+ //<>// //<>// //<>// //<>// //<>// //<>// //<>//
 // Various helper methods specific
 // to the laser puzzle
 
@@ -45,10 +45,10 @@ class LaserHelper {
   int RIGHT_ANGLE_INCREMENT = 1; // how much to increment a direction to get one that is 90 degrees rotratded.
   int[] ANGLES = {0, 90, 180, 270}; // CW from 0 in 45 degree increments, within range of +/180.
   int[][] NEXT_CELL = { // By how much to increment i(row) and j(col) to get to the next cell
-    {0,1}, // Going E
-    {-1,0}, // Going N
-    {0,-1}, // Going W
-    {1,0}   // Going S
+    {0, 1}, // Going E
+    {-1, 0}, // Going N
+    {0, -1}, // Going W
+    {1, 0}   // Going S
   };
   int[] CW90_MIRROR_ANGLE = {-45, 45, -45, 45}; // mirror angle to turn each incoming dir clockwise (CW) by 90 degrees.
   int[] CCW90_MIRROR_ANGLE = {45, -45, 45, -45}; // mirror angle to turn each incoming dir COUNTER-clockwise (CCW) by 90 degrees.
@@ -62,15 +62,14 @@ class LaserHelper {
 
   // Add a laser that targets the specified text cell. Return true if the laser was
   // successfully added.
-  // TODO: Add additional directions
-  Boolean addLaserToTarget(Cell textCell, int laserId) { //<>//
-    ArrayList<Cell> candidateCells = new ArrayList<Cell>(); //<>//
-    ArrayList<Integer> candidateOrientations = new ArrayList<Integer>(); //<>//
+  Boolean addLaserToTarget(Cell textCell, int laserId) {
+    ArrayList<Cell> candidateCells = new ArrayList<Cell>();
+    ArrayList<Integer> candidateOrientations = new ArrayList<Integer>();
 
-    for (int direction = 0; direction < DIRECTION_LIMIT; direction++) { //<>//
-      int[]increments = NEXT_CELL[direction]; //<>//
-      int i = textCell.i + increments[0]; //<>//
-      int j = textCell.j + increments[1]; //<>//
+    for (int direction = 0; direction < DIRECTION_LIMIT; direction++) {
+      int[]increments = NEXT_CELL[direction];
+      int i = textCell.i + increments[0];
+      int j = textCell.j + increments[1];
       Cell c = getCellIfAvailable(g, i, j);
       if (c!=null) {
         candidateCells.add(c);
@@ -81,7 +80,7 @@ class LaserHelper {
     }
 
 
-    // Now add a laser in a randome orientation among the available
+    // Now add a laser in a random orientation among the available
     // orientations.
     if (candidateCells.size()>0) {
       int chosenIndex = (int) random(0, candidateCells.size());
@@ -250,53 +249,82 @@ class LaserHelper {
     float orientation = (change ==1 ) ? CW90_MIRROR_ANGLE[incomingDir] : CCW90_MIRROR_ANGLE[incomingDir];
     return orientation;
   }
-  
-  // Find the next target the laser would hit, starting from Cell c and going in direction specified by
-// orientation (in degrees). Return a boundary Dot cell if you hit a boundary. Return null if
-// Cell c is already at the boundary and the laser is leaving the boundary.
-// We use dotCount just to pass-by-reference the count of dots back. A bit of a hack.
-// NOTE: cStart is the start of the path - it is to detect cycles in the path, which
-// can happen.
-Cell findNextTarget(Cell cStart, Cell c, int direction, ArrayList<TraceCellInfo>dotInfoList, int[]dotCount, Boolean mark) {
-  assert(direction>=0 && direction<4);
-  if (dotCount!=null) {
-    assert( dotCount.length==1);
-    dotCount[0]=0; // int count of dots.
-  }
-  int di = NEXT_CELL[direction][0];
-  int dj = NEXT_CELL[direction][1];
-  Cell cNext = null;
-  int i=c.i + di;
-  int j=c.j + dj;
-  while (i>=0 && j>=0 && i<g.rows && j<g.cols) {
-    cNext = g.cells[i][j];
-    if (cNext == cStart) {
-      // Oops, we've encountered a cycle!
-      //println("CYCLE DETECTED AT " + locationToString(cNext)); // *************** EARLY RETURN **************
-      dotCount[0] = 0;
-      return null;
-    }
-    Boolean visited = cNext.visited;
-    if (!visited && mark) {
-      cNext.visited=true;
-    }
-    // If it's null or a Dot, we keep going...
-    if (cNext.dObject instanceof Dot) {
-      if (dotInfoList!=null) {
-        dotInfoList.add(new TraceCellInfo(cNext, direction));
-      }
-      if (!visited &&/* BOO !visited && */dotCount!=null) {
-        dotCount[0]+=1;
-      }
+
+  // Assuming a beam with orientation prevOrientation hits the mirror,
+  // compute the new orientation
+  int getNextBeamDirection(int direction, float mirrorOrientation)
+  {
+    assert(direction>=0 && direction<DIRECTION_LIMIT);
+    int m = round(mirrorOrientation); // should be either 45 or -45 - this is the NORMAL of the mirror, NOT the plane of the mirror.
+    // TODO: add additional directions
+    int[] m45 = {3, 2, 1, 0}; // If it was 0 (going left) it would now be -90 (going down), etc.
+    int[] mMinus45 = {1, 0, 3, 2}; // If it was 0 (going right) it will now be 90 (going up), etc.
+    int[] m0 = {1, 0, 3, 2}; // If it was 0 (going right) it will now be 90 (going up), etc.
+    int[] m90 = {1, 0, 3, 2}; // If it was 0 (going right) it will now be 90 (going up), etc.
+
+    int[] deflection = null;
+    if (m == 45) {
+      deflection  = m45;
+    } else if (m == -45) {
+      deflection = mMinus45;
+    } else if (m == 0) {
+      deflection = m0;
+    } else if (m == 90) {
+      deflection = m90;
     } else {
-      //println("Hit object at " + locationToString(cNext));
-      break;
+      assert(false);
     }
-    i += di;
-    j += dj;
+
+    return deflection[direction];
   }
-  return cNext;
-}
+
+
+  // Find the next target the laser would hit, starting from Cell c and going in direction specified by
+  // orientation (in degrees). Return a boundary Dot cell if you hit a boundary. Return null if
+  // Cell c is already at the boundary and the laser is leaving the boundary.
+  // We use dotCount just to pass-by-reference the count of dots back. A bit of a hack.
+  // NOTE: cStart is the start of the path - it is to detect cycles in the path, which
+  // can happen.
+  Cell findNextTarget(Cell cStart, Cell c, int direction, ArrayList<TraceCellInfo>dotInfoList, int[]dotCount, Boolean mark) {
+    assert(direction>=0 && direction<4);
+    if (dotCount!=null) {
+      assert( dotCount.length==1);
+      dotCount[0]=0; // int count of dots.
+    }
+    int di = NEXT_CELL[direction][0];
+    int dj = NEXT_CELL[direction][1];
+    Cell cNext = null;
+    int i=c.i + di;
+    int j=c.j + dj;
+    while (i>=0 && j>=0 && i<g.rows && j<g.cols) {
+      cNext = g.cells[i][j];
+      if (cNext == cStart) {
+        // Oops, we've encountered a cycle!
+        //println("CYCLE DETECTED AT " + locationToString(cNext)); // *************** EARLY RETURN **************
+        dotCount[0] = 0;
+        return null;
+      }
+      Boolean visited = cNext.visited;
+      if (!visited && mark) {
+        cNext.visited=true;
+      }
+      // If it's null or a Dot, we keep going...
+      if (cNext.dObject instanceof Dot) {
+        if (dotInfoList!=null) {
+          dotInfoList.add(new TraceCellInfo(cNext, direction));
+        }
+        if (!visited &&/* BOO !visited && */dotCount!=null) {
+          dotCount[0]+=1;
+        }
+      } else {
+        //println("Hit object at " + locationToString(cNext));
+        break;
+      }
+      i += di;
+      j += dj;
+    }
+    return cNext;
+  }
 
   // Sets the viability score for all cells in the list - indicating
   // how suitable that location is for (re)placement of lasers
@@ -419,6 +447,7 @@ Cell findNextTarget(Cell cStart, Cell c, int direction, ArrayList<TraceCellInfo>
     }
     return false;
   }
+
 
 
   // Move laser to dotCellInfo. Returns the new cell containing
