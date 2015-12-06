@@ -8,13 +8,15 @@ void setup() {
   // Grid coordinates: (i, j) are like rows of an array/matrix. So i is vertical,
   // with increasing i going downwards.
   // Angles: normal interpration (0 == going right; 90== going up, etc.)
-
+  long seed = round(random(MAX_INT));
+  println("SEED: " + seed);
+  randomSeed(seed);
 
   Boolean runTest = false;
   if (runTest) {
     runTest();
   } else { 
-    String puzzleText = "1111122222333445";
+    String puzzleText = "11";
     Boolean bestOfMany = true;
     Grid g;
     LaserHelper lh;
@@ -25,8 +27,8 @@ void setup() {
       g = generateGoodPuzzle(rows, cols, puzzleText, 1000);  
       lh = new LaserHelper(g);
     } else {
-      // Create a random puzzle with 25 rows and 25 columns, 
-      // and 100 iterations (attempt to grow the laser paths
+      // Create a random puzzle specified rows and columns, 
+      // (and attempt to grow the laser paths
       // up to a 100 times).
       lh = createRandomPuzzle(rows, cols, puzzleText, 100);
       g = lh.g;
@@ -186,7 +188,7 @@ ArrayList<Cell> computeLaserPath(Grid g, Cell c, Boolean mark) {
   ArrayList<Cell> path = new ArrayList<Cell>();
   LaserHelper lh = new LaserHelper(g);
   path.add(c);
-  lh.tracePath(c, cardinalDirection(c.orientation), path, null, mark);
+  lh.tracePath(c, lh.cardinalDirection(c.orientation), path, null, mark);
   return path;
 }
 
@@ -452,8 +454,7 @@ int computeTextBoxViabilityScore(Grid g, Cell c) {
   for (int di = -1; di < 2; di++) {
     for (int dj = -1; dj < 2; dj++) {
       // We wan't to skip center!
-      // NEW if (di==0 && dj==0) {
-      if ((di+dj) % 2 == 0) {
+      if (di==0 && dj==0) {  // OBSOLETE if ((di+dj) % 2 == 0) {
         continue;
       }
       int i  = c.i + di;
@@ -554,10 +555,6 @@ Grid createDotGrid(int rows, int cols) {
 
 
 
-float orientationFromCardinalDirection(int direction) {
-  assert(direction>=0 && direction<4);
-  return (direction<3) ? direction * 90.0  : -90.0;
-}
 
 
 String locationToString(Cell c) {
@@ -579,14 +576,7 @@ int getRowStep(int direction) {
   return deltas[direction];
 }
 
-// convert orientation in degrees to a number from 1-4
-// representing the cardinal directions.
-// 0=E(right), 1=N(up), 2=W(left), 3=S(down)
-// orientation is assumed to be one of these directions.
-int cardinalDirection(float orientation) {
-  assert(orientation>=-360.0);
-  return (round(orientation)+360)/90 % 4;
-}
+
 
 // Return the list of lasers in random order.
 Cell[] pickRandomLaserOrder(Grid g) {
@@ -674,8 +664,8 @@ Boolean disqualifyPuzzle(LaserHelper lh) {
     for (int j=0; j<i; j++) {
       Cell lcJ = laserCells[j];
       if (abs(lcI.i-lcJ.i)+abs(lcI.j-lcJ.j) == 1) { // adjacent
-        int dirI = cardinalDirection(lcI.orientation);
-        int dirJ = cardinalDirection(lcJ.orientation);
+        int dirI = lh.cardinalDirection(lcI.orientation);
+        int dirJ = lh.cardinalDirection(lcJ.orientation);
         if ((4+dirI-dirJ)%4==2) {
           // opposite directions
           if ((dirI%2 == 0 && lcI.j!=lcJ.j) || (dirI%2 == 1&&lcI.i!=lcJ.i)) {

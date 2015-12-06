@@ -217,6 +217,10 @@ class Cell {
     className = className.substring(className.indexOf("$")+1); // relise of indexOf returning -1 if not found.
     return className;
   }
+  
+  public String coordsAsString() {
+    return "["+i+","+j+"]";
+  }
 }
 
 
