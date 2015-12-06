@@ -213,30 +213,6 @@ class LaserHelper {
     }
   }
 
-  // Compute the orientation of a mirror that will bend a ray headed towards
-  // incomingDir into one headed towards outgoingDir
-  float computeMirrorOrientation_OBSOLETE(int incomingDir, int outgoingDir) {
-    int change = (DIRECTION_LIMIT+outgoingDir-incomingDir) %DIRECTION_LIMIT;
-    change /=  RIGHT_ANGLE_INCREMENT;
-    assert(change==1 || change==3);
-    int orientation = -45;
-    if (change == 3) {
-      orientation = 45;
-    }
-    // we're not quite done yet - this is *relative* to incoming direction.
-    // let's make it absolute...
-    int[] rotationAmount = ANGLES ; // OBSOLETE {0, 90, 180, 270};
-    orientation = (orientation + rotationAmount[incomingDir]) % 360;
-    // Now we normalize the rotation taking into account that this is a two-way mirror.
-    if (orientation == (45+180)) {
-      orientation = 45;
-    } else if (orientation == (-45+180)) {
-      orientation = -45;
-    } else if (orientation == (360-45)) {
-      orientation = -45;
-    }
-    return orientation;
-  }
 
   // Compute the orientation of a mirror that will bend a ray headed towards
   // incomingDir into one headed towards outgoingDir
@@ -424,30 +400,7 @@ class LaserHelper {
     return true;
   }
 
-  // returns true iff the two dots are adjacent in a straight path
-  Boolean adjacentDot_OBSOLETE(TraceCellInfo info1, TraceCellInfo info2) {
-    if (info1==null || info2==null) {
-      return false;
-    }
-    Cell c1 = info1.c;
-    Cell c2 = info2.c;
-    if ((abs(c1.i-c2.i)+abs(c1.j-c2.j))>1) {
-      return false;
-    }
-    //assert(info1.direction == info2.direction);
-
-    int dir1 = info1.direction;
-    int dir2 = info2.direction;
-
-    if (dir1==dir2) {
-      // same directions
-      if ((dir1%2 == 0&&c1.j!=c2.j) || (dir1%2 == 1&&c1.i!=c2.i)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
+ 
 
 
   // Move laser to dotCellInfo. Returns the new cell containing

@@ -214,106 +214,7 @@ String shortClassName(String className) {
 
 
 
-// Find the next target the laser would hit, starting from Cell c and going in direction specified by
-// orientation (in degrees). Return a boundary Dot cell if you hit a boundary. Return null if
-// Cell c is already at the boundary and the laser is leaving the boundary.
-// We use dotCount just to pass-by-reference the count of dots back. A bit of a hack.
-// NOTE: cStart is the start of the path - it is to detect cycles in the path, which
-// can happen.
-Cell findNextTarget_OBSOLETE(Grid g, Cell cStart, Cell c, int direction, ArrayList<TraceCellInfo>dotInfoList, int[]dotCount, Boolean mark) {
-  assert(direction>=0 && direction<4);
-  if (dotCount!=null) {
-    assert( dotCount.length==1);
-    dotCount[0]=0; // int count of dots.
-  }
-  int di=0, dj=0;
-  switch (direction) {
-  case 0:  // right
-    dj=1;
-    break;
-  case 1:  // up
-    di=-1;
-    break;
-  case 2:  // left
-    dj=-1;
-    break;
-  case 3:  // down
-    di=1;
-    break;
-  default: // shouldn't get here.
-    assert(false);
-    break;
-  }
-  Cell cNext = null;
-  int i=c.i + di;
-  int j=c.j + dj;
-  while (i>=0 && j>=0 && i<g.rows && j<g.cols) {
-    cNext = g.cells[i][j];
-    if (cNext == cStart) {
-      // Oops, we've encountered a cycle!
-      //println("CYCLE DETECTED AT " + locationToString(cNext)); // *************** EARLY RETURN **************
-      dotCount[0] = 0;
-      return null;
-    }
-    Boolean visited = cNext.visited;
-    if (!visited && mark) {
-      cNext.visited=true;
-    }
-    // If it's null or a Dot, we keep going...
-    if (cNext.dObject instanceof Dot) {
-      if (dotInfoList!=null) {
-        dotInfoList.add(new TraceCellInfo(cNext, direction));
-      }
-      if (!visited &&/* BOO !visited && */dotCount!=null) {
-        dotCount[0]+=1;
-      }
-    } else {
-      //println("Hit object at " + locationToString(cNext));
-      break;
-    }
-    i += di;
-    j += dj;
-  }
-  return cNext;
-}
 
-// Assuming a beam with orientation prevOrientation hits the mirror,
-// compute the new orientation
-// : add additional directions
-int getNextBeamDirection_OBSOLETE(int direction, float mirrorOrientation)
-{
-  assert(direction>=0 && direction<4);
-  int mO = round(mirrorOrientation); // should be either 45 or -45 - this is the NORMAL of the mirror, NOT the plane of the mirror.
-  int[] m45 = {3, 2, 1, 0}; // If it was 0 (going right) it would now be -90 (going down), etc.
-  int[] mMinus45 = {1, 0, 3, 2}; // If it was 0 (going right) it will now be 90 (going up), etc.
-  if (mO == 45) {
-    return m45[direction];
-  } else {
-    assert(mO==-45);
-    return mMinus45[direction];
-  }
-}
-
-// Compute the beam orientation for a beam coming
-// from cPrev and hitting Cell c.
-// Return value is in degrees.
-// : add additional directions
-float getCurrentBeamOrientation_OBSOLETE(Cell cPrev, Cell c) {
-  // We assume direction is only in the cardinal directions for now.
-  float ret = 0; 
-  if (cPrev.j<c.j) {
-    ret = 0.0; // increasing j is leftwards
-  } else if (cPrev.j>c.j) {
-    ret =   180.0;
-  } else if (cPrev.i<c.i) {
-    ret =  -90; // increasing i is downwards
-  } else if (cPrev.i>c.i) {
-    ret = 90;
-  } else {
-    assert(false); // The cells are identifical - beam orientation is undefined. We shoudl never get here.
-  }
-  return ret;
-}
 
 void drawLaserPath(Grid g, ArrayList<Cell> path, String expectedText) {
   if (path.size()==0) {
@@ -596,62 +497,6 @@ Cell placeNewTextBox(Grid g, String s) {
 
 
 
-// Add a laser that targets the specified text cell. Return true if the laser was
-// successfully added.
-Boolean addLaserToTarget_OBSOLETE(Grid g, Cell textCell, int laserId) {
-  int i, j;
-  Cell c;
-  ArrayList<Cell> candidateCells = new ArrayList<Cell>();
-  ArrayList<Integer> candidateOrientations = new ArrayList<Integer>();
-
-  // Check top...
-  i = textCell.i-1;
-  j = textCell.j;
-  c = getCellIfAvailable(g, i, j);
-  if (c!=null) {
-    candidateCells.add(c);
-    candidateOrientations.add(-90); // pointing down.
-  }
-
-  // Check bottom
-  i = textCell.i+1;
-  j = textCell.j;
-  c = getCellIfAvailable(g, i, j);
-  if (c!=null) {
-    candidateCells.add(c);
-    candidateOrientations.add(90); // pointing up.
-  }
-
-  // Check left
-  i = textCell.i;
-  j = textCell.j-1;
-  c = getCellIfAvailable(g, i, j);
-  if (c!=null) {
-    candidateCells.add(c);
-    candidateOrientations.add(0); // pointing left.
-  }
-
-  // Check right
-  i = textCell.i;
-  j = textCell.j+1;
-  c = getCellIfAvailable(g, i, j);
-  if (c!=null) {
-    candidateCells.add(c);
-    candidateOrientations.add(180); // pointing right.
-  }
-
-  // Now add a laser in a randome orientation among the available
-  // orientations.
-  if (candidateCells.size()>0) {
-    int chosenIndex = (int) random(0, candidateCells.size());
-    Cell chosenCell = candidateCells.get(chosenIndex);
-    chosenCell.dObject = new Laser(laserId, gLaserParams, gLaserParams);
-    chosenCell.orientation = candidateOrientations.get(chosenIndex);
-    return true;
-  } else {
-    return false;
-  }
-}
 
 // Return the cell if available to place
 // an object without disrupting anything
@@ -707,42 +552,6 @@ Grid createDotGrid(int rows, int cols) {
   return genObjects(spec, null);
 }
 
-// Attempt to back up lasers by varying amounts.
-// g is assumed to be already in a viable configuration,
-// i.e., it solves the puzzle. This transformation
-// preserves that.
-void randomlyBackUpLasers_OBSOLETE(Grid g) {
-  markAllPaths(g);
-  Cell[] lasers  = pickRandomLaserOrder(g);
-  for (Cell c : lasers) {
-    int direction = cardinalDirection(180+c.orientation); // Get the reverse direction
-    Cell newC = randomlyPickBackedupLaserCell_OBSOLETE(g, c, direction);
-    if (newC!=null) {
-      // Back up the laser to here by swapping cell content
-      Drawable dTemp = newC.dObject;
-      float orientationTemp = newC.orientation;
-      assert(newC.dObject instanceof Dot);
-      assert(newC.visited==false);
-      assert(c.dObject instanceof Laser);
-      newC.dObject = c.dObject;
-      newC.orientation = c.orientation;
-      c.dObject = dTemp;
-      c.orientation = orientationTemp;
-
-      // Re-do the path - it will backwards-extend
-      // the existing path
-      computeLaserPath(g, newC, true);
-    }
-  }
-}
-
-
-
-// Check and return mirror if the laser cell is
-// backed up against a mirror. Return null otherwise.
-Cell backedAgainstMirror_OBSOLETE(Grid g, Cell laserCell) {
-  return null;
-}
 
 
 float orientationFromCardinalDirection(int direction) {
@@ -750,42 +559,6 @@ float orientationFromCardinalDirection(int direction) {
   return (direction<3) ? direction * 90.0  : -90.0;
 }
 
-// Attempt to backup from cell c in the specified 
-// cardinal direction. Return the existing cell at
-// this new location if one is found, null otherwise.
-// NOTE: orientation MAY NOT be compatible with cLaser - this 
-// happens when we are contemplating adding a mirror at the current
-// laser's position!
-Cell randomlyPickBackedupLaserCell_OBSOLETE(Grid g, Cell cLaser, int direction) {
-  int dI = getRowStep(direction);
-  int dJ = getColStep(direction);
-  println("randomly backing up laser " + ((Laser) cLaser.dObject).id + " in direction " + direction + "di:" + dI + " dj:"+ dJ);
-
-  ArrayList<Cell> candidateCells = new ArrayList<Cell>();
-  ArrayList<Integer> candidateScores = new ArrayList<Integer>();
-  candidateCells.add(cLaser);
-  candidateScores.add(computeTextBoxViabilityScore(g, cLaser));
-  Cell c = cLaser;
-  do {
-    c = g.tryGetCell(c.i+dI, c.j+dJ);
-    if (c!=null && getCellIfAvailable(g, c.i, c.j)!=null) {
-      // found a candidate slot.
-      candidateCells.add(c);
-      candidateScores.add(computeTextBoxViabilityScore(g, c));
-    }
-  } while (c!=null && (c.dObject==null || c.dObject instanceof Dot));
-
-  Cell newC =  pickRandomTopViableCellForTextBox(g, candidateCells, candidateScores); // could be nothing there
-  // If we picked ourself, we return null - indicating we didn't pick any *backed up* cell.
-  if (newC == cLaser) {
-    newC = null;
-  }
-  if (newC!=null) {
-    println("   Backed from location " + locationToString(cLaser) + " to location " + locationToString(newC));
-  } else {
-  }
-  return newC;
-}
 
 String locationToString(Cell c) {
   return "["+c.i+","+c.j+"]";
