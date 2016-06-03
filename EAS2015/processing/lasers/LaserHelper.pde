@@ -93,6 +93,9 @@ class LaserHelper {
     ArrayList<Integer> candidateOrientations = new ArrayList<Integer>();
 
     for (int direction = 0; direction < DIRECTION_LIMIT; direction++) {
+      if (SKIP_DIAGONALS && direction % 2 == 1) {
+        continue;
+      }
       int[]increments = NEXT_CELL[direction];
       int i = textCell.i + increments[0];
       int j = textCell.j + increments[1];
@@ -289,7 +292,7 @@ class LaserHelper {
       cNext = g.cells[i][j];
       if (cNext == cStart) {
         // Oops, we've encountered a cycle!
-        println("CYCLE DETECTED AT " + locationToString(cNext)); // *************** EARLY RETURN **************
+        // YES println("CYCLE DETECTED AT " + locationToString(cNext)); // *************** EARLY RETURN **************
         dotCount[0] = 0;
         return null;
       }

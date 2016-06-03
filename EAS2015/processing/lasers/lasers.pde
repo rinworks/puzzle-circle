@@ -1,62 +1,107 @@
-import java.util.Comparator; //<>// //<>// //<>// //<>// //<>// //<>//
+// //<>// //<>// //<>//
+// Module: LASERS.PDE
+// Description: Main file for the lasers puzzle generator.
+// History:
+//	November 2015 - JMJ created
+//
+// General notes:
+//     Grid coordinates: (i, j) are like rows of an array/matrix. So i is vertical,
+//     with increasing i going downwards.
+//     Angles: normal interpration (0 == going right; 90== going up, etc.)
+//
+import java.util.Comparator;
 import java.util.Arrays;
+Boolean SKIP_DIAGONALS = false; // Set to true to generate only horiz/vert laser paths
+final  String LASER_CHARS = ">}^{<[;]";
+final  String MIRROR_CHARS = "/|:-";
+final  String SPECIAL_CHARS = LASER_CHARS + MIRROR_CHARS + '.';
+final String ESCAPE_CHARS = ""; //"BDFGHIJLMNOPQRST";
+
 
 void setup() {
-  //size(1300, 1300);
-  size(800, 800);
+  size(1300, 1300);
+  //size(2000, 2000);
 
-  // Grid coordinates: (i, j) are like rows of an array/matrix. So i is vertical,
-  // with increasing i going downwards.
-  // Angles: normal interpration (0 == going right; 90== going up, etc.)
+
+  // To recreate a specific puzzle, make a note of the printed seed value and 
+  // set seed to that printed seed value (comment out the call to round(random(...))).
   long seed = round(random(MAX_INT));
   println("SEED: " + seed);
   randomSeed(seed);
 
-  Boolean runTest = false;
-  if (runTest) {
-    runTest();
+  // Set runSpecific to true to run a specific, previously-computed puzzle
+  Boolean runSpecific = true;
+  if (runSpecific) {
+    runSpecific();
   } else { 
-    String puzzleText = "11";
-    Boolean bestOfMany = true;
+    String puzzleText = "D=880 & W=A+23";
+
+    Boolean bestOfMany = true; // Whether to generate a bunch of puzzles and pick
+    // the best of the based on certain metrics
     Grid g;
     LaserHelper lh;
-    int rows = 20;
-    int cols = 20;
+
+    // Size of the grid...
+    int rows = 25;
+    int cols = 25;
+
     if (bestOfMany) {
-      // This code picks the "best" puzzle out of 1000 random puzzles
-      g = generateGoodPuzzle(rows, cols, puzzleText, 1000);  
+      // This code picks the "best" puzzle out of numPuzzles random puzzles
+      int numPuzzles = 1000;
+      g = generateGoodPuzzle(rows, cols, puzzleText, numPuzzles);  
       lh = new LaserHelper(g);
     } else {
       // Create a random puzzle specified rows and columns, 
       // (and attempt to grow the laser paths
-      // up to a 100 times).
-      lh = createRandomPuzzle(rows, cols, puzzleText, 100);
+      // up to a growthIterations times). If growthIterations is set to 0,
+      // a degenerate (but valid) puzzle is created with all lasers directly
+      // next to their target letter.
+      int growthIterations=100;
+      lh = createRandomPuzzle(rows, cols, puzzleText, growthIterations);
       g = lh.g;
     }
 
-
+    // Actually draw out the paths taken by all the lasers
+    // (comment out to NOT draw paths - the puzzle itself of course does NOT have
+    // any paths drawn)
     drawPaths(g, puzzleText);
+
+    // Draw the lasers and the grid (drawn on TOP of the paths so that the labels, etc
+    // are shown)
     g.draw();
+
+    // Print out a text representation of the grid. This is actually Java code that defines
+    // a couple of arrays - you can cut and paste this code into the runSpecific() method to
+    // regenerate exactly that puzzle.
     printGrid(g, null);
+
+    // Compute various "goodness" stats about this puzzle and print it out.
     PuzzleStats pStats = lh.computePuzzleStats();
     println("Puzzle Stats:");
     println(pStats);
   }
 }
 
+// Look (chiefly color) of default objects
 GraphicsParams gParams = new GraphicsParams();
+
+// Look (chiefly color) of lasers
 GraphicsParams gLaserParams = new GraphicsParams();
 
 Grid genObjects(String[] spec, int[] laserIds) {
   String DEFAULT_FONT = "Segoe WP Black";
+
+  // Set look of the textboxes
   gParams.font = createFont(DEFAULT_FONT, 7); // null means don't set
   gParams.textColor = 0;
   gParams.backgroundFill = 255;
 
+  // Set look of the lasers
   gLaserParams.font = createFont(DEFAULT_FONT, 7); // null means don't set
   gLaserParams.textColor = 255;
   gLaserParams.backgroundFill = color(255, 0, 0);
   gLaserParams.borderColor = -1;
+
   int rows = spec.length;
   int cols = (rows>0)? spec[0].length():0;
   int laserCount = 0;
@@ -64,8 +109,6 @@ Grid genObjects(String[] spec, int[] laserIds) {
   int GRID_HEIGHT = height;
   int GRID_PADDING = 10;
   Grid g = new Grid(rows, cols, GRID_WIDTH, GRID_HEIGHT, GRID_PADDING);
-  String laserChars = ">}^{<[;]";
-  String mirrorChars = "/|:-";
   for (int i=0; i<rows; i++) {
     String row = spec[i];
     for (int j=0; j<cols; j++) {
@@ -75,36 +118,24 @@ Grid genObjects(String[] spec, int[] laserIds) {
       if (c=='.') {
         d = new Dot(gParams, gParams);
         //} else if (c=='<'||c=='>'||c=='^'||c==';') {
-      } else if (laserChars.indexOf(c)!=-1) {
+      } else if (LASER_CHARS.indexOf(c)!=-1) {
         d = new Laser(laserIds[laserCount], gLaserParams, gLaserParams);
         //println("Laser " + laserIds[laserCount] + " at ["+i+","+j+"]");
-        int k = laserChars.indexOf(c);
+        int k = LASER_CHARS.indexOf(c);
         orientation = 45*k;
         if (orientation>180) {
           orientation = orientation-360; // convert 270 to -90, etc.
         }
         laserCount++;
         //} else if  (c=='|'||c=='-'||c=='/'||c==':') {
-      } else if  (mirrorChars.indexOf(c)!=-1) {
+      } else if  (MIRROR_CHARS.indexOf(c)!=-1) {
         d = new TwowayMirror(gParams, gParams);
-        int k = mirrorChars.indexOf(c);
+        int k = MIRROR_CHARS.indexOf(c);
         orientation = 45*k-45; // Sequence: -45, 0, 45, 90
       } else {
+        c = unescapeChar(c);
         d = new TextBox(""+c, gParams, gParams);
       }
-      /*
-      if (c=='<') {
-       orientation = 180; // left facing
-       } else if (c=='^'||c=='-') {
-       orientation = 90; // upwards facing
-       } else if (c==';') {
-       orientation = -90; // downwards facing
-       } else if (c=='/') {
-       orientation = -45;
-       } else if (c==':') { // equivalent to backslash
-       orientation = 45;
-       }
-       */
 
       if (d!=null) {
         Cell cl = g.cells[i][j];
@@ -288,10 +319,6 @@ String[] specFromGrid(Grid g) {
       if (d instanceof Dot) {
         row += ".";
       } else if (d instanceof Laser) {
-        //char[] laserChars = {'>', '^', '<', ';'}; // right, up, left, down
-        //int k = ((orientation+360)/90)%4; // 0, 1, 2, 3
-        //int k = ((orientation+360)/90)%4; // 0, 1, 2, 3
-        //assert(k>=0 && k<4);
         char[] laserChars = {'>', '}', '^', '{', '<', '[', ';', ']'}; // right>  NE}  up^  NW{  left<  SW[  down;  SE]
         int k = ((orientation+360)/45)%8; // 0, 1, 2, 3, 4, 5, 6, 7
         assert(k>=0 && k<8);
@@ -312,6 +339,7 @@ String[] specFromGrid(Grid g) {
         TextBox tb = (TextBox) d;
         if (tb.label!=null && tb.label.length()==1) {
           letter = tb.label.charAt(0);
+          letter = escapeChar(letter);
         }
         row += letter;
       }
@@ -337,6 +365,21 @@ Cell[] getLasers(Grid g) {
   return ret;
 }
 
+// Return the text boxes in the order that they are found in the grid
+Cell[] getTextBoxes(Grid g) {
+  ArrayList<Cell> list = new ArrayList<Cell>();
+  for (int i=0; i<g.rows; i++) {
+    for (int j=0; j<g.cols; j++) {
+      Cell c = g.cells[i][j];
+      if (c.dObject instanceof TextBox) {
+        list.add(c);
+      }
+    }
+  }  
+  Cell[] ret = list.toArray(new Cell[list.size()]);
+  return ret;
+}
+
 int[] getLaserIds (Grid g) {
   Cell[] cells = getLasers(g);
   int[] ids = new int[cells.length];
@@ -346,10 +389,20 @@ int[] getLaserIds (Grid g) {
   return ids;
 }
 
+String getText (Grid g) {
+  Cell[] cells = getTextBoxes(g);
+  String text = "";
+  for (int i=0; i<cells.length; i++) {
+    text += ((TextBox) (cells[i].dObject)).label;
+  }
+  return text;
+}
+
 void printGrid(Grid g, String path) {
   String[] spec = specFromGrid(g);
   int[] ids = getLaserIds(g);
   String output = "";
+  String text = getText(g);
   output +="String[] spec = {\n";
   for (int i=0; i<spec.length; i++) {
     output += "   \"" + spec[i] + "\"" + ((i<spec.length-1)?",":"") + "\n";
@@ -361,6 +414,9 @@ void printGrid(Grid g, String path) {
     output +=(ids[i] + ((i<ids.length-1)?", ":""));
   }
   output +="};\n";
+
+  output +="String textboxText = \""+text+"\"\n";
+
   if (path==null) {
     print(output);
   } else {
@@ -457,6 +513,10 @@ int computeTextBoxViabilityScore(Grid g, Cell c) {
       if (di==0 && dj==0) {  // OBSOLETE if ((di+dj) % 2 == 0) {
         continue;
       }
+      if (SKIP_DIAGONALS && (di+dj) % 2 == 0) {
+        //assert(false);
+        continue;
+      }
       int i  = c.i + di;
       int j = c.j + dj;
       Cell cj = getCellIfAvailable(g, i, j);
@@ -495,9 +555,6 @@ Cell placeNewTextBox(Grid g, String s) {
   }
   return chosenCell;
 }
-
-
-
 
 // Return the cell if available to place
 // an object without disrupting anything
@@ -554,9 +611,6 @@ Grid createDotGrid(int rows, int cols) {
 }
 
 
-
-
-
 String locationToString(Cell c) {
   return "["+c.i+","+c.j+"]";
 }
@@ -575,7 +629,6 @@ int getRowStep(int direction) {
   int[] deltas = {0, -1, 0, 1}; // left, up, right, down
   return deltas[direction];
 }
-
 
 
 // Return the list of lasers in random order.
@@ -725,30 +778,58 @@ LaserHelper createRandomPuzzle(int rows, int cols, String puzzleText, int iterat
   return lh;
 }
 
-void  runTest() {
-
-  String[] spec = {
-    "];[", 
-    ">.<", 
-    "}^{", 
-    "/.:", 
-    "...", 
-    "|.-"
-  };
-  int[] ids = {0, 1, 2, 3, 4, 5, 6, 7};
-
-
-
-  String puzzleText = "1";
+// Generate a specific puzzle from its textual description.
+// This same description is printed by the call to printGrid().
+void  runSpecific() {
+String[] spec = {
+   "........--.../......:]--[",
+   "../........../..[..-.|--|",
+   "....-........./....=.||||",
+   "/./|-.|---.|...--|//.-|||",
+   "..-D|.-|..--.......-...-|",
+   ".|-|...-................{",
+   ".A....|..|....:.:....-./:",
+   "^.-|..-|...-.....0...--..",
+   "|.........-....|...3.->./",
+   "||..-..|-.....-..../..:.{",
+   "|-|+..............:./....",
+   "||||...|.W.....|.|.......",
+   "||-.....|...-.|-........{",
+   "|.|..|....-.-..|.|.:.../.",
+   ".|.|.|-./&...|...|...|...",
+   "|.|...|..||-....../.../.|",
+   "||||-./......<.|.....|...",
+   "|.-|-/..:......:....|../:",
+   "..-|.......2-.-..|.......",
+   "./.../....----......|||..",
+   "../.../-../......./---...",
+   "/............:-:.....:-..",
+   ".... ...:.:8....:......./",
+   ":.../--.-.:........../<.{",
+   ">/:........../.{...-{:./."
+};
+int[] ids = {4, 5, 11, 1, 2, 3, 12, 8, 6, 10, 13, 7, 14, 9};
+String textboxText = "=DA03+W&2 8";
   Grid g = genObjects(spec, ids);
   background(200);
   g.draw();
   save("output\\ouput-noPaths.png");
   background(200);
-  //drawLaserPath(g, 1, "a"); // To draw a specific path for the answer doc.
-  //drawPaths(g, puzzleText);
+  String puzzleText = "1";
+  //drawLaserPath(g, 1, "a"); // Uncomment to draw a specific path for the answer doc.
+  drawPaths(g, puzzleText);
   g.draw();
   save("output\\ouput-withPaths.png");
-  //printGrid(g, sketchPath("output\\output-spec.txt"));
-  printGrid(g, null);
+  printGrid(g, sketchPath("output\\output-spec.txt"));
+  //printGrid(g, null); // To print to console
+}
+
+char escapeChar(char c) {
+  int i = SPECIAL_CHARS.indexOf(c);
+  return (i==-1) ? c : ESCAPE_CHARS.charAt(i);
+}
+
+char unescapeChar(char c) {
+  int i = ESCAPE_CHARS.indexOf(c);
+  return (i==-1) ? c : SPECIAL_CHARS.charAt(i);
 }

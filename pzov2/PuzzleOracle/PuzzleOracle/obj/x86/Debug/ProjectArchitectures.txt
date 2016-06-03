@@ -1,0 +1,1 @@
+C:\Users\josephj\Documents\git\puzzle-circle\pzov2\PuzzleOracle\PuzzleOracle\PuzzleOracle.csproj;x86
