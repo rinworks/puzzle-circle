@@ -43,11 +43,11 @@ void setupArena() {
   
 
 
-  Rat r1 = new Rat(ratWidth, ratHeight, a.points, pathE, gray);
+  Rat r1 = new Rat(ratWidth, ratHeight, a.points, rat4Paths, gray);
   a.addCritter(r1); 
-  Rat r2 = new Rat(ratWidth, ratHeight, a.points, pathO, white);
-  a.addCritter(r2);
+  //Rat r2 = new Rat(ratWidth, ratHeight, a.points, pathO, white);
+  //a.addCritter(r2);
 
-  r1.start(0, 0.0);
-  r2.start(0, 0.0);
+  r1.start();
+  //r2.start(0, 0.0);
 }

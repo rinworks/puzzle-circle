@@ -21,36 +21,43 @@ abstract class AnimatedObject {
   Point[] points=null;
   int[] path=null; // indexes of points in path, can be repeats.
   boolean visible=false;
-  int curIndex=0;
+  int curIndex=0; // Index into current path, not into (global) points.
   boolean goForward=true; // increasing index if true, decreasing index if false.
   float fraction=0.0; // Fractional amount moved between curIndex and next index;
+  boolean moving=false;
 
-  AnimatedObject(float w, float h, Point[] points, int[] path) {
+  AnimatedObject(float w, float h, Point[] points) {
     //this.xC = xC;
     //his.yC = yC;
     this.w = w;
     this.h = h;
     this.points = points;
-    this.path = path;
   }
 
   // Start at a particular point (index into points), oriented at a particular angle.
-  void start(int point, float angle) {
-    visible=true;
-    curIndex = point;
-    fraction = 0.0;
-    goForward = true;
-    Point p = this.points[point];
+  void start(int[] path, float angle) {
+    this.path = path;
+    this.visible=true;
+    this.curIndex = 0;
+    this.fraction = 0.0;
+    this.goForward = true;
+    Point p = this.points[path[this.curIndex]];
     this.xC = p.x;
     this.yC = p.y;
     this.a = angle;
+    this.moving = true;
+  }
+
+  void stop() {
+    this.moving = false;
+    this.visible = false;
   }
 
   // Attempt to move autonomously, taking the position of
   // other objects into account.
   void move() {
 
-    if (path==null || path.length==0) {
+    if (!moving || path==null || path.length==0) {
       return;
     }
 

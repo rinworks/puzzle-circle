@@ -30,7 +30,7 @@ class Arena {
     for (int j=0; j<ny; j++) {
       for (int i=0; i<nx; i++) {
         Point p = new Point(cornerX+i*dx, cornerY+j*dy);
-        println(p);
+        //println(p);
         points[ii++] = p;
       }
     }
