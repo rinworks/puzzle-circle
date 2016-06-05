@@ -72,6 +72,7 @@ abstract class AnimatedObject {
       next = nextIndex(curIndex);
       this.fraction -= 1.0;
       assert(fraction>=0.0 && fraction<=1.0);
+      this.pointCrossed(curIndex);
     }
 
     //
@@ -103,4 +104,5 @@ abstract class AnimatedObject {
   }
 
   abstract void draw();
+  abstract void pointCrossed(int point);
 }
