@@ -40,7 +40,9 @@ class Rat extends AnimatedObject {
   boolean currentPathComplete(int lastPointCrossed) {
     // TODO: replace by more sophisticated version once we start switching 
     // path direction.
-    return (lastPointCrossed==0); // completed the circle.
+    // If length is two we pick the 2nd (last) point, otherwise we assume
+    // circle-detection and pick the first point
+    return lastPointCrossed == ((path.length==2)? 1 : 0);
   }
 
   int[] getNextPath() {

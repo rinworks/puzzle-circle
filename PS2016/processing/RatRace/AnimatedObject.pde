@@ -84,7 +84,15 @@ abstract class AnimatedObject {
     //
     assert(MOVEMENT_INCREMENT>=0.0 && MOVEMENT_INCREMENT<1.0);
     assert(fraction>=0.0 && fraction<=1.0);
-    this.fraction += MOVEMENT_INCREMENT*pSpeed.nextValue();
+    float deltaFrac = MOVEMENT_INCREMENT*pSpeed.nextValue();
+
+    // Special case - cur and next indices are same - in this case we 
+    // speed up the progess so that we don't pause too long at the point.
+    if (path[curIndex] == path[next]) {
+        deltaFrac = 0.1; // in 10 frames(?) we should move to next point.
+    }
+    
+    this.fraction += deltaFrac;
     if (this.fraction > 1.0) {
       // We've over stepped, move to next index
       curIndex = next;

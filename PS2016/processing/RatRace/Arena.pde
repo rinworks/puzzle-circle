@@ -7,7 +7,7 @@ class Arena {
   ArrayList<AnimatedObject> critters;
   
   // "Home" is a small region from which the critters emerge. It is located on the upper-left hand corner of the grid.
-  final int HOME_HEIGHT = 30;
+  final int HOME_HEIGHT = 300;
   final int HOME_WIDTH = 20;
 
   Arena(int nx, int ny, int cornerX, int cornerY, int w, int h) {
