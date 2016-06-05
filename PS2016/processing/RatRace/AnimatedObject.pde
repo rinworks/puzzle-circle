@@ -13,6 +13,7 @@ class Point {
 
 abstract class AnimatedObject {
   final float MOVEMENT_INCREMENT = 0.01; // Fractional amount to move between points each frame.
+  final float TURN_SPEED = 0.1;
   float xC=0;
   float yC=0;
   float w=0;
@@ -25,6 +26,8 @@ abstract class AnimatedObject {
   boolean goForward=true; // increasing index if true, decreasing index if false.
   float fraction=0.0; // Fractional amount moved between curIndex and next index;
   boolean moving=false;
+  float curDx=0.0; // incremental delta x
+  float curDy=0.0; // incremental delta y. Current slope is (curDy/curDx), but note that either curDx or curDy can be 0.
 
   public final float POSITION_PERTURBATION_AMPLITUDE = 20.0; // pixels // TODO: make it 2xwidth of object
   public final float POSITION_PERTURBATION_OFFSET = 0.0; // pixels
@@ -47,7 +50,7 @@ abstract class AnimatedObject {
   }
 
   // Start at a particular point (index into points), oriented at a particular angle.
-  void start(int[] path, float angle) {
+  void start(int[] path) {
     this.path = path;
     this.visible=true;
     this.curIndex = 0;
@@ -56,8 +59,8 @@ abstract class AnimatedObject {
     Point p = this.points[path[this.curIndex]];
     this.xC = p.x + pX.nextValue();
     this.yC = p.y + pY.nextValue();
-    this.a = angle;
     this.moving = true;
+    this.curDx = this.curDy = 0.0; // Slope is Dx/Dy, so is undefined at this stage.
   }
 
   void stop() {
@@ -89,9 +92,9 @@ abstract class AnimatedObject {
     // Special case - cur and next indices are same - in this case we 
     // speed up the progess so that we don't pause too long at the point.
     if (path[curIndex] == path[next]) {
-        deltaFrac = 0.1; // in 10 frames(?) we should move to next point.
+      deltaFrac = 0.1; // in 10 frames(?) we should move to next point.
     }
-    
+
     this.fraction += deltaFrac;
     if (this.fraction > 1.0) {
       // We've over stepped, move to next index
@@ -103,14 +106,66 @@ abstract class AnimatedObject {
     }
 
     //
-    // Interpolate
+    // Interpolate position and estimated current slope (represented by curDx and curDy)
     //
     Point p1 = points[path[curIndex]];
     Point p2 = points[path[next]];
-    this.xC = lerp(p1.x, p2.x, fraction) + pX.nextValue();
-    this.yC = lerp(p1.y, p2.y, fraction) + pY.nextValue();
+    float next_xC = lerp(p1.x, p2.x, fraction) + pX.nextValue();
+    float next_yC = lerp(p1.y, p2.y, fraction) + pY.nextValue();
+    this.curDx = next_xC - this.xC;
+    this.curDy = next_yC - this.yC;
+    this.xC = next_xC;
+    this.yC = next_yC;
+
+    //
+    // Update orientiation angle, making it tend towards the slope...
+    //
+    float hyp = sqrt(this.curDx*this.curDx + this.curDy*this.curDy);
+    if (hyp>0.01) {
+      float angle = acos(this.curDx/hyp); // this is between 0 and PI
+      float aFrom = this.a;
+      //println("PRE:aFrom,a " + aFrom + "," + angle);
+      String xx = ":: " + aFrom + ":" + angle;
+      assert(angle>=0 && angle <=PI);
+      assert(aFrom>=-PI && aFrom<=PI);
+      if (this.curDy<-0.01) {
+        angle = -angle;
+      }
+      if (abs(a-angle)>PI) {
+        if (angle<0.0) {
+          angle = 2*PI+angle;
+          assert(aFrom>=0);
+        } else {
+          assert(aFrom<0);
+          aFrom = 2*PI+aFrom;
+          assert(aFrom>=0);
+        }
+      }
+      //if (abs(a-angle)>PI) {
+       // println("a,angle:" + a + "," + angle + xx);
+       // assert(false);
+      //}
+
+      this.a = normalizeAngle(lerp(aFrom, angle, TURN_SPEED));
+    }
   }
 
+  // Return a value between +/- PI 
+  float normalizeAngle(float a) {
+    if (a>0) {
+      a = a % (2*PI);
+      if (a>PI) {
+        a = -(2*PI-a);
+      }
+    } else {
+      a = - ((-a) % (2 * PI));
+      if (a < -PI) {
+        a = 2*PI+a;
+      }
+    }
+    assert(a>=-PI && a<=PI);
+    return a;
+  }
 
   // Compute the next point to head towards, taking direction into account.
   int nextIndex(int index) {

@@ -5,16 +5,21 @@ class Arena {
   int w;
   Point points[];
   ArrayList<AnimatedObject> critters;
+  int cornerX;
+  int cornerY;
   
   // "Home" is a small region from which the critters emerge. It is located on the upper-left hand corner of the grid.
-  final int HOME_HEIGHT = 300;
+  final int HOME_HEIGHT = 300; // Off screen
   final int HOME_WIDTH = 20;
+  final int HOLE_DISPLACEMENT = 35;
 
   Arena(int nx, int ny, int cornerX, int cornerY, int w, int h) {
     this.nx = nx;
     this.ny = ny;
     this.w = w;
     this.h = h;
+    this.cornerX = cornerX;
+    this.cornerY = cornerY;
     critters = new ArrayList<AnimatedObject>();
     points = new Point[1+nx*ny]; // 1 for the initial "home" point;
 
@@ -42,9 +47,29 @@ class Arena {
 
   void draw() {
     background(green);
+    drawBankPre();
     for (AnimatedObject c : critters) {
       // TODO: collision avoidance...
       c.draw();
     }
+    drawBankPost();
   }
+  
+  void drawBankPre() {
+    //Point pHome = points[0];
+    noStroke();
+    fill(darkGreen);
+    rect(width/2, this.cornerY-HOLE_DISPLACEMENT-5, width, this.cornerY);
+    fill(0);
+    ellipse(this.cornerX, this.cornerY-HOLE_DISPLACEMENT, 40, 30);
+  }
+  
+  void drawBankPost() {
+    noStroke();
+    //fill(0,128);
+    //ellipse(this.cornerX, this.cornerY-HOLE_DISPLACEMENT-5, 40, 20);
+    fill(darkGreen);
+    rect(this.cornerX, this.cornerY-HOLE_DISPLACEMENT-10-50, 100, 100);
+  }
+  
 }

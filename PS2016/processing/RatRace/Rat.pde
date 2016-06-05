@@ -13,9 +13,29 @@ class Rat extends AnimatedObject {
     if (this.visible) {
       this.move();
       //println(this.w + ", " + this.h);
+
+      pushMatrix();
+      translate(this.xC, this.yC);
+      rotate(a);
+      //println(degrees(a));
+      
+      // Eyes
+      stroke(pink);
+      fill(pink);
+      ellipse(this.h/2, 0, this.w/1.75, this.w/1.75);
+      
+      //  Body and head
       stroke(c);
       fill(c);
-      ellipse(this.xC, this.yC, this.w, this.h);
+      ellipse(0, 0, this.h, this.w); // Note the rat is wide PERPENDICULAR to the direction of travel
+      triangle(this.h/3, -this.w/4, 
+        this.h, 0, 
+        this.h/3, this.w/4);     
+        
+      // tail
+      strokeWeight(2);
+      line(-this.h, 0, 0,0);
+      popMatrix();
     }
   }
 
@@ -25,7 +45,7 @@ class Rat extends AnimatedObject {
       stop();
       int[] nextPath = getNextPath();
       if (nextPath!=null) {
-        super.start(nextPath, 0.0);
+        super.start(nextPath);
       }
     }
   }
@@ -33,7 +53,7 @@ class Rat extends AnimatedObject {
   void start() {
     int[] nextPath = getNextPath();
     if (nextPath!=null) {
-      super.start(nextPath, 0.0);
+      super.start(nextPath);
     }
   }
 
