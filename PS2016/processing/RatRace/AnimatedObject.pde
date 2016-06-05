@@ -26,6 +26,18 @@ abstract class AnimatedObject {
   float fraction=0.0; // Fractional amount moved between curIndex and next index;
   boolean moving=false;
 
+  public final float POSITION_PERTURBATION_AMPLITUDE = 10.0; // pixels
+  public final float POSITION_PERTURBATION_OFFSET = 0.0; // pixels
+  public final float POSITION_PERTURBATION_SCALE = 0.02; // pixels
+
+  public final float SPEED_PERTURBATION_AMPLITUDE = 0.1; // pixels
+  public final float SPEED_PERTURBATION_OFFSET = 1.0; // pixels
+  public final float SPEED_PERTURBATION_SCALE = 0.01; // pixels
+
+  RandomPerturbation pX = new RandomPerturbation(POSITION_PERTURBATION_AMPLITUDE, POSITION_PERTURBATION_OFFSET, POSITION_PERTURBATION_SCALE);
+  RandomPerturbation pY = new RandomPerturbation(POSITION_PERTURBATION_AMPLITUDE, POSITION_PERTURBATION_OFFSET, POSITION_PERTURBATION_SCALE);
+  RandomPerturbation pSpeed = new RandomPerturbation(SPEED_PERTURBATION_AMPLITUDE, SPEED_PERTURBATION_OFFSET, SPEED_PERTURBATION_SCALE);
+
   AnimatedObject(float w, float h, Point[] points) {
     //this.xC = xC;
     //his.yC = yC;
@@ -42,8 +54,8 @@ abstract class AnimatedObject {
     this.fraction = 0.0;
     this.goForward = true;
     Point p = this.points[path[this.curIndex]];
-    this.xC = p.x;
-    this.yC = p.y;
+    this.xC = p.x + pX.nextValue();
+    this.yC = p.y + pY.nextValue();
     this.a = angle;
     this.moving = true;
   }
@@ -87,8 +99,8 @@ abstract class AnimatedObject {
     //
     Point p1 = points[path[curIndex]];
     Point p2 = points[path[next]];
-    this.xC = lerp(p1.x, p2.x, fraction);
-    this.yC = lerp(p1.y, p2.y, fraction);
+    this.xC = lerp(p1.x, p2.x, fraction) + pX.nextValue();
+    this.yC = lerp(p1.y, p2.y, fraction) + pY.nextValue();
   }
 
 

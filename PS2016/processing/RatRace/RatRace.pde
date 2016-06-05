@@ -40,14 +40,21 @@ void setupArena() {
   int[][] rat2Paths = {pathM, pathO, pathV, pathE, pathD};
   int[][] rat3Paths = {pathM, pathY};
   int[][] rat4Paths = {pathC, pathH, pathE, pathE, pathS, pathE};
-  
 
 
-  Rat r1 = new Rat(ratWidth, ratHeight, a.points, rat4Paths, gray);
+
+  Rat r1 = new Rat(ratWidth, ratHeight, a.points, rat1Paths, black);
   a.addCritter(r1); 
-  //Rat r2 = new Rat(ratWidth, ratHeight, a.points, pathO, white);
-  //a.addCritter(r2);
+  Rat r2 = new Rat(ratWidth, ratHeight, a.points, rat2Paths, white);
+  a.addCritter(r2);
+  Rat r3 = new Rat(ratWidth, ratHeight, a.points, rat3Paths, gray);
+  a.addCritter(r3); 
+  Rat r4 = new Rat(ratWidth, ratHeight, a.points, rat4Paths, brown);
+  a.addCritter(r4);
 
   r1.start();
-  //r2.start(0, 0.0);
+  r2.start();
+  r3.start();
+  r4.start();
+
 }
