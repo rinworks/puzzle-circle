@@ -26,13 +26,13 @@ abstract class AnimatedObject {
   float fraction=0.0; // Fractional amount moved between curIndex and next index;
   boolean moving=false;
 
-  public final float POSITION_PERTURBATION_AMPLITUDE = 10.0; // pixels
+  public final float POSITION_PERTURBATION_AMPLITUDE = 20.0; // pixels // TODO: make it 2xwidth of object
   public final float POSITION_PERTURBATION_OFFSET = 0.0; // pixels
   public final float POSITION_PERTURBATION_SCALE = 0.02; // pixels
 
-  public final float SPEED_PERTURBATION_AMPLITUDE = 0.1; // pixels
+  public final float SPEED_PERTURBATION_AMPLITUDE = 0.75; // pixels
   public final float SPEED_PERTURBATION_OFFSET = 1.0; // pixels
-  public final float SPEED_PERTURBATION_SCALE = 0.01; // pixels
+  public final float SPEED_PERTURBATION_SCALE = 0.1; // pixels
 
   RandomPerturbation pX = new RandomPerturbation(POSITION_PERTURBATION_AMPLITUDE, POSITION_PERTURBATION_OFFSET, POSITION_PERTURBATION_SCALE);
   RandomPerturbation pY = new RandomPerturbation(POSITION_PERTURBATION_AMPLITUDE, POSITION_PERTURBATION_OFFSET, POSITION_PERTURBATION_SCALE);
@@ -84,7 +84,7 @@ abstract class AnimatedObject {
     //
     assert(MOVEMENT_INCREMENT>=0.0 && MOVEMENT_INCREMENT<1.0);
     assert(fraction>=0.0 && fraction<=1.0);
-    this.fraction += MOVEMENT_INCREMENT;
+    this.fraction += MOVEMENT_INCREMENT*pSpeed.nextValue();
     if (this.fraction > 1.0) {
       // We've over stepped, move to next index
       curIndex = next;

@@ -23,8 +23,8 @@ void draw() {
 // WHO MOVED MY CHEESE
 
 void setupArena() {
-  int ratHeight = 20;
-  int ratWidth = 10;
+  int ratHeight = 40;
+  int ratWidth = 20;
   a = new Arena(3, 3, 20, 20, 300, 300);
   int[] pathW = {1, 7, 5, 9, 3, 9, 5, 7};
   int[] pathH = {1, 7, 4, 6, 3, 9, 6, 4};
