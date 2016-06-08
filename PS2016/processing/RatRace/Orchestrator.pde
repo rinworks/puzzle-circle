@@ -13,9 +13,6 @@ class Orchestrator {
   }
 
   void start() {
-    for (Cheese c : cheeses) {
-      c.start();
-    }
 
     for (Rat r : rats) {
       r.start();

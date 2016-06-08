@@ -29,6 +29,10 @@ abstract class AnimatedObject {
   float curDx=0.0; // incremental delta x
   float curDy=0.0; // incremental delta y. Current slope is (curDy/curDx), but note that either curDx or curDy can be 0.
 
+  // These may be directly set by anyone, and will have immediate effect.
+  boolean holdPosition=false; // Prevents progress along path, but still does random flucations in position.
+  boolean freeze=false; // Completely halts motion of any kind. Superceeds holdPosition if true.
+
   public final float POSITION_PERTURBATION_AMPLITUDE = 20.0; // pixels // TODO: make it 2xwidth of object
   public final float POSITION_PERTURBATION_OFFSET = 0.0; // pixels
   public final float POSITION_PERTURBATION_SCALE = 0.02; // pixels
@@ -50,6 +54,7 @@ abstract class AnimatedObject {
   }
 
   // Start at a particular point (index into points), oriented at a particular angle.
+  // Note: Old holdPosition and freeze values are preserved.
   void start(int[] path) {
     this.path = path;
     this.visible=true;
@@ -63,6 +68,7 @@ abstract class AnimatedObject {
     this.curDx = this.curDy = 0.0; // Slope is Dx/Dy, so is undefined at this stage.
   }
 
+  // Note: holdPosition and freeze values are preserved.
   void stop() {
     this.moving = false;
     this.visible = false;
@@ -72,7 +78,7 @@ abstract class AnimatedObject {
   // other objects into account.
   void move() {
 
-    if (!moving || path==null || path.length==0) {
+    if (!moving || freeze || path==null || path.length==0) {
       return;
     }
 
@@ -85,17 +91,19 @@ abstract class AnimatedObject {
     //
     // Update location
     //
-    assert(MOVEMENT_INCREMENT>=0.0 && MOVEMENT_INCREMENT<1.0);
-    assert(fraction>=0.0 && fraction<=1.0);
-    float deltaFrac = MOVEMENT_INCREMENT*pSpeed.nextValue();
+    if (!this.holdPosition) {
+      assert(MOVEMENT_INCREMENT>=0.0 && MOVEMENT_INCREMENT<1.0);
+      assert(fraction>=0.0 && fraction<=1.0);
+      float deltaFrac = MOVEMENT_INCREMENT*pSpeed.nextValue();
 
-    // Special case - cur and next indices are same - in this case we 
-    // speed up the progess so that we don't pause too long at the point.
-    if (path[curIndex] == path[next]) {
-      deltaFrac = 0.1; // in 10 frames(?) we should move to next point.
+      // Special case - cur and next indices are same - in this case we 
+      // speed up the progess so that we don't pause too long at the point.
+      if (path[curIndex] == path[next]) {
+        deltaFrac = 0.1; // in 10 frames(?) we should move to next point.
+      }
+
+      this.fraction += deltaFrac;
     }
-
-    this.fraction += deltaFrac;
     if (this.fraction > 1.0) {
       // We've over stepped, move to next index
       curIndex = next;
@@ -142,8 +150,8 @@ abstract class AnimatedObject {
         }
       }
       //if (abs(a-angle)>PI) {
-       // println("a,angle:" + a + "," + angle + xx);
-       // assert(false);
+      // println("a,angle:" + a + "," + angle + xx);
+      // assert(false);
       //}
 
       this.a = normalizeAngle(lerp(aFrom, angle, TURN_SPEED));

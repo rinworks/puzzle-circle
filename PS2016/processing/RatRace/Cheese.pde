@@ -11,6 +11,7 @@ class Cheese extends AnimatedObject {
     this.point = point;
     this.path = new int[1];
     this.path[0] = point;
+    this.freeze = true;
     setupHoles();
   }
 

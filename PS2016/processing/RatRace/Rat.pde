@@ -40,7 +40,7 @@ class Rat extends AnimatedObject {
   }
 
   void pointCrossed(int point) {
-    println("point crossed: " + point);
+    //println("point crossed: " + point);
     if (currentPathComplete(point)) { 
       stop();
       int[] nextPath = getNextPath();
