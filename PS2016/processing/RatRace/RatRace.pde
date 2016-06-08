@@ -1,4 +1,5 @@
-Arena a;
+
+
 color brown = color(205, 133, 63);
 color black = color(32, 32, 32);
 color white = color(250, 250, 250);
@@ -7,7 +8,7 @@ color green = color(128, 250, 128);
 color darkGreen = color(100, 200, 100);
 color pink = color(255, 100, 100); // eyes
 color yellow = color(255, 255, 0);
-
+Orchestrator o;
 void setup() {
   size(500, 500);
   ellipseMode(CENTER);
@@ -16,7 +17,7 @@ void setup() {
 }
 
 void draw() {
-  a.draw();
+  o.draw();
 }
 
 // Point index:
@@ -29,7 +30,7 @@ void draw() {
 void setupArena() {
   int ratHeight = 40;
   int ratWidth = 25;
-  a = new Arena(3, 3, 100, 50, 300, 350);
+  Arena a = new Arena(3, 3, 100, 50, 300, 350);
   int[] pathW = {1, 7, 5, 9, 3, 9, 5, 7};
   int[] pathH = {1, 7, 4, 6, 3, 9, 6, 4};
   int[] pathO = {1, 3, 9, 7};
@@ -68,14 +69,11 @@ void setupArena() {
   Rat r4 = new Rat(ratWidth, ratHeight, a.points, rat4Paths, brown);
   a.addCritter(r4);
 
-  r1.start();
-  r2.start();
-  r3.start();
-  r4.start();
+  Rat[] rats = {r1, r2, r3, r4};
+  
+  this.o = new Orchestrator(a, rats, cheeses);
+  this.o.start();
 
-  for (Cheese c : cheeses) {
-    c.start();
-  }
 }
 
 // Initialize cheese to go on locations
