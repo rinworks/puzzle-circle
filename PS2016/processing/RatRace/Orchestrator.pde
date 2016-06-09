@@ -21,6 +21,7 @@ class Orchestrator {
   void draw() {
 
     manageCheeses();
+    manageDormantRats();
 
     this.a.draw();
   }
@@ -55,9 +56,9 @@ class Orchestrator {
   }
 
   void manageDormantRats() {
-    final int MIN_RAT_RELEASE_INTERVAL = 100;
-    final int MAX_RAT_RELEASE_INTERVAL = 300;
-    final int MIN_RATS_IN_FIELD = 3;
+    final int MIN_RAT_RELEASE_INTERVAL = 50;
+    final int MAX_RAT_RELEASE_INTERVAL = 100;
+    final int MIN_RATS_IN_FIELD = 2;
     int ratReleaseInterval = (int) random(MIN_RAT_RELEASE_INTERVAL, MAX_RAT_RELEASE_INTERVAL); // interval between semi-periodic release of rats from home.
     if (frameCount % ratReleaseInterval == 0) {
       int ratsInField = numRatsOnField(); // Rats roaming around the field.
@@ -68,7 +69,7 @@ class Orchestrator {
         Rat r = findRatToRelease();
         assert(r!=null);
         // Release (unfreeze) it...
-        assert(r.freeze);
+        //assert(r.freeze);
         r.freeze=false;
       }
     }

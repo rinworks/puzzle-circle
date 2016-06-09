@@ -42,14 +42,19 @@ void setupArena() {
   int[] pathY = {1, 5, 8, 5, 3, 5};
   int[] pathC = {1, 3, 1, 7, 9, 7};
   int[] pathS = {1, 3, 1, 4, 6, 9, 7, 9, 6, 4};
-  int[] pWait = {0, 0, 0, 0, 0};
+  int[] pWait = {0, 0};
   int[] pStart = {0, 1};
   int[] pStop = {1, 0};
   int[] pT = {1, 0, 0};// T==transition. Trick: because it is length > 2, it will only complete when it is a full cycle, so it goes home(0) and comes back to 1.
-  int[][] rat1Paths = {pWait, pWait, pStart, pathW, pT, pathH, pT, pathO, pStop};
+  //int[][] rat1Paths = {pWait, pWait, pStart, pathW, pT, pathH, pT, pathO, pStop};
+  //int[][] rat2Paths = {pWait, pStart, pathM, pT, pathO, pT, pathV, pT, pathE, pT, pathD, pStop};
+  //int[][] rat3Paths = {pWait, pWait, pWait, pStart, pathM, pT, pathY, pStop};
+  //int[][] rat4Paths = {pStart, pathC, pT, pathH, pT, pathE, pT, pathE, pT, pathS, pT, pathE, pStop};
+
+  int[][] rat1Paths = {pWait, pStart, pathW, pT, pathH, pT, pathO, pStop};
   int[][] rat2Paths = {pWait, pStart, pathM, pT, pathO, pT, pathV, pT, pathE, pT, pathD, pStop};
-  int[][] rat3Paths = {pWait, pWait, pWait, pStart, pathM, pT, pathY, pStop};
-  int[][] rat4Paths = {pStart, pathC, pT, pathH, pT, pathE, pT, pathE, pT, pathS, pT, pathE, pStop};
+  int[][] rat3Paths = {pWait, pStart, pathM, pT, pathY, pStop};
+  int[][] rat4Paths = {pWait, pStart, pathC, pT, pathH, pT, pathE, pT, pathE, pT, pathS, pT, pathE, pStop};
 
   int[] pathVert = {1, 4, 7};
   int[] pathDiag = {1, 5, 9};
@@ -71,10 +76,10 @@ void setupArena() {
   a.addCritter(r4);
 
   Rat[] rats = {r1, r2, r3, r4};
-  
+  //Rat[] rats = {r3};
+
   this.o = new Orchestrator(a, rats, cheeses);
   this.o.start();
-
 }
 
 // Initialize cheese to go on locations
