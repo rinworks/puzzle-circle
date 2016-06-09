@@ -2,6 +2,8 @@ class Rat extends AnimatedObject {
   color c;
   int[][] paths;
   int curPath=-1;
+  Cheese cheeseBeingEaten=null;
+  int eatingCountdown=0;
 
   Rat(float w, float h, Point[] points, int[][] paths, color c) {
     super(w, h, points);

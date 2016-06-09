@@ -4,7 +4,8 @@ class Orchestrator {
   Arena a;
   Rat[] rats;
   Cheese[] cheeses;
-  final int INTERVAL = 100;
+  int cheeseAddingInterval; // interval between semi-periodic additions of a cheese.
+
 
   Orchestrator(Arena a, Rat[] rats, Cheese[] cheeses) {
     this.a = a;
@@ -20,28 +21,32 @@ class Orchestrator {
   }
 
   void draw() {
-    if (frameCount % INTERVAL == 0) {
-      periodicTimerHandler();
-    }
+
+    manageCheeses();
+
     this.a.draw();
   }
 
-  void periodicTimerHandler() {
-    //println("******* TIMER *****");
-    manageCheeses();
-  }
+
 
   void manageCheeses() {
+    final int MIN_CHEESE_ADDING_INTERVAL = 100;
+    final int MAX_CHEESE_ADDING_INTERVAL = 300;
+    // TODO: Factor in the number of vacant spaces and the number of mice in deciding what the random interval is going to be...
+    cheeseAddingInterval = (int) random(MIN_CHEESE_ADDING_INTERVAL, MAX_CHEESE_ADDING_INTERVAL);
 
-    // Go through cheeses and selectively stop/start them.
-    for (Cheese c : this.cheeses) {
-      if ((int) random(1, this.cheeses.length) < 2) {
-        if (c.visible) {
-          c.stop();
-        } else {
+    if (frameCount % cheeseAddingInterval == 0) {
+      // Pick a random start offset and then run down from that (with wraparound) until you find an empty spot. 
+      int offset = (int) random(0, cheeses.length);
+      for (int i=0; i< this.cheeses.length; i++) {
+        int j = (i + offset) % cheeses.length; 
+        Cheese c = this.cheeses[j];
+        if (!c.visible) {
           c.start();
+          break;
         }
       }
     }
   }
+}
 }
