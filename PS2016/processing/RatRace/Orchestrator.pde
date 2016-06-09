@@ -56,8 +56,8 @@ class Orchestrator {
   }
 
   void manageDormantRats() {
-    final int MIN_RAT_RELEASE_INTERVAL = 50;
-    final int MAX_RAT_RELEASE_INTERVAL = 100;
+    final int MIN_RAT_RELEASE_INTERVAL = 25;
+    final int MAX_RAT_RELEASE_INTERVAL = 50;
     final int MIN_RATS_IN_FIELD = 2;
     int ratReleaseInterval = (int) random(MIN_RAT_RELEASE_INTERVAL, MAX_RAT_RELEASE_INTERVAL); // interval between semi-periodic release of rats from home.
     if (frameCount % ratReleaseInterval == 0) {

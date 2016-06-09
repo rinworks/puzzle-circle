@@ -12,7 +12,7 @@ class Point {
 }
 
 abstract class AnimatedObject {
-  final float MOVEMENT_INCREMENT = 0.01; // Fractional amount to move between points each frame.
+  final float MOVEMENT_INCREMENT = 0.02; // Fractional amount to move between points each frame.
   final float TURN_SPEED = 0.1;
   float xC=0;
   float yC=0;
@@ -33,13 +33,13 @@ abstract class AnimatedObject {
   boolean holdPosition=false; // Prevents progress along path, but still does random flucations in position.
   boolean freeze=false; // Completely halts motion of any kind. Superceeds holdPosition if true.
 
-  public final float POSITION_PERTURBATION_AMPLITUDE = 20.0; // pixels // TODO: make it 2xwidth of object
+  public final float POSITION_PERTURBATION_AMPLITUDE = 40.0; // pixels // TODO: make it 2xwidth of object
   public final float POSITION_PERTURBATION_OFFSET = 0.0; // pixels
   public final float POSITION_PERTURBATION_SCALE = 0.02; // pixels
 
-  public final float SPEED_PERTURBATION_AMPLITUDE = 0.75; // pixels
-  public final float SPEED_PERTURBATION_OFFSET = 1.0; // pixels
-  public final float SPEED_PERTURBATION_SCALE = 0.1; // pixels
+  public final float SPEED_PERTURBATION_AMPLITUDE = 0.85; // pixels
+  public final float SPEED_PERTURBATION_OFFSET = 0.849; // pixels
+  public final float SPEED_PERTURBATION_SCALE = 0.05; // pixels
 
   RandomPerturbation pX = new RandomPerturbation(POSITION_PERTURBATION_AMPLITUDE, POSITION_PERTURBATION_OFFSET, POSITION_PERTURBATION_SCALE);
   RandomPerturbation pY = new RandomPerturbation(POSITION_PERTURBATION_AMPLITUDE, POSITION_PERTURBATION_OFFSET, POSITION_PERTURBATION_SCALE);
@@ -94,12 +94,13 @@ abstract class AnimatedObject {
     if (!this.holdPosition) {
       assert(MOVEMENT_INCREMENT>=0.0 && MOVEMENT_INCREMENT<1.0);
       assert(fraction>=0.0 && fraction<=1.0);
-      float deltaFrac = MOVEMENT_INCREMENT*pSpeed.nextValue();
+      float speed  = pSpeed.nextValue();
+      float deltaFrac = MOVEMENT_INCREMENT*speed*speed*speed*speed;
 
       // Special case - cur and next indices are same - in this case we 
       // speed up the progess so that we don't pause too long at the point.
       if (path[curIndex] == path[next]) {
-        deltaFrac = 0.1; // in 10 frames(?) we should move to next point.
+        deltaFrac = 0.5; // in 4 frames(?) we should move to next point.
       }
 
       this.fraction += deltaFrac;

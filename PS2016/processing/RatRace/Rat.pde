@@ -76,8 +76,8 @@ class Rat extends AnimatedObject {
 
   // Private; sets up cheese and rat for eating the cheese.
   void beginEatingCheese(Cheese c) {
-    final int MIN_EATING_COUNTDOWN = 100;
-    final int MAX_EATING_COUNTDOWN = 200;
+    final int MIN_EATING_COUNTDOWN = 25;
+    final int MAX_EATING_COUNTDOWN = 50;
     assert(this.cheeseBeingEaten == null && !c.beingEaten);
     this.cheeseBeingEaten = c;
     this.eatingCountdown = (int) random(MIN_EATING_COUNTDOWN, MAX_EATING_COUNTDOWN);
