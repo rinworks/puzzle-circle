@@ -72,4 +72,11 @@ class Arena {
     rect(this.cornerX, this.cornerY-HOLE_DISPLACEMENT-10-50, 100, 100);
   }
   
+  // Display status message at position i.
+  void displayStatus(int i, String s) {
+    text(s, 10+(i*WIDTH/2) , HEIGHT-50);
+  }
+  
+
+  
 }

@@ -24,6 +24,8 @@ class Orchestrator {
     manageDormantRats();
 
     this.a.draw();
+    fill(black);
+    a.displayStatus(0, "Elapsed: " + (millis()/1000));
   }
 
   // Return cheese present at the current point, null otherwise.
@@ -36,20 +38,24 @@ class Orchestrator {
     return null;
   }
 
-  void manageCheeses() {
+  void manageCheeses() { 
     final int MIN_CHEESE_ADDING_INTERVAL = 100;
     final int MAX_CHEESE_ADDING_INTERVAL = 300;
     // TODO: Factor in the number of vacant spaces and the number of mice in deciding what the random interval is going to be...
     int cheeseAddingInterval = (int) random(MIN_CHEESE_ADDING_INTERVAL, MAX_CHEESE_ADDING_INTERVAL); // interval between semi-periodic additions of a cheese.
     if (frameCount % cheeseAddingInterval == 0) {
-      // Pick a random start offset and then run down from that (with wraparound) until you find an empty spot. 
-      int offset = (int) random(0, cheeses.length);
-      for (int i=0; i< this.cheeses.length; i++) {
-        int j = (i + offset) % cheeses.length; 
-        Cheese c = this.cheeses[j];
-        if (!c.visible) {
-          c.start();
-          break;
+      int ratsInField = numRatsOnField(); // Rats roaming around the field.
+      int numVisibleCheeses = numVisibleCheeses();
+      if (ratsInField > numVisibleCheeses) {
+        // Pick a random start offset and then run down from that (with wraparound) until you find an empty spot. 
+        int offset = (int) random(0, cheeses.length);
+        for (int i=0; i< this.cheeses.length; i++) {
+          int j = (i + offset) % cheeses.length; 
+          Cheese c = this.cheeses[j];
+          if (!c.visible) {
+            c.start();
+            break;
+          }
         }
       }
     }
@@ -58,7 +64,7 @@ class Orchestrator {
   void manageDormantRats() {
     final int MIN_RAT_RELEASE_INTERVAL = 25;
     final int MAX_RAT_RELEASE_INTERVAL = 50;
-    final int MIN_RATS_IN_FIELD = 2;
+    final int MIN_RATS_IN_FIELD = 3;
     int ratReleaseInterval = (int) random(MIN_RAT_RELEASE_INTERVAL, MAX_RAT_RELEASE_INTERVAL); // interval between semi-periodic release of rats from home.
     if (frameCount % ratReleaseInterval == 0) {
       int ratsInField = numRatsOnField(); // Rats roaming around the field.
@@ -85,6 +91,16 @@ class Orchestrator {
     return n;
   }
 
+  int numVisibleCheeses() {
+    int n = 0;
+    for (Cheese c : this.cheeses) {
+      if (c.visible) {
+        n++;
+      }
+    }
+    return n;
+  }
+
   int numDormantRats() {
     int n = 0;
     for (Rat r : this.rats) {
@@ -98,15 +114,21 @@ class Orchestrator {
   Rat findRatToRelease() {
     Rat rMax = null;
     int nMax = 0;
-    for (Rat r : this.rats) {
+    int iMax = -1;
+    for (int i =0; i<this.rats.length; i++) {
+      Rat r = this.rats[i];
       if (r.isDormant()) {
         int n = r.remainingPointCount();
         if (n>nMax) {
           nMax = n;
           rMax = r;
+          iMax = i;
         }
       }
     }
+    //a.displayStatus(2, "Rat"+(i+1)+"Has new max: " + nMax);
+    println("Rat"+(iMax+1)+"released with points:" + nMax );
+
     return rMax;
   }
 }

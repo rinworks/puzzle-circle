@@ -8,6 +8,8 @@ color green = color(128, 250, 128);
 color darkGreen = color(100, 200, 100);
 color pink = color(255, 100, 100); // eyes
 color yellow = color(255, 255, 0);
+final int HEIGHT = 500;
+final int WIDTH = 500;
 
 Orchestrator o;
 void setup() {
@@ -19,6 +21,7 @@ void setup() {
 
 void draw() {
   o.draw();
+  saveFrame();
 }
 
 // Point index:
@@ -31,17 +34,19 @@ void draw() {
 void setupArena() {
   int ratHeight = 40;
   int ratWidth = 25;
+  randomSeed(1);
+  noiseSeed(1);
   Arena a = new Arena(3, 3, 100, 50, 300, 350);
-  int[] pathW = {1, 7, 5, 9, 3, 9, 5, 7};
-  int[] pathH = {1, 7, 4, 6, 3, 9, 6, 4};
-  int[] pathO = {1, 3, 9, 7};
-  int[] pathM = {1, 7, 1, 5, 3, 9, 3, 5};
-  int[] pathV = {1, 8, 3, 8};
-  int[] pathE = {1, 3, 1, 4, 5, 4, 7, 9, 7};
-  int[] pathD = {1, 2, 6, 8, 7};
-  int[] pathY = {1, 5, 8, 5, 3, 5};
-  int[] pathC = {1, 3, 1, 7, 9, 7};
-  int[] pathS = {1, 3, 1, 4, 6, 9, 7, 9, 6, 4};
+  int[] pathW = {1, 4, 7, 5, 9, 5, 9, 3, 9, 5, 7, 5, 7, 4};
+  int[] pathH = {1, 4, 7, 4, 5, 4, 6, 3, 9, 6, 4, 5, 4};
+  int[] pathO = {1, 3, 9, 6, 9, 7, 4, 7};
+  int[] pathM = {1, 7, 1, 4, 1, 5, 3, 9, 3, 5, 3, 5};
+  int[] pathV = {1, 8, 3, 8, 3, 8, 1};
+  int[] pathE = {1, 3, 1, 4, 5, 4, 7, 4, 7, 9, 7, 8, 7};
+  int[] pathD = {1, 2, 6, 2, 6, 8, 7, };
+  int[] pathY = {1, 5, 3, 5, 1, 5, 8, 5, 8, 5, 1, 5, 1};
+  int[] pathC = {1, 3, 1, 2, 1, 7, 9, 7, 8, 7};
+  int[] pathS = {1, 3, 1, 4, 1, 4, 6, 9, 6, 9, 7, 9, 6, 4};
   int[] pWait = {0, 0};
   int[] pStart = {0, 1};
   int[] pStop = {1, 0};

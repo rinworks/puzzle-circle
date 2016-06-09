@@ -12,7 +12,7 @@ class Point {
 }
 
 abstract class AnimatedObject {
-  final float MOVEMENT_INCREMENT = 0.02; // Fractional amount to move between points each frame.
+  final float MOVEMENT_INCREMENT = 0.03; // Fractional amount to move between points each frame.
   final float TURN_SPEED = 0.1;
   float xC=0;
   float yC=0;
