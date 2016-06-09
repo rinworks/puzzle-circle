@@ -1,4 +1,5 @@
 class Rat extends AnimatedObject {
+  final int HOME_POINT = 0; // Index of the hole aming the global Point array of points.
   color c;
   int[][] paths;
   int curPath=-1;
@@ -12,6 +13,14 @@ class Rat extends AnimatedObject {
   }
 
   void draw() {
+
+    // Stop eating of neecessary.
+    if (this.cheeseBeingEaten!=null) {
+      if (this.eatingCountdown-- <= 0) {
+        this.endEatingCheese();
+      }
+    }
+
     if (this.visible) {
       this.move();
       //println(this.w + ", " + this.h);
@@ -20,12 +29,12 @@ class Rat extends AnimatedObject {
       translate(this.xC, this.yC);
       rotate(a);
       //println(degrees(a));
-      
+
       // Eyes
       stroke(pink);
       fill(pink);
       ellipse(this.h/2, 0, this.w/1.75, this.w/1.75);
-      
+
       //  Body and head
       stroke(c);
       fill(c);
@@ -33,23 +42,60 @@ class Rat extends AnimatedObject {
       triangle(this.h/3, -this.w/4, 
         this.h, 0, 
         this.h/3, this.w/4);     
-        
+
       // tail
       strokeWeight(2);
-      line(-this.h, 0, 0,0);
+      line(-this.h, 0, 0, 0);
       popMatrix();
     }
   }
 
   void pointCrossed(int point) {
     //println("point crossed: " + point);
+
+    if (this.path[point] == HOME_POINT) {
+      // We're crossing into the home point. Let's freeze the rat for starters...
+      this.freeze = true;
+    }
     if (currentPathComplete(point)) { 
+      // We're done with the current path, start the next one...
       stop();
       int[] nextPath = getNextPath();
       if (nextPath!=null) {
         super.start(nextPath);
       }
+    } else if (this.cheeseBeingEaten == null) {
+      // Check if we should eat cheese...
+      Cheese c = o.tryGetCheeseAtPoint(this.path[point]);
+      if (c!=null && c.visible && !c.beingEaten) {
+        // Got one! Let's start eating it.
+        beginEatingCheese(c);
+      }
     }
+  }
+
+  // Private; sets up cheese and rat for eating the cheese.
+  void beginEatingCheese(Cheese c) {
+    final int MIN_EATING_COUNTDOWN = 100;
+    final int MAX_EATING_COUNTDOWN = 200;
+    assert(this.cheeseBeingEaten == null && !c.beingEaten);
+    this.cheeseBeingEaten = c;
+    this.eatingCountdown = (int) random(MIN_EATING_COUNTDOWN, MAX_EATING_COUNTDOWN);
+    this.holdPosition = true; // makes it stay on location with a little bit of jiggling around.
+    c.beingEaten = true;
+    c.freeze = false; // makes it move around.
+  }
+
+  // Private; Cleans up afte cheese eating is complete.
+  void endEatingCheese() {
+    Cheese c = this.cheeseBeingEaten;
+    assert(c != null && c.beingEaten && c.visible);
+    this.cheeseBeingEaten = null;
+    this.eatingCountdown = 0;
+    this.holdPosition = false; // Begin moving again...
+    c.beingEaten = false;
+    c.visible = false;
+    c.freeze = true;
   }
 
   void start() {
@@ -73,5 +119,28 @@ class Rat extends AnimatedObject {
       nextPath = paths[++curPath];
     }
     return nextPath;
+  }
+
+  // Am I in the hole/home but still have points to visit?
+  boolean isDormant() {
+    return (this.path[this.curIndex]==HOME_POINT) && ((curPath+1) < paths.length );
+  }
+
+  // Am I on the field?
+  boolean onField() {
+    return this.path[this.curIndex]!=HOME_POINT;
+  }
+
+  int remainingPointCount() {
+    int pointsLeft = 0;
+    // Add points from current path...
+    if (this.curIndex < this.path.length) {
+      pointsLeft += this.path.length-this.curIndex;
+    }
+    // Add points from remaining paths...
+    for (int i=this.curPath+1; i<paths.length; i++) {
+      pointsLeft += this.paths[i].length;
+    }
+    return pointsLeft;
   }
 }

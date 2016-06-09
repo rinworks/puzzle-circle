@@ -8,6 +8,7 @@ color green = color(128, 250, 128);
 color darkGreen = color(100, 200, 100);
 color pink = color(255, 100, 100); // eyes
 color yellow = color(255, 255, 0);
+
 Orchestrator o;
 void setup() {
   size(500, 500);

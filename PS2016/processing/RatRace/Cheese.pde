@@ -5,6 +5,7 @@ class Cheese extends AnimatedObject {
   Point[] holeCenters;
   float[] holeRadii;
   final int DISPLACEMENT = 10;
+  boolean beingEaten = false; // true iff a rat is eating this cheese. Set directly by Rat.
 
   Cheese(float w, float h, Point[] points, int point) {
     super(w, h, points);
