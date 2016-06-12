@@ -19,6 +19,7 @@ abstract class AnimatedObject {
   float w=0;
   float h=0;
   float a=0; // angle in radians.
+  float aPrev=0; // angle from previous frame.
   Point[] points=null;
   int[] path=null; // indexes of points in path, can be repeats.
   boolean visible=false;
@@ -154,7 +155,7 @@ abstract class AnimatedObject {
       // println("a,angle:" + a + "," + angle + xx);
       // assert(false);
       //}
-
+      this.aPrev = a;
       this.a = normalizeAngle(lerp(aFrom, angle, TURN_SPEED));
     }
   }

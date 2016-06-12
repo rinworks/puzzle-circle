@@ -10,6 +10,7 @@ color pink = color(255, 100, 100); // eyes
 color yellow = color(255, 255, 0);
 final int HEIGHT = 500;
 final int WIDTH = 500;
+boolean saveFrames = true; // will be set to false when all rats are done
 
 Orchestrator o;
 void setup() {
@@ -21,7 +22,9 @@ void setup() {
 
 void draw() {
   o.draw();
-  saveFrame();
+  if (saveFrames) {
+    saveFrame("output/frame######.png");
+  }
 }
 
 // Point index:

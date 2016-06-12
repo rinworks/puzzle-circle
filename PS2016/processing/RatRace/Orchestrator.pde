@@ -4,6 +4,7 @@ class Orchestrator {
   Arena a;
   Rat[] rats;
   Cheese[] cheeses;
+  boolean ratsDone=false; // true when they are all done and no longer on the field.
 
   Orchestrator(Arena a, Rat[] rats, Cheese[] cheeses) {
     this.a = a;
@@ -20,13 +21,19 @@ class Orchestrator {
 
   void draw() {
 
-    manageCheeses();
-    manageDormantRats();
+    if (!this.ratsDone) {
 
-    this.a.draw();
-    fill(black);
-    a.displayStatus(0, "Elapsed: " + (millis()/1000));
-  }
+      manageCheeses();
+      manageDormantRats();
+
+      this.a.draw();
+      fill(black);
+      a.displayStatus(0, "Elapsed: " + (millis()/1000));
+    } else {     
+      // We're all done... stop saving frames if we're saving frames.
+      saveFrames = false;
+    }
+   }
 
   // Return cheese present at the current point, null otherwise.
   Cheese tryGetCheeseAtPoint(int point) {
@@ -78,6 +85,9 @@ class Orchestrator {
         //assert(r.freeze);
         r.freeze=false;
       }
+      if (ratsInField+dormantRats == 0) {
+        this.ratsDone = true; // we're all done
+      }
     }
   }
 
@@ -127,7 +137,7 @@ class Orchestrator {
       }
     }
     //a.displayStatus(2, "Rat"+(i+1)+"Has new max: " + nMax);
-    println("Rat"+(iMax+1)+"released with points:" + nMax );
+    //println("Rat"+(iMax+1)+"released with points:" + nMax );
 
     return rMax;
   }

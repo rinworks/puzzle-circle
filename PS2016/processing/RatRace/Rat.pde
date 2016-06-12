@@ -45,7 +45,10 @@ class Rat extends AnimatedObject {
 
       // tail
       strokeWeight(2);
-      line(-this.h, 0, 0, 0);
+      pushMatrix();
+      rotate(3*(aPrev-a)); // Tail silghtly follows the angle of turn
+      line(-this.h, 0, -this.w/2, 0);
+      popMatrix();
       popMatrix();
     }
   }
