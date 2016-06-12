@@ -4,3 +4,5 @@
 # So for now it's all directories called output wherever
 # they occur...
 output/
+exported/
+*Auto-Save/
