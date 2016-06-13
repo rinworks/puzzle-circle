@@ -74,6 +74,6 @@ class Arena {
 
   // Display status message at position i.
   void displayStatus(int i, String s) {
-    text(s, 10+(i*WIDTH/2), HEIGHT-50);
+    //text(s, 10+(i*WIDTH/2), HEIGHT-50);
   }
 }
