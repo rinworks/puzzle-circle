@@ -13,6 +13,7 @@ class Cheese extends AnimatedObject {
     this.path = new int[1];
     this.path[0] = point;
     this.freeze = true;
+    this.xyPerturbationGain = 0.2;  // Attenuate xy position perturbation - we're a cheese after all!
     setupHoles();
   }
 

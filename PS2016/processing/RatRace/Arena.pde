@@ -7,7 +7,7 @@ class Arena {
   ArrayList<AnimatedObject> critters;
   int cornerX;
   int cornerY;
-  
+
   // "Home" is a small region from which the critters emerge. It is located on the upper-left hand corner of the grid.
   final int HOME_HEIGHT = 300; // Off screen
   final int HOME_WIDTH = 20;
@@ -27,7 +27,7 @@ class Arena {
     Point pHome = new Point(cornerX, cornerY-HOME_HEIGHT);
     int ii = 0;
     points[ii++]=pHome;
-    
+
     // Initialize remaining points in row-major order...
     assert(nx>=2 && ny>=2);
     float dx = 1.0*w/(nx-1);
@@ -54,16 +54,16 @@ class Arena {
     }
     drawBankPost();
   }
-  
+
   void drawBankPre() {
     //Point pHome = points[0];
     noStroke();
     fill(darkGreen);
     rect(width/2, this.cornerY-HOLE_DISPLACEMENT-5, width, this.cornerY);
     fill(0);
-    ellipse(this.cornerX, this.cornerY-HOLE_DISPLACEMENT, 40, 30);
+    ellipse(this.cornerX, this.cornerY-HOLE_DISPLACEMENT, 50, 30);
   }
-  
+
   void drawBankPost() {
     noStroke();
     //fill(0,128);
@@ -71,12 +71,9 @@ class Arena {
     fill(darkGreen);
     rect(this.cornerX, this.cornerY-HOLE_DISPLACEMENT-10-50, 100, 100);
   }
-  
+
   // Display status message at position i.
   void displayStatus(int i, String s) {
-    text(s, 10+(i*WIDTH/2) , HEIGHT-50);
+    text(s, 10+(i*WIDTH/2), HEIGHT-50);
   }
-  
-
-  
 }

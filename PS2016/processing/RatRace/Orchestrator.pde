@@ -33,7 +33,7 @@ class Orchestrator {
       // We're all done... stop saving frames if we're saving frames.
       saveFrames = false;
     }
-   }
+  }
 
   // Return cheese present at the current point, null otherwise.
   Cheese tryGetCheeseAtPoint(int point) {
@@ -46,8 +46,8 @@ class Orchestrator {
   }
 
   void manageCheeses() { 
-    final int MIN_CHEESE_ADDING_INTERVAL = 100;
-    final int MAX_CHEESE_ADDING_INTERVAL = 300;
+    final int MIN_CHEESE_ADDING_INTERVAL = 30;
+    final int MAX_CHEESE_ADDING_INTERVAL = 75;
     // TODO: Factor in the number of vacant spaces and the number of mice in deciding what the random interval is going to be...
     int cheeseAddingInterval = (int) random(MIN_CHEESE_ADDING_INTERVAL, MAX_CHEESE_ADDING_INTERVAL); // interval between semi-periodic additions of a cheese.
     if (frameCount % cheeseAddingInterval == 0) {
@@ -69,21 +69,23 @@ class Orchestrator {
   }
 
   void manageDormantRats() {
-    final int MIN_RAT_RELEASE_INTERVAL = 25;
-    final int MAX_RAT_RELEASE_INTERVAL = 50;
-    final int MIN_RATS_IN_FIELD = 3;
+    final int MIN_RAT_RELEASE_INTERVAL = 10;
+    final int MAX_RAT_RELEASE_INTERVAL = 25;
+    final int MIN_RATS_IN_FIELD = 2;
     int ratReleaseInterval = (int) random(MIN_RAT_RELEASE_INTERVAL, MAX_RAT_RELEASE_INTERVAL); // interval between semi-periodic release of rats from home.
     if (frameCount % ratReleaseInterval == 0) {
       int ratsInField = numRatsOnField(); // Rats roaming around the field.
       int dormantRats = numDormantRats(); // Rats waiting in the hole, but that still have work to do.
-      if (dormantRats > 0 && ratsInField <  MIN_RATS_IN_FIELD) {
+      if (dormantRats > 0 ) {
         // We're below the threshold of rats in the field and we have dormant rats, so release
         // the one with the longest remaining path.
-        Rat r = findRatToRelease();
-        assert(r!=null);
-        // Release (unfreeze) it...
-        //assert(r.freeze);
-        r.freeze=false;
+        Rat r = findRatToRelease(ratsInField <  MIN_RATS_IN_FIELD);
+        if (r!=null) {
+          // Release (unfreeze) it...
+          //assert(r.freeze);
+          r.freeze=false;
+          r.dormantStartMS=0;
+        }
       }
       if (ratsInField+dormantRats == 0) {
         this.ratsDone = true; // we're all done
@@ -121,8 +123,9 @@ class Orchestrator {
     return n;
   }
 
-  Rat findRatToRelease() {
+  Rat findRatToRelease(boolean forceRelease) {
     Rat rMax = null;
+    Rat rRet = null;
     int nMax = 0;
     int iMax = -1;
     for (int i =0; i<this.rats.length; i++) {
@@ -136,9 +139,29 @@ class Orchestrator {
         }
       }
     }
+
     //a.displayStatus(2, "Rat"+(i+1)+"Has new max: " + nMax);
+
+    if (forceRelease) {
+      rRet = rMax;
+    } else {
+      for (Rat r : this.rats) {
+        int n = r.remainingPointCount(); // Computed again .. not ideal, but...
+        if (dormantDelayExpired(r, nMax-n)) {
+          rRet  = r;
+          break;
+        }
+      }
+    }
+
     //println("Rat"+(iMax+1)+"released with points:" + nMax );
 
-    return rMax;
+    return rRet;
+  }
+
+  boolean dormantDelayExpired(Rat r, int remainingPoints) {
+    int perPointDelay=1;
+    int expiry = r.dormantStartMS  + perPointDelay*remainingPoints;
+    return expiry < millis();
   }
 }

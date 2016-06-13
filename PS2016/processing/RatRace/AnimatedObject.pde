@@ -14,6 +14,7 @@ class Point {
 abstract class AnimatedObject {
   final float MOVEMENT_INCREMENT = 0.03; // Fractional amount to move between points each frame.
   final float TURN_SPEED = 0.1;
+  float xyPerturbationGain = 1.0; // Default position gain of 1.0 - it is used to attenuate (potentially dynamically) position fluctiations.
   float xC=0;
   float yC=0;
   float w=0;
@@ -34,9 +35,9 @@ abstract class AnimatedObject {
   boolean holdPosition=false; // Prevents progress along path, but still does random flucations in position.
   boolean freeze=false; // Completely halts motion of any kind. Superceeds holdPosition if true.
 
-  public final float POSITION_PERTURBATION_AMPLITUDE = 40.0; // pixels // TODO: make it 2xwidth of object
+  public final float POSITION_PERTURBATION_AMPLITUDE = 60.0; // pixels // TODO: make it 2xwidth of object
   public final float POSITION_PERTURBATION_OFFSET = 0.0; // pixels
-  public final float POSITION_PERTURBATION_SCALE = 0.02; // pixels
+  public final float POSITION_PERTURBATION_SCALE = 0.02; //0.03; // 0.02; // pixels
 
   public final float SPEED_PERTURBATION_AMPLITUDE = 0.85; // pixels
   public final float SPEED_PERTURBATION_OFFSET = 0.849; // pixels
@@ -63,8 +64,8 @@ abstract class AnimatedObject {
     this.fraction = 0.0;
     this.goForward = true;
     Point p = this.points[path[this.curIndex]];
-    this.xC = p.x + pX.nextValue();
-    this.yC = p.y + pY.nextValue();
+    this.xC = p.x + this.xyPerturbationGain*pX.nextValue();
+    this.yC = p.y + this.xyPerturbationGain*pY.nextValue();
     this.moving = true;
     this.curDx = this.curDy = 0.0; // Slope is Dx/Dy, so is undefined at this stage.
   }
@@ -120,8 +121,8 @@ abstract class AnimatedObject {
     //
     Point p1 = points[path[curIndex]];
     Point p2 = points[path[next]];
-    float next_xC = lerp(p1.x, p2.x, fraction) + pX.nextValue();
-    float next_yC = lerp(p1.y, p2.y, fraction) + pY.nextValue();
+    float next_xC = lerp(p1.x, p2.x, fraction) + this.xyPerturbationGain*pX.nextValue();
+    float next_yC = lerp(p1.y, p2.y, fraction) + this.xyPerturbationGain*pY.nextValue();
     this.curDx = next_xC - this.xC;
     this.curDy = next_yC - this.yC;
     this.xC = next_xC;

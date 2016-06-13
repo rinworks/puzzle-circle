@@ -5,7 +5,7 @@ class Rat extends AnimatedObject {
   int curPath=-1;
   Cheese cheeseBeingEaten=null;
   int eatingCountdown=0;
-
+  int dormantStartMS=0; // Millis() at the point the moust started dormant mode.
   Rat(float w, float h, Point[] points, int[][] paths, color c) {
     super(w, h, points);
     this.c = c;
@@ -59,6 +59,7 @@ class Rat extends AnimatedObject {
     if (this.path[point] == HOME_POINT) {
       // We're crossing into the home point. Let's freeze the rat for starters...
       this.freeze = true;
+      this.dormantStartMS= millis();
     }
     if (currentPathComplete(point)) { 
       // We're done with the current path, start the next one...

@@ -10,7 +10,7 @@ color pink = color(255, 100, 100); // eyes
 color yellow = color(255, 255, 0);
 final int HEIGHT = 500;
 final int WIDTH = 500;
-boolean saveFrames = true; // will be set to false when all rats are done
+boolean saveFrames = true; // Initialie to true to save frames. Will be set to false when all rats are done
 
 Orchestrator o;
 void setup() {
@@ -42,7 +42,7 @@ void setupArena() {
   Arena a = new Arena(3, 3, 100, 50, 300, 350);
   int[] pathW = {1, 4, 7, 5, 9, 5, 9, 3, 9, 5, 7, 5, 7, 4};
   int[] pathH = {1, 4, 7, 4, 5, 4, 6, 3, 9, 6, 4, 5, 4};
-  int[] pathO = {1, 3, 9, 6, 9, 7, 4, 7};
+  int[] pathO = {1, 2, 3, 9, 3, 9, 6, 9, 7, 4, 7};
   int[] pathM = {1, 7, 1, 4, 1, 5, 3, 9, 3, 5, 3, 5};
   int[] pathV = {1, 8, 3, 8, 3, 8, 1};
   int[] pathE = {1, 3, 1, 4, 5, 4, 7, 4, 7, 9, 7, 8, 7};
@@ -101,7 +101,11 @@ Cheese[] initializeCheeses(Arena a) {
     new Cheese(cheeseH, cheeseW, a.points, 6), 
     new Cheese(cheeseH, cheeseW, a.points, 7), 
     new Cheese(cheeseH, cheeseW, a.points, 8), 
-    new Cheese(cheeseH, cheeseW, a.points, 9)
+    new Cheese(cheeseH, cheeseW, a.points, 9), 
+    // Decided to add 2 and 4 as well...
+    new Cheese(cheeseH, cheeseW, a.points, 2), 
+    new Cheese(cheeseH, cheeseW, a.points, 4)
+
   };
 
   return cheeses;
