@@ -3,20 +3,20 @@ class Machine {
   Gear[][] gears;
 
   int[][] teethCounts  = {
-    {15}, 
-    {20}, 
-    {30, 15, 20}, // Center
-    {18}, 
-    {16}
+    {15, 15, 20}, 
+    {20, 15, 18}, 
+    {37, 15, 16}, // Center
+    {18, 15, 14}, 
+    {16, 15, 12}
   };
 
   // Dimensions should match teethCounts
   float[][] rotations = {
-    {0}, 
-    {2}, 
+    {0, 0, 0}, 
+    {2, 0, 0}, 
     {0, -3, 0}, // Center
-    {2}, 
-    {0} 
+    {2, 0, 0}, 
+    {0, 0, 0} 
   };
 
   Machine() {
