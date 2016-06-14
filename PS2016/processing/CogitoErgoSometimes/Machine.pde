@@ -2,15 +2,30 @@
 class Machine {
   Gear[][] gears;
 
-  Machine() {
-    int[][] teethCounts  = {
-      {15}, 
-      {20}, 
-      {30}, 
-      {18}, 
-      {16}
-    };
+  int[][] teethCounts  = {
+    {15}, 
+    {20}, 
+    {30, 15, 20}, // Center
+    {18}, 
+    {16}
+  };
 
+  // Dimensions should match teethCounts
+  float[][] rotations = {
+    {0}, 
+    {2}, 
+    {0, -3, 0}, // Center
+    {2}, 
+    {0} 
+  };
+
+  Machine() {
+
+    // Verify that the dimensions of rotations are the same 
+    assert(teethCounts.length == rotations.length);
+    for (int i=0; i<teethCounts.length; i++) {
+      assert(teethCounts[i].length == rotations[i].length);
+    }
     initializeGears(teethCounts);
     positionGears();
   }
@@ -60,6 +75,17 @@ class Machine {
         fixHorizontalPosition(right, 1); // towards right;
       }
     }
+
+    // Now go down each column, positioning the y's
+    for (int i=0; i< gears.length; i++) {
+      Gear[] col = gears[i];
+      for (int j=0; (j+1)< col.length; j++) {
+        Gear gPrev = col[j];
+        Gear gNew = col[j+1];
+        gNew.c.x = gPrev.c.x;
+        fixVerticalPosition(gPrev, gNew);
+      }
+    }
   }
   boolean almostEqual(double a, double b) {
     return Math.abs(a-b)<0.001;
@@ -80,6 +106,18 @@ class Machine {
     gNew.c.x = gPrev.c.x + (gNew.D+gPrev.D+EXTRA_SPACE)*direction*0.5; // left or right, depending on directon (0.5 to go from D to r)
   }
 
+  void fixVerticalPosition(Gear gPrev, Gear gNew) {
+    final int EXTRA_SPACE = 8; // Extra space between gears
+
+    // We expect the top gear at prevIndex to have its yValue already set (i.e., nozero)
+    // While gNew/s y value should not be set (i.e., 0),
+    // and both gPrev and gNew to have the same x value (for now)
+    assert(!almostEqual(gPrev.c.y, 0));
+    assert(almostEqual(gNew.c.y, 0));
+    assert(almostEqual(gPrev.c.x, gNew.c.x));
+    gNew.c.y = gPrev.c.y + (gNew.D+gPrev.D+EXTRA_SPACE)*0.5; // (0.5 to go from D to r)
+  }
+
   void verticalLine(int x) {
     pg.stroke(1);
     pg.fill(0);
@@ -93,27 +131,27 @@ class Machine {
 
 
   void drawGears() {
-    float[][] rotations = {
-      {0}, 
-      {2}, 
-      {0}, // Center
-      {2}, 
-      {0} 
-    };
+    // Rotations by which to tweak each gear - in degrees, *clockwise*.
+
+
+
+
     horizontalLine(imageHeight/2);
     verticalLine(imageWidth/2);
     //float angle =((float)frameCount/360)*2*PI;
     //println(angle);
 
-    // For now we just draw the top layer...
     for (int i=0; i<gears.length; i++) {
-      Gear g = gears[i][0];
-      float rot = radians(rotations[i][0]);
-      pg.stroke(128);
-      pg.noFill();
-      pg.ellipse((float)g.c.x, (float)g.c.y, (float)g.D/2, (float)g.D/2);
-      //drawGear2(g.c.x, g.c.y, g.D/2*1.8, 0.2);
-      g.draw2(rot);
+      Gear[] col = gears[i];
+      for (int j=0; j<col.length; j++) {
+        Gear g = col[j];
+        float rot = radians(rotations[i][j]);
+        pg.stroke(128);
+        pg.noFill();
+        pg.ellipse((float)g.c.x, (float)g.c.y, (float)g.D/2, (float)g.D/2);
+        //drawGear2(g.c.x, g.c.y, g.D/2*1.8, 0.2);
+        g.draw2(rot);
+      }
     }
   }
 }

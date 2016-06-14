@@ -2,7 +2,7 @@
 // (written from scratch) to generate the RINWORKS logo.
 
 import java.util.Arrays;
-final  int imageHeight = 1000;
+final  int imageHeight = 2000;
 final  int imageWidth = 2000;
 PGraphics pg;
 Machine m;
@@ -36,7 +36,7 @@ class Point {
 }
 
 void setup() {
-  size(2000, 1000);
+  size(2000, 1500);
   pg = createGraphics(imageWidth, imageHeight);
   //String[] fontList = PFont.list();
   //println(fontList);
