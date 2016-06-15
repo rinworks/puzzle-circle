@@ -14,7 +14,7 @@ class Machine {
   float[][] rotations = {
     {-6, 5, -6}, 
     {-3, -6, 6}, 
-    {0, -3, -1}, // Center
+    {0, -4, -1}, // Center
     {6, -4, 0}, 
     {-2, -3, -9} 
   };
@@ -220,9 +220,9 @@ class Machine {
   // Return extra spacing (if any) between gears so that they don't bump
   double extraGearSpacing(Gear g1, Gear g2) {
     double dist = g1.c.distance(g2.c.x, g2.c.y);
-    double offset = 450;
-    double base = -1;
-    double scale = 0.035;
+    double offset = 350;
+    double base = 2;
+    double scale = 0.040;
     double delta = base + (offset-dist)*scale;
     println("delta: " + delta);
     return delta; // TODO
