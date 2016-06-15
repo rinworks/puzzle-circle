@@ -12,11 +12,11 @@ class Machine {
 
   // Dimensions should match teethCounts
   float[][] rotations = {
-    {0, 0, 0}, 
-    {3, 0, 0}, 
-    {0, 0, 0}, // Center
-    {0, 0, 0}, 
-    {0, 0, 0} 
+    {-6, 5, -6}, 
+    {-3, -6, 6}, 
+    {0, -3, -1}, // Center
+    {6, -4, 0}, 
+    {-2, -3, -9} 
   };
 
   int[][] teethCountsX  = {
@@ -219,7 +219,14 @@ class Machine {
 
   // Return extra spacing (if any) between gears so that they don't bump
   double extraGearSpacing(Gear g1, Gear g2) {
-    return 0; // TODO
+    double dist = g1.c.distance(g2.c.x, g2.c.y);
+    double offset = 450;
+    double base = -1;
+    double scale = 0.035;
+    double delta = base + (offset-dist)*scale;
+    println("delta: " + delta);
+    return delta; // TODO
+    
   }
 
 
