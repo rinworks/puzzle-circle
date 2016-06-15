@@ -71,7 +71,7 @@ void setup() {
   m.overlayTextLabels();
 
   pg.endDraw();
-  //pg.save("logo-out.png");
+  pg.save("gears.png");
   image(pg, 0, 0, width, width*imageHeight/imageWidth);
 
   noLoop();

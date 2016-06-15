@@ -266,11 +266,11 @@ class Machine {
   void overlayTextLabels() {
     // 16, -18, 6, -2, 10  or 8, -9, 3, -1, 5
     String[] labels = {
-      "A--R----------------", 
-      "W--------E----------", 
-      "A----O--------------", 
-      "IR------------------", 
-      "T-G-----------------"   
+      "AOBRICHLTEC---------", 
+      "WAOLSNIHRE----------", 
+      "AHTRCOHE----------", 
+      "IREMSODTN--------", 
+      "TRGNEFS--------"   
     };
 
     for (int i=0; i<gears.length; i++) {
