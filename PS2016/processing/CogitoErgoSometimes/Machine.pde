@@ -3,19 +3,19 @@ class Machine {
   Gear[][] gears;
 
   int[][] teethCounts  = {
-    {22, 15, 20}, 
-    {20, 15, 18}, 
-    {37, 15, 16}, // Center
-    {18, 15, 14}, 
-    {22, 15, 12}
+    {22, 10, 22}, // 16
+    {20, 15, 20}, // 18
+    {38, 11, 16}, // 6, Center
+    {15, 12, 18}, // 2
+    {25, 13, 14}  // 10
   };
 
   // Dimensions should match teethCounts
   float[][] rotations = {
     {0, 0, 0}, 
-    {2, 0, 0}, 
-    {0, -3, 0}, // Center
-    {2, 0, 0}, 
+    {3, 0, 0}, 
+    {0, 0, 0}, // Center
+    {0, 0, 0}, 
     {0, 0, 0} 
   };
 
@@ -238,8 +238,8 @@ class Machine {
   void drawGears() {
     // Rotations by which to tweak each gear - in degrees, *clockwise*.
 
-    horizontalLine(imageHeight/2);
-    verticalLine(imageWidth/2);
+    //horizontalLine(imageHeight/2);
+    //verticalLine(imageWidth/2);
     //float angle =((float)frameCount/360)*2*PI;
     //println(angle);
 
@@ -248,10 +248,9 @@ class Machine {
       for (int j=0; j<col.length; j++) {
         Gear g = col[j];
         float rot = radians(rotations[i][j]);
-        pg.stroke(128);
-        pg.noFill();
-        pg.ellipse((float)g.c.x, (float)g.c.y, (float)g.D/2, (float)g.D/2);
-        //drawGear2(g.c.x, g.c.y, g.D/2*1.8, 0.2);
+        //pg.stroke(128);
+        //pg.noFill();
+        //pg.ellipse((float)g.c.x, (float)g.c.y, (float)g.D/2, (float)g.D/2);
         g.draw(rot);
       }
     }
