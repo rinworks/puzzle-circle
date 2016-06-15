@@ -33,6 +33,14 @@ class Point {
     x = xn;
     y = yn;
   }
+
+  public double distance(double xx, double yy) {
+    double dx = xx-x;
+    double dy = yy-y;
+    return Math.sqrt(dx*dx + dy*dy);
+  }
+  
+  
 }
 
 void setup() {
@@ -64,13 +72,11 @@ void setup() {
   pg.endDraw();
   //pg.save("logo-out.png");
   image(pg, 0, 0, width, width*imageHeight/imageWidth);
-  
+
   noLoop();
 }
 
 void draw() {
-
-  
 }
 
 void showPoints(Point[] points) {
