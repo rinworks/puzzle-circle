@@ -54,7 +54,7 @@ void setup() {
     "Oswald Bold", 
     "Segoe WP Bold"
   };
-  int fontSize = 600; //48
+  int fontSize = 48;
   font = createFont(fontNames[1], fontSize);
   // pg.text(leftText, fudgeX+pg.width/2, fudgeY+pg.height/2);
   //   float r1Frac = 0.55; // was 0.65
@@ -68,6 +68,7 @@ void setup() {
   pg.ellipseMode(RADIUS);
 
   m.drawGears();
+  m.overlayTextLabels();
 
   pg.endDraw();
   //pg.save("logo-out.png");

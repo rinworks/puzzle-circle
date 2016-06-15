@@ -137,7 +137,7 @@ class Machine {
     //gNew.c.x = gPrev.c.x + (gNew.D+gPrev.D+EXTRA_SPACE)*direction*0.5; // left or right, depending on directon (0.5 to go from D to r)
     Gear gBot = gNewCol[gNewCol.length-1];
     double deltaY = maxBotY-(gBot.c.y+gBot.D/2);
-    println("deltaY: " + deltaY);
+    //println("deltaY: " + deltaY);
     touchGear(gPrev, gNew, gPrev.c.x +(gNew.D+gPrev.D)*direction*0.5, gNew.c.y+deltaY);
     //touchGear(gPrev, gNew, gNew.c.x, gNew.c.y);
   }
@@ -179,7 +179,7 @@ class Machine {
       double bot = g.c.y+g.D/2;
       maxBotY = Math.max(maxBotY, bot);
     }
-    println("maxBotY: " + maxBotY);
+    //println("maxBotY: " + maxBotY);
     int iCenter = gears.length/2;  //0 1 [2] 3 4 5
     Gear gCenter = gears[iCenter][0];
 
@@ -195,7 +195,7 @@ class Machine {
         fixHorizontalPosition2(right, 1, maxBotY); // towards right;
       }
     }
-    
+
     // Now fix each column...
     // Now go down each column, positioning the y's and tweaking the xs.
     int nCols = gears.length;
@@ -224,9 +224,8 @@ class Machine {
     double base = 2;
     double scale = 0.040;
     double delta = base + (offset-dist)*scale;
-    println("delta: " + delta);
+    //println("delta: " + delta);
     return delta; // TODO
-    
   }
 
 
@@ -261,5 +260,42 @@ class Machine {
         g.draw(rot);
       }
     }
+  }
+
+  // Add on the text labes along the bottom row of gears
+  void overlayTextLabels() {
+    // 16, -18, 6, -2, 10  or 8, -9, 3, -1, 5
+    String[] labels = {
+      "A--R----------------", 
+      "W--------E----------", 
+      "A----O--------------", 
+      "IR------------------", 
+      "T-G-----------------"   
+    };
+
+    for (int i=0; i<gears.length; i++) {
+      Gear[] col = gears[i];
+      Gear g = col[col.length-1];
+      for (int j=0; j < g.Z/2; j++) {
+        double a = PI/2 + 4*PI/g.Z*j;
+        drawOneChar(g, labels[i], j, a);
+      }
+    }
+  }
+
+  // Draws one character (s.charAt(i))), at angle a expressed in radians - Processing style
+  void drawOneChar(Gear g, String s, int i, double a) {
+    final int LETTER_OFFSET = 50;
+    println("s: " + s + " i: " + i + " a:" + a);
+    pg.pushMatrix();
+    //println("Gear.c: " + g.c);
+    //println("PG: " + pg);
+    pg.translate((float)(g.c.x), (float)(g.c.y));
+    pg.rotate((float)a);
+    pg.translate((float)g.D/2-LETTER_OFFSET,0);
+    pg.rotate( - PI/2);
+    pg.fill(255);
+    pg.text(s.charAt(i%s.length()), 0, 0);
+    pg.popMatrix();
   }
 }
