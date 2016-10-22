@@ -32,7 +32,7 @@ interface Drawable {
 class GraphicsParams {
   public int borderColor=0; // -1 means don't set
   public int borderWeight=1; // -1 means don't set
-  public int backgroundFill=-255; // -1 means don't set
+  public int backgroundFill=255; // -1 means don't set
   public PFont font=null; // null means don't set
   public PFont smallFont = null; // font for small text; null means don't set.
   public int textSize=-1; // -1 means don't set
@@ -123,16 +123,35 @@ class Utils {
     x2 = x1+w;
     y1 = y-h/2;
     y2 = y1+h;
+    float sw = getGraphics().strokeWeight;
+    // We have to draw a rectangle *without* borders first,
+    // then add on the dotted lines after restoring stroke width...
+    noStroke();
+    rect(x, y, w, h);
+    stroke(sw);
     dottedLine(x1, y1, x2, y1, space); // North
     dottedLine(x1, y2, x2, y2, space); // South
     dottedLine(x2, y1, x2, y2, space); // East
     dottedLine(x1, y1, x1, y2, space); // West
+
   }
   
-  
+  // Note - to make this predictable, 
+  // set the random seed before calling, using randomSeed()
+  public void randomPermutation(int[] arr) {
+    if (arr.length<2) return;
+    for (int i=0; i<arr.length-1; i++) {
+      swap(arr, i, (int) random(i+1, arr.length));
+    }
+  }
+
+  void swap(int[] arr, int i, int j) {
+    int t = arr[i];
+    arr[i] = arr[j];
+    arr[j] = t;
+  }
 }
 
-Utils gUtils = new Utils();
 
 
 

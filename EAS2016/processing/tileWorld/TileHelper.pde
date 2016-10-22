@@ -26,7 +26,9 @@ class TextTile implements  Drawable {
     rectMode(CENTER);
     gUtils.dottedRect(0, 0, c.eW, c.eH, 10);
     gUtils.setTextParams(params);
-    text(centerText, 0, -b/4.0);
+    if (centerText!=null) {
+      text(centerText, 0, -b/4.0);
+    }
     //textSize(borderTextSize); // setTextParams earlier set text size to graphicsParams.textSize
     gUtils.setSmallTextParams(params); // Style for the border text...
     if (borderTexts[0]!=null) { 
@@ -65,24 +67,55 @@ class TileHelper {
     gParams.smallFont = createFont(SMALL_FONT, 18); // null means don't set
     gParams.textColor = 0;
     gParams.backgroundFill = 255;
-    gParams.borderColor = 128;
+    gParams.borderColor =  128;
     gParams.borderWeight = 3;
   }
 
 
-  public Grid createGrid(int rows, int cols) {
+  // letters - go in the center of each tile.
+  // borderText - pairs of related words - used to generate borders.
+  // Both are laid out in row-major order.
+  // permutation - scrambles the order. If cell i's true position is i, it will be located
+  // in permutation[i]. If permutation is [0, 1, 2,... n-1] then there is no scrambling.
+  // permutation.length MUST be rows*cols.
+  public Grid createGrid(int rows, int cols, String letters, String[] borderText, int[] permutation) {
+    assert(permutation.length == rows*cols);
+    String[][][] borders = generateBorders(rows, cols, borderText); // borders - used to the 4 borders  - N, E, S, W.
     int GRID_WIDTH = width;
     int GRID_HEIGHT = height;
     int GRID_PADDING = 10;
-    String[] borderTexts = {"North", "East", "South", "West"};
+    //String[] borderTexts = {"North", "East", "South", "West"};
     Grid g = new Grid(rows, cols, GRID_WIDTH, GRID_HEIGHT, GRID_PADDING);
     for (int i=0; i<rows; i++) {
-      //String row = spec[i];
       for (int j=0; j<cols; j++) {
-        Cell cl = g.cells[i][j];
-        cl.dObject = new TextTile("X", borderTexts, gParams, gParams);
+        String[] borderTexts = borders[i][j];
+        int pos = i*cols + j; // Position on row-major linearization
+        String label = null;
+        if (pos<letters.length()) {
+          label = ""+letters.charAt(pos);
+        }
+        // We look up the *permuted* version of the cell position, which is at (pi, pj)
+        int permutedPos = permutation[pos];
+        int pi = permutedPos/cols;
+        int pj = permutedPos%cols;
+        Cell cl = g.cells[pi][pj];
+        cl.dObject = new TextTile(label, borderTexts, gParams, gParams);
       }
     }
     return g;
+  }
+
+  // Generates borders: 4 borders  - N, E, S, W, for each cell.
+  // borderText - pairs of related words 
+  String[][][] generateBorders(int rows, int cols, String[] borderText) {
+    String[][][] cells = new String[rows][cols][];
+    for (int i=0; i<rows; i++) {
+      for (int j=0; j<cols; j++) {
+        String ij = "("+i+","+j+")";
+        String[] borders = {"N"+ij, "E"+ij, "S"+ij, "W"+ij};
+        cells[i][j] = borders;
+      }
+    }
+    return cells;
   }
 }
