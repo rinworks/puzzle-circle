@@ -34,8 +34,11 @@ class GraphicsParams {
   public int borderWeight=1; // -1 means don't set
   public int backgroundFill=-255; // -1 means don't set
   public PFont font=null; // null means don't set
-  public int textSize=20; // -1 means don't set
+  public PFont smallFont = null; // font for small text; null means don't set.
+  public int textSize=-1; // -1 means don't set
+  public int smallTextSize=-1; // -1 means don't set
   public int textColor=0; // -1 means don't set
+  public int smallTextColor=-1; // -1 means don't set
 }
 
 class Utils {
@@ -79,6 +82,54 @@ class Utils {
       fill(p.textColor);
     }
   }
+  
+  void setSmallTextParams(GraphicsParams p) {
+    if (p.smallFont!=null) {
+      textFont(p.smallFont);
+    }
+    if (p.smallTextSize!=-1) {
+      textSize(p.smallTextSize);
+    }
+    textAlign(CENTER, CENTER);
+    if (p.smallTextColor!=-1) {
+      fill(p.smallTextColor);
+    }
+  }
+  
+  // First dot is at (x1, y1). Subsequent dots are spaced "space" apart
+  void dottedLine(float x1, float y1, float x2, float y2, float space) {
+    //point(x1, y1);
+    //point(x1, y1);
+    double dx = x2-x1;
+    double dy = y2-y1;
+    double len = Math.sqrt(dx*dx+dy*dy);
+    space = max(space, 0.1); // To avoid divide by zero. Units: pixels.
+    int n = (int) (len/space); // Note truncation of fractional part.
+    double len1 = Math.max(len, 0.1); // To avoid divide by zero.
+    double ddx = space*dx/len1;
+    double ddy = space*dy/len1;
+    for (int i=0; i<n; i++) {
+      float x = (float) (x1 + i*ddx);
+      float y = (float) (y1 + i*ddy);
+      point(x, y);
+    }
+  }
+  
+  // Dots start upper left
+  void dottedRect(float x, float y, float w, float h, float space) {
+    float x1, y1, x2, y2;
+    assert(getGraphics().rectMode == CENTER); // Only kind we support for now.. later we can addmore.
+    x1 = x-w/2;
+    x2 = x1+w;
+    y1 = y-h/2;
+    y2 = y1+h;
+    dottedLine(x1, y1, x2, y1, space); // North
+    dottedLine(x1, y2, x2, y2, space); // South
+    dottedLine(x2, y1, x2, y2, space); // East
+    dottedLine(x1, y1, x1, y2, space); // West
+  }
+  
+  
 }
 
 Utils gUtils = new Utils();

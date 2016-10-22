@@ -18,27 +18,32 @@ class TextTile implements  Drawable {
 
   void draw(Cell c) { 
     GraphicsParams params = (c.state==ShapeState.HILIGHTED)?hilightedGraphicsParams:graphicsParams;
-    int a = 30, b=10;
+    float a = 30, b=10;
     pushMatrix();
     translate(c.center.x, c.center.y);
     rotate(radians(-c.orientation));
     gUtils.setShapeParams(params);
     rectMode(CENTER);
-    rect(0, 0, c.eW, c.eH);
+    gUtils.dottedRect(0, 0, c.eW, c.eH, 10);
     gUtils.setTextParams(params);
     text(centerText, 0, -b/4.0);
-    textSize(borderTextSize);
-    if (borderTexts[0]!=null) {
-      text(borderTexts[0], 0, (-c.iH/2.0 + b)); // North
+    //textSize(borderTextSize); // setTextParams earlier set text size to graphicsParams.textSize
+    gUtils.setSmallTextParams(params); // Style for the border text...
+    if (borderTexts[0]!=null) { 
+      text(borderTexts[0], 0, (-c.iH/2.0 + b/2)); // North
     }
     if (borderTexts[1]!=null) {
-      text(borderTexts[1], (c.iW/2.0 - b), 0); // East
+      gUtils.pushTransform((c.iW/2.0 - b/2), 0, -90);
+      text(borderTexts[1], 0, 0); // East
+      gUtils.popTransform();
     }
     if (borderTexts[2]!=null) {
-      text(borderTexts[2], 0, (c.iH/2.0 - b)); // South
+      text(borderTexts[2], 0, (c.iH/2.0 - b*3/2)); // South
     }
     if (borderTexts[3]!=null) {
-      text(borderTexts[3], (-c.iW/2.0 + b), 0); // West
+      gUtils.pushTransform((-c.iW/2.0 + b*3/2), 0, -90);
+      text(borderTexts[3], 0, 0); // West
+      gUtils.popTransform();
     }
     popMatrix();
   }
@@ -50,12 +55,14 @@ class TileHelper {
 
   GraphicsParams gParams;
   final String DEFAULT_FONT = "Segoe WP Black";
+  final String SMALL_FONT = "Segoe UI Light Italic";
 
   public TileHelper() {
 
     // Set look of the textboxes
     gParams = new GraphicsParams();
-    gParams.font = createFont(DEFAULT_FONT, 7); // null means don't set
+    gParams.font = createFont(DEFAULT_FONT, 50); // null means don't set
+    gParams.smallFont = createFont(SMALL_FONT, 18); // null means don't set
     gParams.textColor = 0;
     gParams.backgroundFill = 255;
     gParams.borderColor = 128;
@@ -73,7 +80,7 @@ class TileHelper {
       //String row = spec[i];
       for (int j=0; j<cols; j++) {
         Cell cl = g.cells[i][j];
-        cl.dObject = new TextTile("FOO", borderTexts, gParams, gParams);
+        cl.dObject = new TextTile("X", borderTexts, gParams, gParams);
       }
     }
     return g;
