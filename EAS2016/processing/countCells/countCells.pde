@@ -39,11 +39,31 @@ void setup() {
   randomSeed(seed);
 
   CellHelper helper = new CellHelper();
-  int rows=4;
-  int cols=4;
+  int rows=30;
+  int cols=30;
 
   Grid g = helper.createGrid(rows, cols);
-  helper.highlightCells(g, 0, 0, 1, 1, true);
+  if (index==1) genPuzzle1(helper, g);
+  //else if (index==2) genPuzzle2(helper, g);
+  //else if (index==3) genPuzzle3(helper, g);
+  //else if (index==4) genPuzzle4(helper, g);
+  else assert(false);
+  int count = helper.countHighlightedCells(g);
+  println("HILIGHTED CELL COUNT: " + count);
+  println("SUM OF DIGITS: " + helper.sumDigits(count));
   g.draw();
   save("output/countCells"+(index+1)+ (permute? "" : "ans") + ".png");
+}
+
+void genPuzzle1(CellHelper helper, Grid g) {
+  int smallW = 3;
+  int smallH = 4;
+
+  helper.highlightCells(g, 0, 0, g.rows, g.cols, true);
+  helper.highlightCells(g, 0, 5, 10, 15, false);
+  helper.highlightCells(g, 20, 5, smallW, smallH, false);
+  helper.highlightCells(g, 15, 10, 12, 18, false);
+  helper.highlightCells(g, 0+3, 5+3, smallW, smallH, true);
+  helper.highlightCells(g, 15+3, 10+5, smallW, smallH, true);
+  helper.highlightCells(g, 15+9, 10+8, smallW, smallH, true);
 }

@@ -14,7 +14,8 @@ class SimpleTile implements  Drawable {
     GraphicsParams params = (c.state==ShapeState.HILIGHTED)?hilightedGraphicsParams:graphicsParams;
     gUtils.setShapeParams(params);
     rectMode(CENTER);
-    gUtils.dottedRect(c.center.x, c.center.y, c.eW, c.eH, 10);
+    final float SPACE = 5;
+    gUtils.dottedRect(c.center.x, c.center.y, c.eW, c.eH, SPACE);
   }
 }
 
@@ -29,8 +30,8 @@ class CellHelper {
 
     gParams = new GraphicsParams();
     gParams.backgroundFill = 255;
-    gParams.borderColor =  128;
-    gParams.borderWeight = 3;
+    gParams.borderColor =  0;
+    gParams.borderWeight = 2;
 
     gHParams = new GraphicsParams(gParams);
     gHParams.backgroundFill = color(255, 255, 0); // yellow
@@ -55,15 +56,38 @@ class CellHelper {
   // that overlaps will be considered.
   // cornerX and cornerY are the numerically lowest corners (graphically top left)
   public void highlightCells(Grid g, int cornerX, int cornerY, int w, int h, boolean highlight) {
-    int iStart = max(0,cornerX);
-    int jStart = max(0,cornerY);
-    int iEnd = min(g.rows, cornerX+w);
+    int iStart = max(0, cornerY); // Remember - i is row, grows downwards with Y
+    int jStart = max(0, cornerX);
+    int iEnd = min(g.rows, cornerY+h);
     int jEnd = min(g.cols, cornerX+w);
+
     for (int i=iStart; i<iEnd; i++) {
       for (int j=jStart; j<jEnd; j++) {
         Cell cl = g.cells[i][j];
         cl.state = highlight ? ShapeState.HILIGHTED : ShapeState.NORMAL;
       }
     }
+  }
+
+  public int countHighlightedCells(Grid g) {
+    int count = 0;
+    for (Cell[] row : g.cells) {
+      for (Cell c : row) {
+        if (c.state == ShapeState.HILIGHTED) {
+          count++;
+        }
+      }
+    }
+    return count;
+  }
+  
+  // Return the sum of the digits of i
+  public int sumDigits(int i) {
+    int sum = 0;
+    while (i>0) {
+      sum += i%10;
+      i /= 10;
+    }
+    return sum;
   }
 }
