@@ -9,6 +9,12 @@ class Point {
   public String toString() {
     return "("+x+","+y+")";
   }
+  
+  double distance(double x, double y) {
+    double dx = this.x-x;
+    double dy = this.y-y;
+    return Math.sqrt(dx*dx + dy*dy);
+  }
 }
 
 abstract class AnimatedObject {

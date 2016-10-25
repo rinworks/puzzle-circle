@@ -6,10 +6,12 @@ class Rat extends AnimatedObject {
   Cheese cheeseBeingEaten=null;
   int eatingCountdown=0;
   int dormantStartMS=0; // Millis() at the point the moust started dormant mode.
+  ArrayList<Point> tracks;
   Rat(float w, float h, Point[] points, int[][] paths, color c) {
     super(w, h, points);
     this.c = c;
     this.paths = paths;
+    this.tracks = tracePaths ? new ArrayList<Point>() : null;
   }
 
   void draw() {
@@ -24,6 +26,7 @@ class Rat extends AnimatedObject {
     if (this.visible) {
       this.move();
       //println(this.w + ", " + this.h);
+      updateAndDrawTracks(); // Must be done *before* pushMatrix.
 
       pushMatrix();
       translate(this.xC, this.yC);
@@ -63,6 +66,9 @@ class Rat extends AnimatedObject {
     }
     if (currentPathComplete(point)) { 
       // We're done with the current path, start the next one...
+      if (this.tracks!=null) {
+        this.tracks.clear(); // Clear track from previous path
+      }
       stop();
       int[] nextPath = getNextPath();
       if (nextPath!=null) {
@@ -74,6 +80,29 @@ class Rat extends AnimatedObject {
       if (c!=null && c.visible && !c.beingEaten) {
         // Got one! Let's start eating it.
         beginEatingCheese(c);
+      }
+    }
+  }
+
+  void updateAndDrawTracks() {
+    int MIN_TRACK_SEPARATION = 2;
+    int TRACK_WIDTH = 5;
+    if (this.tracks!=null) {
+      boolean addPoint = true;
+      if (this.tracks.size()>0) {
+
+        Point pPrev = this.tracks.get(this.tracks.size()-1);
+        if (pPrev.distance(this.xC, this.yC) < MIN_TRACK_SEPARATION) {
+          addPoint = false;
+        }
+      }
+      if (addPoint) {
+        this.tracks.add(new Point(this.xC, this.yC));
+      }
+      for (Point p : this.tracks) {
+        noStroke();
+        fill(this.c);
+        ellipse((float)p.x, (float)p.y, TRACK_WIDTH, TRACK_WIDTH);
       }
     }
   }

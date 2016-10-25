@@ -10,7 +10,8 @@ color pink = color(255, 100, 100); // eyes
 color yellow = color(255, 255, 0);
 final int HEIGHT = 500;
 final int WIDTH = 500;
-boolean saveFrames = true; // Initialie to true to save frames. Will be set to false when all rats are done
+boolean saveFrames = false; // Initialie to true to save frames. Will be set to false when all rats are done
+boolean tracePaths = true; // Set to make rats leave tracks
 
 Orchestrator o;
 void setup() {
@@ -60,6 +61,8 @@ void setupArena() {
   //int[][] rat4Paths = {pStart, pathC, pT, pathH, pT, pathE, pT, pathE, pT, pathS, pT, pathE, pStop};
 
   int[][] rat1Paths = {pWait, pStart, pathW, pT, pathH, pT, pathO, pStop};
+  //int[][] rat1Paths = {pWait, pStart, pathO, pStop};
+
   int[][] rat2Paths = {pWait, pStart, pathM, pT, pathO, pT, pathV, pT, pathE, pT, pathD, pStop};
   int[][] rat3Paths = {pWait, pStart, pathM, pT, pathY, pStop};
   int[][] rat4Paths = {pWait, pStart, pathC, pT, pathH, pT, pathE, pT, pathE, pT, pathS, pT, pathE, pStop};
@@ -84,7 +87,7 @@ void setupArena() {
   a.addCritter(r4);
 
   Rat[] rats = {r1, r2, r3, r4};
-  //Rat[] rats = {r3};
+  //Rat[] rats = {r1};
 
   this.o = new Orchestrator(a, rats, cheeses);
   this.o.start();
