@@ -65,7 +65,7 @@ void setup() {
   star.draw();
 
   gPg.endDraw();
-  gPg.save("out/gears"+(index+1)+".png");
+  gPg.save("output/gears"+(index+1)+".png");
   image(gPg, 0, 0, width, width*imageHeight/imageWidth);
 
   noLoop();
