@@ -8,7 +8,7 @@ StarMachine star;
 PFont font;
 float backgroundValue = 255.0;
 GearUtils gGearUtils = new GearUtils();
-boolean g_drawPitchCircle=true; // If true a fine circle is drawn to illustrate the pitch circle
+boolean g_drawPitchCircle= false; //true; // If true a fine circle is drawn to illustrate the pitch circle
 
 void setup() {
   size(2000, 1500);
