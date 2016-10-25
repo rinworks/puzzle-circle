@@ -71,7 +71,7 @@ void setup() {
   m.overlayTextLabels();
 
   pg.endDraw();
-  pg.save("gears.png");
+  pg.save("output\\gears.png");
   image(pg, 0, 0, width, width*imageHeight/imageWidth);
 
   noLoop();
