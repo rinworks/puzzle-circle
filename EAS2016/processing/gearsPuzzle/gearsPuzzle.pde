@@ -19,8 +19,41 @@ void setup() {
   };
   int fontSize = 48;
   font = createFont(fontNames[1], fontSize);
-  int centerTeeth = 50;
-  int[] outerTeeth = {10, 15, 10, 20, 15, 30};
+  
+  int index = 0; // Vary this between 1 and 5 to generate the 5 puzzles.
+
+  int centerTeeth = 60;
+  int[] centerRotationsA = {
+    9
+  };
+  int[][] outerTeethA = {
+    {10, 15, 10, 20, 30}
+  };
+  
+  int centerRotations = centerRotationsA[index];
+  int[] outerTeeth = outerTeethA[index];
+
+  // Print stuff for puzzle answer
+  println("PUZZLE ID: " + (index+1));// 1 based
+  println("CENTER TEETH: " + centerTeeth);
+  println("CENTER ROTATIONS: " + centerRotations);
+  int totalOuterRotations = 0;
+  String partialRotations = "";
+  String teethString = "";
+  for (int t : outerTeeth) {
+    int outerRotations = centerRotations * centerTeeth/t;
+    if (outerRotations*t != centerRotations*centerTeeth) {
+      println("WARNING: teeth " + t + " not integral rotations!");
+    }
+    teethString += " " + t;
+    partialRotations += (partialRotations.length()>0 ? " + " : "") + outerRotations;
+    totalOuterRotations += outerRotations;
+  }
+  println("OUTER GEAR TEETH: " + teethString);
+  println ("SUM OF OUTER ROTATIONS: " + partialRotations + " = " + totalOuterRotations);
+
+
+
   star = new StarMachine(centerTeeth, outerTeeth, gPg);
 
   gPg.beginDraw();
@@ -30,9 +63,9 @@ void setup() {
   gPg.ellipseMode(RADIUS);
 
   star.draw();
- 
+
   gPg.endDraw();
-  gPg.save("out/gears.png");
+  gPg.save("out/gears"+(index+1)+".png");
   image(gPg, 0, 0, width, width*imageHeight/imageWidth);
 
   noLoop();

@@ -14,9 +14,9 @@ class GearUtils {
   // Return extra spacing (if any) between gears so that they don't bump
   double extraGearSpacing(Gear g1, Gear g2) {
     double dist = Math.min(g1.D, g2.D);
-    double scale = 0.02;
+    double scale = 0.035;
     double delta = -dist*scale;
-    println("delta: " + delta);
+    //println("delta: " + delta);
     return delta; // TODO
   }
   
