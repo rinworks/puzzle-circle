@@ -21,6 +21,7 @@ class NationStatHelper {
   // by searching among letters of the chosen countries, and hilight those spaces.
   // Print & render a warning if the answer could not be found.
   public void   renderPuzzle(int[] chosenCountries, String answer) {
+    background(255);
     int[][]hilightedSpots = getHilightedSpots(chosenCountries, answer);
     int maxLetters = 0;
     int maxArea = 0;
@@ -46,12 +47,14 @@ class NationStatHelper {
   }
 
   void drawVizForCountry(int index, int maxLetters, int[]highlightedSpots, float populationFrac, float areaFrac) {
-    int y_offset = index*3*BAR_THICKNESS; 
-    int boxesWidth = drawLettersBox(10, y_offset, maxLetters, highlightedSpots);
-    final int X_GAP = 10;
+    int x_base = BAR_THICKNESS;
+    int y_base = BAR_THICKNESS;
+    int y_offset = y_base + index*3*BAR_THICKNESS; 
+    int boxesWidth = drawLettersBox(x_base, y_offset, maxLetters, highlightedSpots);
+    final int X_GAP = BAR_THICKNESS;
     final int MAX_BAR_LENGTH=100;
-    drawBar(boxesWidth+X_GAP, y_offset, POPULATION_COLOR, MAX_BAR_LENGTH, populationFrac);
-    drawBar(boxesWidth+X_GAP, y_offset+BAR_THICKNESS, AREA_COLOR, MAX_BAR_LENGTH, areaFrac);
+    drawBar(x_base + boxesWidth+X_GAP, y_offset, POPULATION_COLOR, MAX_BAR_LENGTH, populationFrac);
+    drawBar(x_base + boxesWidth+X_GAP, y_offset+BAR_THICKNESS, AREA_COLOR, MAX_BAR_LENGTH, areaFrac);
   }
 
   // Draw a horizontal bar with upper left at (x, y) with color c and length frac fraction of max.
@@ -66,8 +69,8 @@ class NationStatHelper {
   // spots (0-based) hilighted in some way.
   // Returns width (x-dim) of box.
   int drawLettersBox(int x, int y, int n, int[] highlightedSpots) {
-    final int DX=10;
-    final int DY=20;
+    final int DX=(int) (BAR_THICKNESS*1.5);
+    final int DY=2*BAR_THICKNESS;
     final int DHY=5;
     rectMode(CORNER);
     stroke(0); // Black
