@@ -6,7 +6,7 @@
 
 void setup() {
   noLoop();
-  size(800, 600);
+  size(450, 350);
   Country[] countries = {
     new Country("China", 1336718015, 3705386), 
     new Country("India", 1189172906, 1269338), 
@@ -27,7 +27,7 @@ void setup() {
   // IDs(indices) of chosen countries for visualization, in order.
 
   String[][] chosenCountryLists = {
-    { "CHIN>A", "IN>DIA", "U>SA" }
+    { "NI>GERIA", "B>RAZIL", "US>A", "CHI>NA", "IN>DIA"  }
   };
 
   String[]chosenCountries  = chosenCountryLists[puzzleIndex];
