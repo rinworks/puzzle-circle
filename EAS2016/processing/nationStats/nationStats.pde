@@ -4,7 +4,7 @@
 // letters from each identified country.
 void setup() {
   noLoop();
-  size(1000, 1000);
+  size(800, 600);
   String names[] = {
     "A--", // 0
     "-B-", // 1
@@ -28,11 +28,30 @@ void setup() {
   };
   // List of answers, one per puzzle.
   String[] answers = {
-    "ABC"
+    "ABD"
   };
   
-  helper.renderPuzzle(chosenCountryLists[puzzleIndex], answers[puzzleIndex]);
+  int[][][] allHighlightedSpots = {
+    {
+      {0},
+      {1},
+      {2}
+    }
+  };
+  int[]chosenCountries  = chosenCountryLists[puzzleIndex];
+  int[][] highlightedSpots = allHighlightedSpots[puzzleIndex];
+  String answer = answers[puzzleIndex];
+  
+  helper.verifyAnswer(chosenCountries, highlightedSpots, answer);
+  helper.renderPuzzle(chosenCountries, highlightedSpots);
   println("PUZZLE ID: " + (puzzleIndex+1));
-  println("ANSWER: " + answers[puzzleIndex]);
+  println("ANSWER: " + answer);
   save("output\\nationStats"+(puzzleIndex+1)+".png");
+}
+
+void assertMsg(boolean test, String msg) {
+  if (!test) {
+    System.err.println("ASSERTION FAILURE MESSAGE: " + msg);
+    assert(false);
+  }
 }

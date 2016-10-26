@@ -5,8 +5,8 @@ class NationStatHelper {
   int populations[];
   int areas[];
   final int BAR_THICKNESS = 20; // Width of bar (graphic).
-  final color POPULATION_COLOR = color(128, 128, 128);
-  final color AREA_COLOR = color(0, 0, 0);
+  final color POPULATION_COLOR = color(150, 150, 150);
+  final color AREA_COLOR = color(32, 32, 32);
 
 
   public NationStatHelper(String[]names, int[] populations, int[] areas) {
@@ -20,9 +20,8 @@ class NationStatHelper {
   // Render a puzzle for the specific countries. Find (if possible) an answer
   // by searching among letters of the chosen countries, and hilight those spaces.
   // Print & render a warning if the answer could not be found.
-  public void   renderPuzzle(int[] chosenCountries, String answer) {
+  public void   renderPuzzle(int[] chosenCountries, int[][] hilightedSpots) {
     background(255);
-    int[][]hilightedSpots = getHilightedSpots(chosenCountries, answer);
     int maxLetters = 0;
     int maxArea = 0;
     int maxPopulation = 0;
@@ -37,13 +36,24 @@ class NationStatHelper {
     }
   }
 
-  // Compute location of answer letters amongst the chosencountries
-  int[][] getHilightedSpots(int[]chosenCountries, String answer) {
-    int[][] ret = new int[chosenCountries.length][1];
-    for (int[]row : ret) {
-      row[0] = 0;
+  // Verifies that the hilighted spots indeed spell out the answer.
+  // Assertion failure otherwise.
+  void verifyAnswer(int[]chosenCountries, int[][] hilightedSpots, String answer) {
+    int ansOffset=0;
+    for (int i=0;i<chosenCountries.length;i++) {
+      int id = chosenCountries[i]; // id is the countryID;
+      int[] spots = hilightedSpots[i];
+      String name = names[id];
+      for (int s:spots) {
+        assertMsg(s<name.length(), "offset " + s + "out of bounds for name " + name);
+        char c = name.charAt(s);
+        assertMsg(ansOffset<answer.length(), "too many hilighted boxes!");
+        char ac = answer.charAt(ansOffset);
+        assertMsg(c == ac, "hilighted letter("+c+") does not match answer letter("+ac+")");
+        ansOffset++;
+      }
     }
-    return ret;
+    assertMsg(ansOffset == answer.length(), "Unfilled answer chars: " + answer.substring(ansOffset));
   }
 
   void drawVizForCountry(int index, int maxLetters, int[]highlightedSpots, float populationFrac, float areaFrac) {
