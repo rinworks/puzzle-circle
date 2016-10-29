@@ -6,7 +6,7 @@
 
 void setup() {
   noLoop();
-  size(450, 350);
+  size(500, 350);
   Country[] countries = {
     new Country("China", 1336718015, 3705386), 
     new Country("India", 1189172906, 1269338), 

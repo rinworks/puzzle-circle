@@ -115,7 +115,7 @@ class NationStatHelper {
     int y_offset = y_base + index*3*BAR_THICKNESS; 
     int boxesWidth = drawLettersBox(x_base, y_offset, maxLetters, highlightedSpots);
     final int X_GAP = BAR_THICKNESS;
-    final int MAX_BAR_LENGTH=100;
+    final int MAX_BAR_LENGTH=200;
     drawBar(x_base + boxesWidth+X_GAP, y_offset, POPULATION_COLOR, MAX_BAR_LENGTH, populationFrac);
     drawBar(x_base + boxesWidth+X_GAP, y_offset+BAR_THICKNESS, AREA_COLOR, MAX_BAR_LENGTH, areaFrac);
   }
@@ -132,9 +132,9 @@ class NationStatHelper {
   // spots (0-based) hilighted in some way.
   // Returns width (x-dim) of box.
   int drawLettersBox(int x, int y, int n, int[] highlightedSpots) {
-    final int DX=(int) (BAR_THICKNESS*1.5);
-    final int DY=2*BAR_THICKNESS;
-    final int DHY=5;
+    final float DX=BAR_THICKNESS*1.2;
+    final float DY=1.75*BAR_THICKNESS;
+    final float DHY=5;
     rectMode(CORNER);
     stroke(0); // Black
     strokeWeight(2);
