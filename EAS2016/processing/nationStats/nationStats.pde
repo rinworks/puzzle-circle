@@ -6,7 +6,7 @@
 
 void setup() {
   noLoop();
-  size(500, 350);
+  size(550, 350);
   Country[] countries = {
     new Country("China", 1336718015, 3705386), 
     new Country("India", 1189172906, 1269338), 
@@ -23,11 +23,15 @@ void setup() {
   };
 
   NationStatHelper helper = new NationStatHelper(countries);
-  int puzzleIndex = 0; // Ranges fro 0-4 to pick the appropriate puzzle.
+  int puzzleIndex = 4; // Ranges from 0-4 to pick the appropriate puzzle.
   // IDs(indices) of chosen countries for visualization, in order.
 
   String[][] chosenCountryLists = {
-    { "NI>GERIA", "B>RAZIL", "US>A", "CHI>NA", "IN>DIA"  }
+    { "NI>GERIA", "B>RAZIL", "US>A", "CHI>NA", "IN>DIA"  },
+    {"RU>SSIA", "JAPA>N", "INDONESI>A", "PA>KISTAN", "M>EXICO"},
+    {">RUSSIA", "US>A", ">PHILIPPINES", "N>IGERIA", "IN>DIA" },
+    {">MEXICO", "PAK>ISTAN", "JAPA>N", "NI>GERIA", "BANG>LAD>ESH" },
+    {">BRAZIL", "PHI>LIPPINES", "BANGLAD>ESH", "PAKISTA>N",  "IN>DONESIA"}
   };
 
   String[]chosenCountries  = chosenCountryLists[puzzleIndex];
