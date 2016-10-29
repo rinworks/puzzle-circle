@@ -19,17 +19,25 @@ void setup() {
   };
   int fontSize = 48;
   font = createFont(fontNames[1], fontSize);
-  
-  int index = 0; // Vary this between 1 and 5 to generate the 5 puzzles.
+
+  int index = 3; // Vary this between 0 and 4 to generate the 5 puzzles.
 
   int centerTeeth = 60;
   int[] centerRotationsA = {
-    9
+    9, 
+    9, 
+    8, 
+    11,
+    11
   };
   int[][] outerTeethA = {
-    {10, 15, 10, 20, 30}
+    {10, 15, 10, 20, 30}, 
+    {30, 10, 15, 20, 15}, 
+    {20, 15, 12, 30, 12}, 
+    {15, 12, 15, 30, 20}, 
+    {12, 30, 15, 20, 10}
   };
-  
+
   int centerRotations = centerRotationsA[index];
   int[] outerTeeth = outerTeethA[index];
 
