@@ -32,32 +32,35 @@ void setup() {
     baseSeed+4
   };
 
+  boolean permute = true; // Set to true to generate the (scrambled) puzzle - else the answer.
+
   // ****************   TO GENERATE MULTIPLE VERSIONS ***************
-  int index=1; // Change this from 0-4 to generate multiple versions of puzzles
-  boolean permute = false; // Set to true to generate the (scrambled) puzzle - else the answer.
+  for (int index = 0; index < 5; index++) {
+    //int index=1; // Change this from 0-4 to generate multiple versions of puzzles
 
-  long seed = seeds[index];
-  println("SEED: " + seed);
-  randomSeed(seed);
+    long seed = seeds[index];
+    println("SEED: " + seed);
+    randomSeed(seed);
 
-  TileHelper helper = new TileHelper();
-  int rows=4;
-  int cols=4;
+    TileHelper helper = new TileHelper();
+    int rows=4;
+    int cols=4;
 
-  //TESTING ONLY String[] wordPairs = genTestWordPairs(2*rows*cols);
-  String[] wordPairs = getWordPairs();
-  String[] answers = {
-    "T H E S E V E N T H P L A N E T", 
-    "H A R D E S T M A T E R I A L", 
-    "F R O Z E N F O R M O F W A T ER", 
-    "M A S S P E R U N I T V O L U ME", 
-    "C O L D E S T C O N T I N E N T"
-  };
-  int[] tilePermutation = generatePermutation(rows*cols, 0, permute);
-  int[] borderPermutation = generatePermutation(wordPairs.length, 0, true); // We always permute the border pairs...
-  Grid g = helper.createGrid(rows, cols, answers[index], wordPairs, tilePermutation, borderPermutation);
-  g.draw();
-  save("output/tileWorld"+(index+1)+ (permute? "" : "ans") + ".png");
+    //TESTING ONLY String[] wordPairs = genTestWordPairs(2*rows*cols);
+    String[] wordPairs = getWordPairs();
+    String[] answers = {
+      "T H E S E V E N T H P L A N E T", 
+      "H A R D E S T M A T E R I A L", 
+      "F R O Z E N F O R M O F W A T ER", 
+      "M A S S P E R U N I T V O L U ME", 
+      "C O L D E S T C O N T I N E N T"
+    };
+    int[] tilePermutation = generatePermutation(rows*cols, 0, permute);
+    int[] borderPermutation = generatePermutation(wordPairs.length, 0, true); // We always permute the border pairs...
+    Grid g = helper.createGrid(rows, cols, answers[index], wordPairs, tilePermutation, borderPermutation);
+    g.draw();
+    save("output/tileWorld"+(index+1)+ (permute? "" : "ans") + ".png");
+  }
 }
 
 // Generates permutations of [startValue ... startValue+length-1]

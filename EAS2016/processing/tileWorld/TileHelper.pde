@@ -29,6 +29,9 @@ class TextTile implements  Drawable {
     if (centerText!=null) {
       text(centerText, 0, -b/4.0);
     }
+    // Draw underline - this is needed to make direction clear when the letter has symmetry. We do this for all letters, including blanks.
+    fill(0);
+    rect(0, 35, 20, 3);
     //textSize(borderTextSize); // setTextParams earlier set text size to graphicsParams.textSize
     gUtils.setSmallTextParams(params); // Style for the border text...
     if (borderTexts[0]!=null) { 
