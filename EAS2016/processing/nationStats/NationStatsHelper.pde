@@ -82,6 +82,7 @@ class NationStatHelper {
         assert(j>=pastMarks);
         tmp.add(j-pastMarks);
         j = name.indexOf(MARK, j+1);
+        pastMarks++;
       }
       // Convert the array list into an int array (don't think there is an
       // easier way to do this - tmp.toArray() returns an array of Integers, not ints.

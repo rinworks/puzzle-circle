@@ -23,7 +23,7 @@ void setup() {
   };
 
   NationStatHelper helper = new NationStatHelper(countries);
-  int puzzleIndex = 4; // Ranges from 0-4 to pick the appropriate puzzle.
+  int puzzleIndex = 3; // Ranges from 0-4 to pick the appropriate puzzle.
   // IDs(indices) of chosen countries for visualization, in order.
 
   String[][] chosenCountryLists = {
