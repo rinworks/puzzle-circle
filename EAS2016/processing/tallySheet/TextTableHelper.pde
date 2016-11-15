@@ -67,13 +67,16 @@ class TextTile implements  Drawable {
     float dY =  - b/4.0;
     if (centerText.indexOf("^^")==0) {
       // Push to top of cell...
-      dY = -cl.iH/2; //min(-cl.eH/2, 0);
+      dY = b/2-cl.iH/2;
+      textAlign(CENTER);
       text = centerText.substring(2);
     } else if (centerText.indexOf(">>") == 0) {
       // Push to rilign(RIGHT);
-      dX = cl.iW/2; //min(-cl.eH/2, 0);
+      dX = cl.iW/2;
       textAlign(RIGHT);
       text = centerText.substring(2);
+    } else {
+      textAlign(CENTER);
     }
     text(text, dX, dY);
   }

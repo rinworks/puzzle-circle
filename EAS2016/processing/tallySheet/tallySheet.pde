@@ -96,7 +96,14 @@ void testNestedGrid(TextTableHelper helper, int rows, int cols) {
       for (int ni = 0; ni  < text.length; ni++) {
         String[] textRow = text[ni];
         for (int nj = 0; nj < textRow.length; nj++) {
-          textRow[nj] = "^^"+"["+i+","+j+"] ("+ni+","+nj+")";
+          String prefix = "";
+          int m = (ni+nj)%3;
+          if (m==0) {
+            prefix = ">>>";
+          } else if (m==1) {
+            prefix = "^^^";
+          }
+          textRow[nj] = prefix+"["+i+","+j+"] ("+ni+","+nj+")";
           //println("textRow[ni]: " + textRow[nj]);
           //println("text[ni][nj]: " + text[ni][nj]);
         }
