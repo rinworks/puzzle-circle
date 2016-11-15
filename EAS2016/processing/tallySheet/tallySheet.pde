@@ -12,10 +12,16 @@
 //
 //import java.util.Comparator;
 //import java.util.Arrays;
+import processing.pdf.*;
 Utils gUtils = new Utils();
+public static final boolean GENERATE_PDF = false;
 
 void setup() {
+  // Pick 2nd one if GENERATE_PDF is true.
   size(2000, 1000);
+  //size(2000, 1000, PDF, "output/out.pdf");
+
+
   //println(PFont.list());
   //size(2000, 2000);
 
@@ -63,15 +69,21 @@ void setup() {
     int cols=2;
     //Grid g = helper.createGrid(rows, cols, answers, originX, originY, 300, 50); 
     //g.draw();
-    testNestedGrid(helper);
-    save("output/tileWorld"+(index+1)+ (permute? "" : "ans") + ".png");
+    if (GENERATE_PDF) {
+      PGraphicsPDF pdf = (PGraphicsPDF) g;  // Get the renderer
+      testNestedGrid(helper, 1, 2);
+      pdf.nextPage();
+      testNestedGrid(helper, 2, 3);
+      exit();
+    } else {
+      testNestedGrid(helper, 2, 3);
+    }
+    //save("output/tileWorld"+(index+1)+ (permute? "" : "ans") + ".png");
   }
 }
 
-void testNestedGrid(TextTableHelper helper) {
+void testNestedGrid(TextTableHelper helper, int rows, int cols) {
   //(int rows, int cols, float gridWidth, float gridHeight, float cellPadding, float originX, float originY)
-  int rows = 2;
-  int cols = 3;
   Grid pg = new Grid(rows, cols, width/2, height/2, 0, 20, 20);
   for (int i=0; i< pg.rows; i++) {
     Cell[] row = pg.cells[i];
@@ -84,7 +96,7 @@ void testNestedGrid(TextTableHelper helper) {
       for (int ni = 0; ni  < text.length; ni++) {
         String[] textRow = text[ni];
         for (int nj = 0; nj < textRow.length; nj++) {
-          textRow[nj] = "["+i+","+j+"] ("+ni+","+nj+")";
+          textRow[nj] = "^^"+"["+i+","+j+"] ("+ni+","+nj+")";
           //println("textRow[ni]: " + textRow[nj]);
           //println("text[ni][nj]: " + text[ni][nj]);
         }

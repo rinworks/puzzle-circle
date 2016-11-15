@@ -224,8 +224,8 @@ class Grid implements Drawable {
   int borderWeight=0; // If nonzero, draw a (currently black) border of this weight around the whole grid. See borderWeight() method.
 
   // Construct a nested grid - within parent grid cell pc,
-  Grid (Cell pc, int rows, int cols) {
-    this(rows, cols, pc.eW, pc.eH, 0, pc.center.x-pc.eW/2.0, pc.center.y-pc.eH/2.0);
+  Grid (Cell pc, int rows, int cols, int padding) {
+    this(rows, cols, pc.eW, pc.eH, padding, pc.center.x-pc.eW/2.0, pc.center.y-pc.eH/2.0);
   }
 
   Grid(int rows, int cols, float gridWidth, float gridHeight, float cellPadding, float originX, float originY) {

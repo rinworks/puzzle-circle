@@ -29,7 +29,7 @@ class TextTile implements  Drawable {
     gUtils.dottedRect(0, 0, cl.eW, cl.eH, 10);
     gUtils.setTextParams(params);
     if (centerText!=null) {
-      text(centerText, 0, -b/4.0);
+      drawMainText();
     }
 
     //textSize(borderTextSize); // setTextParams earlier set text size to graphicsParams.textSize
@@ -55,7 +55,31 @@ class TextTile implements  Drawable {
     }
     popMatrix();
   }
+
+  // Draw this.centerText, but honor the in-line formatting:
+  // ^^ means up.
+  // >> means right justified.
+  // Expects current center to be at center of cell.
+  void drawMainText() {
+    String text = centerText;
+    float b=20;
+    float dX = 0.0;
+    float dY =  - b/4.0;
+    if (centerText.indexOf("^^")==0) {
+      // Push to top of cell...
+      dY = -cl.iH/2; //min(-cl.eH/2, 0);
+      text = centerText.substring(2);
+    } else if (centerText.indexOf(">>") == 0) {
+      // Push to rilign(RIGHT);
+      dX = cl.iW/2; //min(-cl.eH/2, 0);
+      textAlign(RIGHT);
+      text = centerText.substring(2);
+    }
+    text(text, dX, dY);
+  }
 }
+
+
 
 // Utility methods specific to tile world
 // For tile world
@@ -64,8 +88,10 @@ class TextTableHelper {
   GraphicsParams gParams;
   final String DEFAULT_FONT = "Segoe WP Black";
   final String SMALL_FONT = "Segoe UI Light Italic";
+  final int GRID_PADDING =20;// 10;
 
   public TextTableHelper() {
+
 
     // Set look of the textboxes
     gParams = new GraphicsParams();
@@ -80,17 +106,16 @@ class TextTableHelper {
   // Greate a grid nested within Grid pg - located at cell(i,j).
   public Grid createNestedGrid(Grid pg, int i, int j, int rows, int cols, String[][]text) {
     Cell cl = pg.cells[i][j];
-    Grid g = new Grid(cl, rows, cols);
+    Grid g = new Grid(cl, rows, cols, GRID_PADDING);
     initGrid(g, text);
     return g;
   }
 
 
-  // letters - go in the center of each tile.
+  // text - go in the center of each tile.
   public Grid createGrid(int rows, int cols, String[][]text, int originX, int originY, int dX, int dY) {
     int GRID_WIDTH = cols*dX;
     int GRID_HEIGHT = rows*dY;
-    int GRID_PADDING = 10;
     Grid g = new Grid(rows, cols, GRID_WIDTH, GRID_HEIGHT, GRID_PADDING, originX, originY);
     initGrid(g, text);
     return g;
@@ -163,9 +188,30 @@ class TextTableHelper {
         }
       }
     }
-
-
-
     return cells;
+  }
+
+  // Returns a grid, including header.
+  // puzzles: 2D array - 1st col is PuzzleID and 2nd col is puzzle name:
+  // {{"886", "Foo bar"},...}
+  Grid generateAnswersGrid(String[][]puzzles) {
+    Grid g=null;
+    return g;
+  }
+
+  // questNames: {"Quest 1", "Quest 3", ...}
+  // Returns a nested grid.
+  Grid generateStickerGrid(String[] questNames) {
+    Grid g=null;
+    return g;
+  }
+
+  // activities: {"Quest 1", "Furnature Factory", "Perspectives 2", ...}
+  Grid generateTicketsGrid(String[]activities) {
+    Grid g=null;
+    return g;
+  }
+
+  void renderTallySheet(Grid puzzleGrid, Grid stickerGrid, Grid ticketGrid) {
   }
 }
