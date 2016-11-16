@@ -297,4 +297,32 @@ class Grid implements Drawable {
       }
     }
   }
+
+  // Reposition the origin (top left corner) to the new location
+  public void repositionOrigin(Point newOrigin) {
+    float dx = newOrigin.x-origin.x;
+    float dy = newOrigin.y-origin.y;
+    this.moveBy(dx, dy);
+  }
+
+  // Move the entire grid by the specified amount
+  // Recurse into child grids if necessary.
+  public void moveBy(float dx, float dy) {
+    for (Cell[] row : cells) {
+      for (Cell c : row) {
+        c.center.x += dx;
+        c.center.y += dy;
+        if (c.dObject instanceof Grid) {
+          Grid cg = (Grid) c.dObject;
+          cg.moveBy(dx, dy);
+        }
+      }
+    }
+  }
+  
+  // Horizontally center the grid
+  public void horizontallyCenter() {
+    Point newOrigin = new Point((width-gridWidth)/2, origin.y);
+    repositionOrigin(newOrigin);
+  }
 }

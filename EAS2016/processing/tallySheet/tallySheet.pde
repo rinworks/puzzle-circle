@@ -18,7 +18,7 @@ public static final boolean GENERATE_PDF = false;
 
 void setup() {
   // Pick 2nd one if GENERATE_PDF is true.
-  size(2000, 1000);
+  size(1700, 2200);
   //size(2000, 1000, PDF, "output/out.pdf");
 
 
@@ -50,38 +50,33 @@ void setup() {
 
     TextTableHelper helper = new TextTableHelper();
 
+    renderAll(helper);
 
-    //TESTING ONLY String[] wordPairs = genTestWordPairs(2*rows*cols);
-    //String[] wordPairs = {}; 
-    String[][] answers = {
-      {"Voluminous", "Voluminous Ticket"}, 
-      {"Quest 1", "Quest 1 Ticket"}, 
-      {"Furniture Factory", "Furniture Factory Ticket"}, 
-      {"Quest 2", "Quest 2 Ticket"}, 
-      {"Quest 3", "Quest 3 Ticket"}, 
-      {"Perspective", "Perspective Ticket"}, 
-      {"Challenge foo", "Challenge foo Ticket"}, 
-      {"Challenge bar", "Challenge bar Ticket"}
-    };
-    int originX = 100;
-    int originY = 100;
-    int rows=8;
-    int cols=2;
-    //Grid g = helper.createGrid(rows, cols, answers, originX, originY, 300, 50); 
-    //g.draw();
-    if (GENERATE_PDF) {
-      PGraphicsPDF pdf = (PGraphicsPDF) g;  // Get the renderer
-      testNestedGrid(helper, 1, 2);
-      pdf.nextPage();
-      testNestedGrid(helper, 2, 3);
-      exit();
-    } else {
-      testNestedGrid(helper, 2, 3);
-    }
+    //runTests(helper);
+
+
     //save("output/tileWorld"+(index+1)+ (permute? "" : "ans") + ".png");
   }
 }
 
+void runTests(TextTableHelper helper) {
+  //TESTING ONLY String[] wordPairs = genTestWordPairs(2*rows*cols);
+  //String[] wordPairs = {}; 
+  if (GENERATE_PDF) {
+    PGraphicsPDF pdf = (PGraphicsPDF) g;  // Get the renderer
+    for (int i=1; i<=3; i++) {
+      for (int j=1; j<=3; j++) {
+        if (i+j>2) {
+          pdf.nextPage();
+        }
+        testNestedGrid(helper, i, j);
+      }
+    }
+    exit();
+  } else {
+    testNestedGrid(helper, 2, 3);
+  }
+}
 void testNestedGrid(TextTableHelper helper, int rows, int cols) {
   //(int rows, int cols, float gridWidth, float gridHeight, float cellPadding, float originX, float originY)
   Grid pg = new Grid(rows, cols, width/2, height/2, 0, 20, 20);
@@ -110,7 +105,7 @@ void testNestedGrid(TextTableHelper helper, int rows, int cols) {
       }
       Grid g = helper.createNestedGrid(pg, i, j, nRows, nCols, text);
       g.borderWeight(5);
-      row[j].dObject = g;
+      // OBSOLEte row[j].dObject = g;
       // g.draw();
     }
   }
@@ -129,4 +124,16 @@ int[] generatePermutation(int length, int startValue, boolean permute) {
     gUtils.randomPermutation(p);
   }
   return p;
+}
+
+
+void renderAll(TextTableHelper helper) {
+  Point puzzlesOrigin = new Point(10, 10);
+  Grid puzzleGrid = helper.generateAnswersGrid(puzzlesOrigin, 1);
+  Point stickersOrigin = new Point(10, 10);
+  Grid stickerGrid  = helper.generateStickerGrid(stickersOrigin, 1, 1);
+  Point ticketsOrigin = new Point(10, 10);
+  Grid ticketGrid  = null;//helper.generateTicketsGrid(ticketsOrigin, 1, 1);
+
+  helper.renderTallySheet(puzzleGrid, stickerGrid, ticketGrid);
 }
