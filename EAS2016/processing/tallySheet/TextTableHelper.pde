@@ -26,7 +26,11 @@ class TextTile implements  Drawable {
     rotate(radians(-cl.orientation));
     gUtils.setShapeParams(params);
     rectMode(CENTER);
-    gUtils.dottedRect(0, 0, cl.eW, cl.eH, 10);
+    if (params.borderType == LineType.DOTTED) {
+      gUtils.dottedRect(0, 0, cl.eW, cl.eH, 10);
+    } else if (params.borderType == LineType.SOLID) {
+      rect(0, 0, cl.eW, cl.eH);
+    }
     gUtils.setTextParams(params);
     if (centerText!=null) {
       drawMainText();
@@ -62,9 +66,10 @@ class TextTile implements  Drawable {
   // Expects current center to be at center of cell.
   void drawMainText() {
     String text = centerText;
-    float b=20;
+    float b=0;
     float dX = 0.0;
     float dY =  - b/4.0;
+    textSize(12);
     if (centerText.indexOf("^^")==0) {
       // Push to top of cell...
       dY = b/2-cl.iH/2;
@@ -93,22 +98,43 @@ class TextTile implements  Drawable {
 // For tile world
 class TextTableHelper {
 
-  GraphicsParams gParams;
+  final int MARGIN_WIDTH = 40; // Width of margins around printable areas.
   final String DEFAULT_FONT = "Segoe WP Black";
   final String SMALL_FONT = "Segoe UI Light Italic";
   final int GRID_PADDING =20;// 10;
 
+  final String TITLE_STYLE = "TITLE";
+  final String TITLE_FONT = DEFAULT_FONT;
+  final int TITLE_SIZE = 20;
+  final color TITLE_COLOR = color(255, 0, 0);
+
+  final String H1_STYLE = "H1";
+  final String H1_FONT = DEFAULT_FONT;
+  final int H1_SIZE = 15;
+  final color H1_COLOR = color(128, 128, 255);
+
+  final String NORMAL_STYLE = "NORMAL";
+  final String NORMAL_FONT = "Segoe";
+  final int NORMAL_SIZE = 10;
+  final color NORMAL_COLOR = color(0);
+
+  GraphicsParams gParams;
+  TextRenderer texter; 
+
   public TextTableHelper() {
 
-
+    texter = new TextRenderer(new Point(MARGIN_WIDTH, MARGIN_WIDTH), width-2*MARGIN_WIDTH, height-2*MARGIN_WIDTH);
+    texter.addStyle(TITLE_STYLE, TITLE_FONT, TITLE_SIZE, TITLE_COLOR);
+    texter.addStyle(H1_STYLE, H1_FONT, H1_SIZE, H1_COLOR);
+    texter.addStyle(NORMAL_STYLE, NORMAL_FONT, NORMAL_SIZE, NORMAL_COLOR);
     // Set look of the textboxes
     gParams = new GraphicsParams();
     gParams.font = createFont(DEFAULT_FONT, 20); // null means don't set
     gParams.smallFont = createFont(SMALL_FONT, 20); // null means don't set
     gParams.textColor = 0;
     gParams.backgroundFill = 255;
-    gParams.borderColor =  128;
-    gParams.borderWeight = 3;
+    gParams.borderColor =  0;
+    gParams.borderWeight = 1;
   }
 
   // Greate a grid nested within Grid pg - located at cell(i,j).
@@ -122,10 +148,10 @@ class TextTableHelper {
 
 
   // text - go in the center of each tile.
-  public Grid createGrid(int rows, int cols, String[][]text, int originX, int originY, int dX, int dY) {
+  public Grid createGrid(int rows, int cols, String[][]text, int dX, int dY) {
     int GRID_WIDTH = cols*dX;
     int GRID_HEIGHT = rows*dY;
-    Grid g = new Grid(rows, cols, GRID_WIDTH, GRID_HEIGHT, GRID_PADDING, originX, originY);
+    Grid g = new Grid(rows, cols, GRID_WIDTH, GRID_HEIGHT, GRID_PADDING);
     initGrid(g, text);
     return g;
   }
@@ -146,6 +172,37 @@ class TextTableHelper {
         }
         Cell cl = g.cells[i][j];
         cl.dObject = new TextTile(cl, label, null, gParams, gParams);
+      }
+    }
+  }
+
+  // Override the graphics param of all cells in the specified col to the supplied params.
+  void overrideColGraphicsParams(Grid g, int col, GraphicsParams gParms) {
+    int rows = g.rows;
+    int cols = g.cols;
+    assert(col<cols);
+    for (int i=0; i<rows; i++) {
+        Cell cl = g.cells[i][col];
+        if (cl.dObject instanceof TextTile) {
+          TextTile tile = (TextTile) cl.dObject;
+          tile.graphicsParams = gParams;
+        }
+      }
+    }
+  }
+  
+    // Override the graphics param of all cells in the specified col to the supplied params.
+  void overrideRowGraphicsParams(Grid g, int row, GraphicsParams gParams) {
+    int rows = g.rows;
+    int cols = g.cols;
+    Cell[] cellRow = g.cells[row];
+    assert(row<rows);
+    for (int j=0; j<cols; j++) {
+        Cell cl = cellRow[j];
+        if (cl.dObject instanceof TextTile) {
+          TextTile tile = (TextTile) cl.dObject;
+          tile.graphicsParams = gParams;
+        }
       }
     }
   }
@@ -203,7 +260,7 @@ class TextTableHelper {
   // Returns a grid, including header.
   // puzzles: 2D array - 1st col is PuzzleID and 2nd col is puzzle name:
   // {{"886", "Foo bar"},...}
-  Grid generateAnswersGrid(Point origin, int guildNo) {
+  Grid generateAnswersGrid(int clanNo, int guildNo) {
     String[][]puzzles = generateGuildPuzzles(guildNo);
     String[] heading = {"No.", "PUZZLE NAME", "YOUR SOLUTION"};
     String[][] tableData = new String[puzzles.length+1][3]; // 3: (#, name, solution)
@@ -213,19 +270,19 @@ class TextTableHelper {
       tableData[i+1][1] = puzzles[i][1];
     }
     //public Grid createGrid(int rows, int cols, String[][]text, int originX, int originY, int dX, int dY) {
-    final int DX = 300;
-    final int DY = 50;
+    final int DX = 200;
+    final int DY = 25;
     int rows = tableData.length;
     int cols = tableData[0].length;
-    Grid g= createGrid(rows, cols, tableData, (int)origin.x, (int)origin.y, DX, DY);
+    Grid g= createGrid(rows, cols, tableData, DX, DY);
     return g;
   }
 
   // questNames: {"Quest 1", "Quest 3", ...}
   // Returns a nested grid.
-  Grid generateStickerGrid(Point origin, int clanNo, int guildNo) {
+  Grid generateStickerGrid(int clanNo, int guildNo) {
     String[][] questNames = generateGuildQuests(clanNo, guildNo);
-    Grid pg = new Grid(1, 2, width/2, height/2, GRID_PADDING, origin.x, origin.y); // Two cols, 1 row.
+    Grid pg = new Grid(1, 2, width-2*MARGIN_WIDTH, height/5, GRID_PADDING); // Two cols, 1 row.
     // Insert quests...
     Grid qg = createNestedGrid(pg, 0, 0, 2, 2, questNames); // Max 2x2 grid of quests.
     //initGrid(qg, questNames);    
@@ -236,33 +293,31 @@ class TextTableHelper {
   }
 
   // activities: {"Quest 1", "Furnature Factory", "Perspectives 2", ...}
-  Grid generateTicketsGrid(Point origin, int clanNo, int guildNo) {
+  Grid generateTicketsGrid(int clanNo, int guildNo) {
     String[][]tickets = generateGuildTickets(clanNo, guildNo);
-    final int DX = 300;
+    final int DX = 150;
     final int DY = 100;
     int rows = tickets.length;
     int cols = tickets[0].length;
-    Grid g= createGrid(rows, cols, tickets, (int)origin.x, (int)origin.y, DX, DY);
+    assert(cols==2);
+    Grid g= createGrid(rows, cols, tickets, DX, DY);
+    // Now go through and fix up the cell borders.
+
     return g;
   }
 
-  void renderTallySheet(Grid puzzleGrid, Grid stickerGrid, Grid ticketGrid) {
-    if (puzzleGrid!=null) {
-      puzzleGrid.horizontallyCenter();
-      puzzleGrid.draw();
-    }
-    if (stickerGrid!=null) {
-      stickerGrid.moveBy(0, puzzleGrid.gridHeight);
-      stickerGrid.horizontallyCenter();
-      stickerGrid.draw();
-    }
-    pushMatrix();
-    rotate(radians(-90));
-    translate(-600,0);
-    if (ticketGrid!=null) ticketGrid.draw();
-    popMatrix();
+  void renderGlobalText(String text, int size, color c, int y) {
+    textAlign(CENTER);
+    fill(c);
+    textSize(size);
+    text(text, width/2, y);
   }
 
+
+  // TODO: hardcoded for now.
+  String generateTitle(int clanNo, int guildNo) {
+    return "Orca Clan Guild 1 Tally Sheet";
+  }
   // guildNo: One-based guild number
   String[][] generateGuildPuzzles(int guildNo) {
     final int NUM_GUILDS = 5;
@@ -325,5 +380,57 @@ class TextTableHelper {
       cellText[i][0] = "<<"+a.toUpperCase()+"\nBears-1 ticket";
     }
     return cellText;
+  }
+
+  void renderTallySheet(int clanNo, int guildNo) {
+    int curY = 0;
+    String title = generateTitle(clanNo, guildNo);
+    background(255);
+    texter.moveTo(MARGIN_WIDTH, MARGIN_WIDTH, width-2*MARGIN_WIDTH, height-2*MARGIN_WIDTH);
+    // Title:
+    texter.renderText(title, TITLE_STYLE);
+    texter.renderText("<<Puzzle Answers", H1_STYLE);
+    curY = texter.moveDownBy(0);
+    Grid puzzleGrid = generateAnswersGrid(clanNo, guildNo);
+    Grid stickerGrid  = generateStickerGrid(clanNo, guildNo);
+    Grid ticketGrid  = generateTicketsGrid( clanNo, guildNo);
+
+    //puzzleGrid = null;
+    //stickerGrid = null;
+    //ticketGrid = null;
+
+    if (puzzleGrid!=null) {
+      puzzleGrid.moveBy(0, curY);
+      puzzleGrid.horizontallyCenter();
+      puzzleGrid.draw();
+      curY = puzzleGrid.bottomY();
+    }
+    texter.moveDownTo(curY+2*H1_SIZE);
+    texter.renderText("<<Sticker Grid", H1_STYLE);
+    texter.renderText("<<Place each QUEST sticker you have earned in its correct position in the grid to receive credit.\n" +
+      "Place all CHALLENGE stickers in the Challenge stickers area.", NORMAL_STYLE);
+
+    curY = texter.moveDownBy(0);
+
+    if (stickerGrid!=null) {
+      stickerGrid.moveBy(0, curY);
+      stickerGrid.horizontallyCenter();
+      stickerGrid.draw();
+      curY = stickerGrid.bottomY();
+    }
+
+    texter.moveDownTo(curY+2*H1_SIZE);
+    texter.renderText("<<Activity Tickets", H1_STYLE);
+    texter.renderText("<<Attempt each of these activities one by one, IN ORDER - left to right.\n" +
+      "Tear off a ticket and TWO of your teammates take this ticket to the challenge area.", NORMAL_STYLE);
+
+    curY = texter.moveDownBy(0);
+
+    pushMatrix();
+    translate(0, curY);
+    rotate(radians(-90));
+    translate(-ticketGrid.gridWidth, ticketGrid.gridHeight/2);
+    if (ticketGrid!=null) ticketGrid.draw();
+    popMatrix();
   }
 }

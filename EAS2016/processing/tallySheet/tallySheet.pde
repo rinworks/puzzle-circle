@@ -18,8 +18,9 @@ public static final boolean GENERATE_PDF = false;
 
 void setup() {
   // Pick 2nd one if GENERATE_PDF is true.
-  size(1700, 2200);
-  //size(2000, 1000, PDF, "output/out.pdf");
+  size(800, 1024);
+  //size(1700, 2200, PDF, "output/out.pdf");
+  //size(772, 1000, PDF, "output/out.pdf");
 
 
   //println(PFont.list());
@@ -56,6 +57,7 @@ void setup() {
 
 
     //save("output/tileWorld"+(index+1)+ (permute? "" : "ans") + ".png");
+    println("***** ALL DONE! *****");
   }
 }
 
@@ -128,12 +130,24 @@ int[] generatePermutation(int length, int startValue, boolean permute) {
 
 
 void renderAll(TextTableHelper helper) {
-  Point puzzlesOrigin = new Point(10, 10);
-  Grid puzzleGrid = helper.generateAnswersGrid(puzzlesOrigin, 1);
-  Point stickersOrigin = new Point(10, 10);
-  Grid stickerGrid  = helper.generateStickerGrid(stickersOrigin, 1, 1);
-  Point ticketsOrigin = new Point(10, 10);
-  Grid ticketGrid  = null;//helper.generateTicketsGrid(ticketsOrigin, 1, 1);
 
-  helper.renderTallySheet(puzzleGrid, stickerGrid, ticketGrid);
+  if (GENERATE_PDF) {
+    PGraphicsPDF pdf = (PGraphicsPDF) g;  // Get the renderer
+    boolean firstPage = true;
+    int numClans = 1;
+    int numGuilds = 2;
+    for (int clanNo=1; clanNo<=numClans; clanNo++) {
+      for (int guildNo=1; guildNo<=numGuilds; guildNo++) {
+        if (firstPage) {
+          firstPage = false;
+        } else {
+          pdf.nextPage();
+        }
+        helper.renderTallySheet(clanNo, guildNo);
+      }
+    }
+    exit();
+  } else {
+    helper.renderTallySheet(1, 1);
+  }
 }

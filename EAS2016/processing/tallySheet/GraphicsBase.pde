@@ -21,8 +21,7 @@ enum ShapeState {
 
 enum LineType {
   UNCHANGED, 
-    SOLID, 
-    DASHED, 
+    SOLID,
     DOTTED
 }
 
@@ -228,6 +227,10 @@ class Grid implements Drawable {
     this(rows, cols, pc.eW, pc.eH, padding, pc.center.x-pc.eW/2.0, pc.center.y-pc.eH/2.0);
   }
 
+  Grid(int rows, int cols, float gridWidth, float gridHeight, float cellPadding) {
+    this(rows, cols, gridWidth, gridHeight, cellPadding, 0, 0);
+  }
+
   Grid(int rows, int cols, float gridWidth, float gridHeight, float cellPadding, float originX, float originY) {
     this.rows = rows;
     this.cols = cols;
@@ -299,15 +302,17 @@ class Grid implements Drawable {
   }
 
   // Reposition the origin (top left corner) to the new location
-  public void repositionOrigin(Point newOrigin) {
-    float dx = newOrigin.x-origin.x;
-    float dy = newOrigin.y-origin.y;
+  public void moveTo(float newX, float newY) {
+    float dx = newX-origin.x;
+    float dy = newY-origin.y;
     this.moveBy(dx, dy);
   }
 
-  // Move the entire grid by the specified amount
+  // Move the entire grid by the specified relative amount
   // Recurse into child grids if necessary.
   public void moveBy(float dx, float dy) {
+    origin.x += dx;
+    origin.y += dy;
     for (Cell[] row : cells) {
       for (Cell c : row) {
         c.center.x += dx;
@@ -319,10 +324,14 @@ class Grid implements Drawable {
       }
     }
   }
-  
+
   // Horizontally center the grid
   public void horizontallyCenter() {
-    Point newOrigin = new Point((width-gridWidth)/2, origin.y);
-    repositionOrigin(newOrigin);
+    moveTo((width-gridWidth)/2, origin.y);
+  }
+  
+  // Returns the absolute position of the bottom of the grid.
+  public int bottomY() {
+    return (int) (origin.y + gridHeight);
   }
 }
