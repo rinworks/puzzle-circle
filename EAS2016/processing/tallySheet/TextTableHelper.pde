@@ -31,9 +31,8 @@ class TextTile implements  Drawable {
     } else if (params.borderType == LineType.SOLID) {
       rect(0, 0, cl.eW, cl.eH);
     }
-    gUtils.setTextParams(params);
     if (centerText!=null) {
-      drawMainText();
+      drawMainText(params);
     }
 
     //textSize(borderTextSize); // setTextParams earlier set text size to graphicsParams.textSize
@@ -64,12 +63,13 @@ class TextTile implements  Drawable {
   // ^^ means up.
   // >> means right justified.
   // Expects current center to be at center of cell.
-  void drawMainText() {
+  void drawMainText(GraphicsParams params) {
     String text = centerText;
     float b=0;
     float dX = 0.0;
     float dY =  - b/4.0;
-    textSize(12);
+    gUtils.setTextParams(params);
+
     if (centerText.indexOf("^^")==0) {
       // Push to top of cell...
       dY = b/2-cl.iH/2;
@@ -101,6 +101,7 @@ class TextTableHelper {
   final int MARGIN_WIDTH = 40; // Width of margins around printable areas.
   final String DEFAULT_FONT = "Segoe WP Black";
   final String SMALL_FONT = "Segoe UI Light Italic";
+  final int DEFAULT_SIZE = 13;
   final int GRID_PADDING =20;// 10;
 
   final String TITLE_STYLE = "TITLE";
@@ -129,8 +130,8 @@ class TextTableHelper {
     texter.addStyle(NORMAL_STYLE, NORMAL_FONT, NORMAL_SIZE, NORMAL_COLOR);
     // Set look of the textboxes
     gParams = new GraphicsParams();
-    gParams.font = createFont(DEFAULT_FONT, 20); // null means don't set
-    gParams.smallFont = createFont(SMALL_FONT, 20); // null means don't set
+    gParams.font = createFont(DEFAULT_FONT, DEFAULT_SIZE); // null means don't set
+    gParams.smallFont = createFont(SMALL_FONT, DEFAULT_SIZE); // null means don't set
     gParams.textColor = 0;
     gParams.backgroundFill = 255;
     gParams.borderColor =  0;
@@ -156,6 +157,15 @@ class TextTableHelper {
     return g;
   }
 
+  // Enhanced version - this one adjusts col0 fraction.
+  public Grid createGrid(int rows, int cols, String[][]text, int dX, int dY, float col0Frac) {
+    int GRID_WIDTH = cols*dX;
+    int GRID_HEIGHT = rows*dY;
+    Grid g = new Grid(rows, cols, GRID_WIDTH, GRID_HEIGHT, GRID_PADDING);
+    g.adjustColWidth(0, col0Frac);
+    initGrid(g, text);
+    return g;
+  }
 
   void initGrid(Grid g, String[][]text) {
     int rows = g.rows;
@@ -177,35 +187,36 @@ class TextTableHelper {
   }
 
   // Override the graphics param of all cells in the specified col to the supplied params.
-  void overrideColGraphicsParams(Grid g, int col, GraphicsParams gParms) {
+  void setColGraphicsParams(Grid g, int col, GraphicsParams params) {
     int rows = g.rows;
     int cols = g.cols;
     assert(col<cols);
     for (int i=0; i<rows; i++) {
-        Cell cl = g.cells[i][col];
-        if (cl.dObject instanceof TextTile) {
-          TextTile tile = (TextTile) cl.dObject;
-          tile.graphicsParams = gParams;
-        }
+      Cell cl = g.cells[i][col];
+      if (cl.dObject instanceof TextTile) {
+        TextTile tile = (TextTile) cl.dObject;
+        println("HAHA!");
+        tile.graphicsParams = params;
       }
     }
   }
-  
-    // Override the graphics param of all cells in the specified col to the supplied params.
-  void overrideRowGraphicsParams(Grid g, int row, GraphicsParams gParams) {
+
+
+  // Override the graphics param of all cells in the specified col to the supplied params.
+  void setRowGraphicsParams(Grid g, int row, GraphicsParams params) {
     int rows = g.rows;
     int cols = g.cols;
     Cell[] cellRow = g.cells[row];
     assert(row<rows);
     for (int j=0; j<cols; j++) {
-        Cell cl = cellRow[j];
-        if (cl.dObject instanceof TextTile) {
-          TextTile tile = (TextTile) cl.dObject;
-          tile.graphicsParams = gParams;
-        }
+      Cell cl = cellRow[j];
+      if (cl.dObject instanceof TextTile) {
+        TextTile tile = (TextTile) cl.dObject;
+        tile.graphicsParams = params;
       }
     }
   }
+
 
   // Generates borders: 4 borders  - N, E, S, W, for each cell.
   // borderText - pairs of related words 
@@ -274,7 +285,7 @@ class TextTableHelper {
     final int DY = 25;
     int rows = tableData.length;
     int cols = tableData[0].length;
-    Grid g= createGrid(rows, cols, tableData, DX, DY);
+    Grid g= createGrid(rows, cols, tableData, DX, DY, 0.1);
     return g;
   }
 
@@ -282,7 +293,8 @@ class TextTableHelper {
   // Returns a nested grid.
   Grid generateStickerGrid(int clanNo, int guildNo) {
     String[][] questNames = generateGuildQuests(clanNo, guildNo);
-    Grid pg = new Grid(1, 2, width-2*MARGIN_WIDTH, height/5, GRID_PADDING); // Two cols, 1 row.
+    Grid pg = new Grid(1, 2, width, height/5, GRID_PADDING); // Two cols, 1 row.
+    pg.adjustColWidth(0, 1.0/3);
     // Insert quests...
     Grid qg = createNestedGrid(pg, 0, 0, 2, 2, questNames); // Max 2x2 grid of quests.
     //initGrid(qg, questNames);    
@@ -296,13 +308,18 @@ class TextTableHelper {
   Grid generateTicketsGrid(int clanNo, int guildNo) {
     String[][]tickets = generateGuildTickets(clanNo, guildNo);
     final int DX = 150;
-    final int DY = 100;
+    final int DY = 60;
     int rows = tickets.length;
     int cols = tickets[0].length;
     assert(cols==2);
     Grid g= createGrid(rows, cols, tickets, DX, DY);
     // Now go through and fix up the cell borders.
-
+    GraphicsParams noBorderParams = new GraphicsParams(gParams);
+    noBorderParams.borderWeight(0);
+    setColGraphicsParams(g, 1, noBorderParams);
+    GraphicsParams dashedBorderParams = new GraphicsParams(gParams);
+    dashedBorderParams.borderType(LineType.DOTTED);
+    setColGraphicsParams(g, 0, dashedBorderParams);
     return g;
   }
 

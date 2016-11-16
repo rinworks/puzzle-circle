@@ -21,7 +21,7 @@ enum ShapeState {
 
 enum LineType {
   UNCHANGED, 
-    SOLID,
+    SOLID, 
     DOTTED
 }
 
@@ -52,6 +52,8 @@ class GraphicsParams {
 
   public GraphicsParams(GraphicsParams gp) {
     borderColor = gp.borderColor;
+    borderType = gp.borderType;
+    markPeriod = gp.markPeriod;
     borderWeight = gp.borderWeight;
     backgroundFill = gp.backgroundFill;
     font = gp.font;
@@ -60,6 +62,21 @@ class GraphicsParams {
     smallTextSize = gp.smallTextSize;
     textColor = gp.textColor;
     smallTextColor = gp.smallTextColor;
+  }
+
+  GraphicsParams borderType(LineType type) {
+    borderType = type;
+    return this;
+  }
+
+  GraphicsParams textSize(int size) {
+    textSize = size;
+    return this;
+  }
+
+  GraphicsParams borderWeight(int weight) { 
+    borderWeight = weight;
+    return this;
   }
 }
 
@@ -329,9 +346,46 @@ class Grid implements Drawable {
   public void horizontallyCenter() {
     moveTo((width-gridWidth)/2, origin.y);
   }
-  
+
   // Returns the absolute position of the bottom of the grid.
   public int bottomY() {
     return (int) (origin.y + gridHeight);
+  }
+
+  // Adjust the specified col's width so that it is fractWidth of the total.
+  // The grid's width is adjusted accordingly.
+  // FUTURE:
+  //   Columns to the RIGHT are adjusted to have equal share of remaining width.
+  //   MUST be falled before any cell's dObjects are set because they cannot be
+  //   expected to handle handle cell resizing.
+  //   Cannot obviously be applied to the last col as no more cols exist to the right to adjust.
+  public void adjustColWidth(int col, float fracWidth) {
+    assert(fracWidth>0.01 && fracWidth<0.99); // Slightly arbitrary check.
+    assert((col+1) < cols);
+    float newColWidth = gridWidth*fracWidth;
+    float oldColWidth = cells[0][col].eW; // Assuming it exists...
+    float delta = newColWidth-oldColWidth;
+    gridWidth += delta;  // Adjust grid width.
+    for (Cell[] row : cells) {
+      for (Cell c : row) {
+        if (c.dObject!=null) {
+          assert(false);
+          return; // ******************* EARLY RETURN ************
+        }
+      }
+    }
+
+    for (Cell[] row : cells) {
+      Cell c = row[col];
+      float padding = c.eW-c.iW;
+      c.eW = newColWidth;
+      c.iW = min(0, c.eW-2*padding); // Could get very small!
+      c.center.x += delta/2;
+      // Shift all centers from col and to right by delta/2.
+      for (int j=col+1; j<row.length; j++) {
+        Cell c1 = row[j];
+        c1.center.x += delta;
+      }
+    }
   }
 }
