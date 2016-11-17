@@ -14,11 +14,12 @@
 //import java.util.Arrays;
 import processing.pdf.*;
 Utils gUtils = new Utils();
-public static final boolean GENERATE_PDF = false;
+public static final boolean GENERATE_PDF = true;
 
 void setup() {
   // Pick 2nd one if GENERATE_PDF is true.
-  size(800, 1024);
+  //size(800, 1024);
+  size(800, 1024, PDF, "output/out.pdf");
   //size(1700, 2200, PDF, "output/out.pdf");
   //size(772, 1000, PDF, "output/out.pdf");
 
@@ -134,8 +135,8 @@ void renderAll(TextTableHelper helper) {
   if (GENERATE_PDF) {
     PGraphicsPDF pdf = (PGraphicsPDF) g;  // Get the renderer
     boolean firstPage = true;
-    int numClans = 1;
-    int numGuilds = 2;
+    int numClans = 5;
+    int numGuilds = 5;
     for (int clanNo=1; clanNo<=numClans; clanNo++) {
       for (int guildNo=1; guildNo<=numGuilds; guildNo++) {
         if (firstPage) {
@@ -148,6 +149,6 @@ void renderAll(TextTableHelper helper) {
     }
     exit();
   } else {
-    helper.renderTallySheet(1, 1);
+    helper.renderTallySheet(2, 3);
   }
 }

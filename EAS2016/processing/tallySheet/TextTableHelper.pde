@@ -333,7 +333,8 @@ class TextTableHelper {
 
   // TODO: hardcoded for now.
   String generateTitle(int clanNo, int guildNo) {
-    return "Orca Clan Guild 1 Tally Sheet";
+    return g_clanNames[clanNo-1] + " Clan Guild " + guildNo + " Tally Sheet";
+    //return "Orca Clan Guild 1 Tally Sheet";
   }
   // guildNo: One-based guild number
   String[][] generateGuildPuzzles(int guildNo) {
@@ -343,11 +344,11 @@ class TextTableHelper {
     assert(numPuzzles%NUM_GUILDS == 0); 
     // We pick out every (NUM_GUILDS+guildNo-1) puzzle - these are the 
     // puzzles for guild guidNo, ASSUMING that they are numbered exactly that way.
-    ArrayList<Object> list = new ArrayList<Object>();
+    ArrayList<Object> list = new ArrayList<Object> ();
     for (int i=0; i<g_puzzleData.length; i+= NUM_GUILDS) {
       int index = i+guildNo-1;
       assert(index<g_puzzleData.length);
-      list.add(g_puzzleData[i]);
+      list.add(g_puzzleData[index]);
     }
     String[][] puzzles = new String[list.size()][2]; // For puzzle ID and  name
     int i = 0;
@@ -366,15 +367,23 @@ class TextTableHelper {
   // These must be in the form of a 2D array.
   String[][] generateGuildQuests(int clanNo, int guildNo) {
     // For now - just return a hardcoded set of quest names...
-    String[][] quests = {
-      {"Quest 1", "Quest 3"}, 
-      {"Quest 5"}
-    };
-
+    String[] activities = generateActivities(clanNo, guildNo);
+    //String[][] quests = {{"Quest 1", "Quest 3"}, {"Quest 5"}};
+    String[][] quests = new String[2][2];
     // Tack on " sticker" to each string.
+    int index=0;
     for (String[] row : quests) {
       for (int i=0; i<row.length; i++) {
-        row[i] = "^^" + row[i] + " sticker";
+        // Find next activity that is a quest...
+        while(index<activities.length && activities[index].indexOf("Quest")!=0) {
+          index++;
+        }
+        if (index==activities.length) {
+          // We're done here..
+          return quests; // *********** EARLY RETURN **********
+        }
+        row[i] = "^^" + activities[index] + " sticker";
+        index++;
       }
     }
     return quests;
@@ -383,22 +392,33 @@ class TextTableHelper {
   // Generate the tickets that this (clanNo, guildNo) will participate in.
   // These must be in the form of a 2D array.
   String[][] generateGuildTickets(int clanNo, int guildNo) {
-    // For now - just return a hardcoded set of quest names...
-    String[] activities = {
-      "Quest 1", "Furnature Factory", "Perspectives 3"
-      //{"Quest 1", "Quest 1\nBears-1 ticket"}, 
-      //{"Quest 5"}
-    };
+    String[] activities = generateActivities(clanNo, guildNo);  
     String[][] cellText = new String[activities.length][2]; 
     for (int i=0; i<cellText.length; i++) {
       char letter = (char)('a'+i);
       String a = activities[i];
-      cellText[i][1] = "<<   "+letter + ") " + a;
-      cellText[i][0] = "<<"+a.toUpperCase()+"\nBears-1 ticket";
+      cellText[i][1] = "<< "+letter + ") " + a;
+      cellText[i][0] = "<<"+a.toUpperCase()+"\n" + g_clanNames[clanNo-1] + "-" + guildNo + " ticket";
     }
     return cellText;
   }
 
+  String[] generateActivities(int clanNo, int guildNo) {
+    final int NUM_GUILDS = 5;
+    final int NUM_CLANS = 5;
+    final int NUM_ACTIVITIES = 10;
+    assert(clanNo>0 && clanNo<= NUM_CLANS);
+    assert(guildNo>0 && guildNo<= NUM_GUILDS);
+    //final int PERIOD = NUM_GUILDS*NUM_CLANS;
+    int startOffset = (clanNo-1)*NUM_GUILDS;
+    // For now - just return  a hardcoded set of quest names...
+    //String[] activities = {"Quest 1", "Furnature Factory", "Perspectives 3"};
+    String[] activities = new String[NUM_ACTIVITIES];
+    for (int i=0; i<activities.length;i++) {
+      activities[i] = g_activityNames[(startOffset+i*(NUM_GUILDS+2))%g_activityNames.length];
+    }
+    return activities;
+  }
   void renderTallySheet(int clanNo, int guildNo) {
     int curY = 0;
     String title = generateTitle(clanNo, guildNo);
@@ -446,8 +466,8 @@ class TextTableHelper {
     pushMatrix();
     translate(0, curY);
     rotate(radians(-90));
-    translate(-ticketGrid.gridWidth, ticketGrid.gridHeight/2);
-    if (ticketGrid!=null) ticketGrid.draw();
+    translate(-ticketGrid.gridWidth, MARGIN_WIDTH);
+    ticketGrid.draw();
     popMatrix();
   }
 }

@@ -1,3 +1,33 @@
+String[] g_clanNames =  {  "Bear", "Orca", "Osprey", "Raven", "Wolf"};
+
+String[] g_activityNames = {
+  "Quest 1", 
+  "Quest 2", 
+  "Quest 3", 
+  "Quest 4", 
+  "Quest 5", 
+  "Quest 6", 
+  "Quest 7", 
+  "Quest 8", 
+  "Quest 9", 
+  "Quest 10", 
+  "Quest 11", 
+  "Quest 12", 
+  "Perspective 1", 
+  "Perspective 2", 
+  "Perspective 3", 
+  "Perspective 4", 
+  "Perspective 5", 
+  "Describe it", 
+  "Describe it", 
+  "Dibujar", 
+  "Dibujar", 
+  "Furniture Factory", 
+  "Furniture Factory", 
+  "Voluminous", 
+  "Voluminous"
+};
+
 String[][] g_puzzleData = {
   {"860", "Tile World I"}, 
   {"288", "Tile World II"}, 
@@ -50,28 +80,3 @@ String[][] g_puzzleData = {
   {"111", "Con-cent-ric IV"}, 
   {"721", "Con-cent-ric V"}
 };
-
-String[] questNames = {
-  "Quest 1", 
-  "Quest 2", 
-  "Quest 3", 
-  "Quest 4", 
-  "Quest 5", 
-  "Quest 6", 
-  "Quest 7", 
-  "Quest 8", 
-  "Quest 9", 
-  "Quest 10",
-  "Quest 11",
-  "Quest 12"
-  };
-  
-String[] challengeNames = {
-  "Voluminous",
-  "Furniture Factory",
-  "Perspective 1",
-  "Perspective 2"
-};
-
-  
-  
