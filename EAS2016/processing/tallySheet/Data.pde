@@ -1,5 +1,37 @@
 String[] g_clanNames =  {  "Bear", "Orca", "Osprey", "Raven", "Wolf"};
 
+
+String[] g_questNames = {
+  "Quest 1", 
+  "Quest 2", 
+  "Quest 3", 
+  "Quest 4", 
+  "Quest 5", 
+  "Quest 6", 
+  "Quest 7", 
+  "Quest 8", 
+  "Quest 9", 
+  "Quest 10", 
+  "Quest 11", 
+  "Quest 12"
+};
+
+String[] g_perspectiveNames = {
+  "Perspective 1", 
+  "Perspective 2", 
+  "Perspective 3", 
+  "Perspective 4", 
+  "Perspective 5"
+};
+
+String[] g_challengeNames = {
+  "Describe it", 
+  "Dibujar", 
+  "Furniture Factory",
+  "Voluminous"
+};
+
+
 String[] g_activityNames = {
   "Quest 1", 
   "Quest 2", 

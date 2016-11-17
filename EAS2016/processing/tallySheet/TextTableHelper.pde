@@ -1,4 +1,13 @@
 
+
+// TODO:
+// - Verify activity assignments:
+//      - Same activity not assigned to same (clan, guild)
+//      - Report counts of each activity per clan.
+//      - Report counts of each activity per activity sequence#.
+//      - Altogether: report Activity, Clan, Guild, Sequence in a table.
+// - Increase normal text size.
+// 2. 
 // Represents and renders one tile.
 class TextTile implements  Drawable {
 
@@ -98,7 +107,10 @@ class TextTile implements  Drawable {
 // For tile world
 class TextTableHelper {
 
-  final int MARGIN_WIDTH = 40; // Width of margins around printable areas.
+  final int NUM_GUILDS = 5;
+  final int NUM_CLANS = 5;
+
+  final int MARGIN_WIDTH = 20; // Width of margins around printable areas.
   final String DEFAULT_FONT = "Segoe WP Black";
   final String SMALL_FONT = "Segoe UI Light Italic";
   final int DEFAULT_SIZE = 13;
@@ -121,9 +133,16 @@ class TextTableHelper {
 
   GraphicsParams gParams;
   TextRenderer texter; 
+  Table activityStats;
+  final String ACTIVITY  = "Activity";
+  final String CLAN = "Clan";
+  final String GUILD = "Guild";
+  final String SEQUENCE = "Sequence";
 
   public TextTableHelper() {
 
+    activityStats = new Table();
+    initActivityStats();
     texter = new TextRenderer(new Point(MARGIN_WIDTH, MARGIN_WIDTH), width-2*MARGIN_WIDTH, height-2*MARGIN_WIDTH);
     texter.addStyle(TITLE_STYLE, TITLE_FONT, TITLE_SIZE, TITLE_COLOR);
     texter.addStyle(H1_STYLE, H1_FONT, H1_SIZE, H1_COLOR);
@@ -136,6 +155,13 @@ class TextTableHelper {
     gParams.backgroundFill = 255;
     gParams.borderColor =  0;
     gParams.borderWeight = 1;
+  }
+
+  void initActivityStats() {
+    activityStats.addColumn(ACTIVITY);
+    activityStats.addColumn(CLAN);
+    activityStats.addColumn(GUILD);
+    activityStats.addColumn(SEQUENCE);
   }
 
   // Greate a grid nested within Grid pg - located at cell(i,j).
@@ -195,7 +221,6 @@ class TextTableHelper {
       Cell cl = g.cells[i][col];
       if (cl.dObject instanceof TextTile) {
         TextTile tile = (TextTile) cl.dObject;
-        println("HAHA!");
         tile.graphicsParams = params;
       }
     }
@@ -278,7 +303,7 @@ class TextTableHelper {
     tableData[0] = heading;
     for (int i=0; i<puzzles.length; i++) {
       tableData[i+1][0] = puzzles[i][0];
-      tableData[i+1][1] = puzzles[i][1];
+      tableData[i+1][1] = ">>" + puzzles[i][1];
     }
     //public Grid createGrid(int rows, int cols, String[][]text, int originX, int originY, int dX, int dY) {
     final int DX = 200;
@@ -293,7 +318,7 @@ class TextTableHelper {
   // Returns a nested grid.
   Grid generateStickerGrid(int clanNo, int guildNo) {
     String[][] questNames = generateGuildQuests(clanNo, guildNo);
-    Grid pg = new Grid(1, 2, width, height/5, GRID_PADDING); // Two cols, 1 row.
+    Grid pg = new Grid(1, 2, width, height/4.5, GRID_PADDING); // Two cols, 1 row.
     pg.adjustColWidth(0, 1.0/3);
     // Insert quests...
     Grid qg = createNestedGrid(pg, 0, 0, 2, 2, questNames); // Max 2x2 grid of quests.
@@ -338,7 +363,6 @@ class TextTableHelper {
   }
   // guildNo: One-based guild number
   String[][] generateGuildPuzzles(int guildNo) {
-    final int NUM_GUILDS = 5;
     int numPuzzles = g_puzzleData.length;
     assert(guildNo>0 && guildNo<= NUM_GUILDS);
     assert(numPuzzles%NUM_GUILDS == 0); 
@@ -375,7 +399,7 @@ class TextTableHelper {
     for (String[] row : quests) {
       for (int i=0; i<row.length; i++) {
         // Find next activity that is a quest...
-        while(index<activities.length && activities[index].indexOf("Quest")!=0) {
+        while (index<activities.length && activities[index].indexOf("Quest")!=0) {
           index++;
         }
         if (index==activities.length) {
@@ -392,7 +416,8 @@ class TextTableHelper {
   // Generate the tickets that this (clanNo, guildNo) will participate in.
   // These must be in the form of a 2D array.
   String[][] generateGuildTickets(int clanNo, int guildNo) {
-    String[] activities = generateActivities(clanNo, guildNo);  
+    String[] activities = generateActivitiesV2(clanNo, guildNo); 
+    updateActivityStats( clanNo, guildNo, activities);
     String[][] cellText = new String[activities.length][2]; 
     for (int i=0; i<cellText.length; i++) {
       char letter = (char)('a'+i);
@@ -404,20 +429,102 @@ class TextTableHelper {
   }
 
   String[] generateActivities(int clanNo, int guildNo) {
-    final int NUM_GUILDS = 5;
-    final int NUM_CLANS = 5;
-    final int NUM_ACTIVITIES = 10;
+    final int NUM_ACTIVITIES = 8;
     assert(clanNo>0 && clanNo<= NUM_CLANS);
     assert(guildNo>0 && guildNo<= NUM_GUILDS);
     //final int PERIOD = NUM_GUILDS*NUM_CLANS;
-    int startOffset = (clanNo-1)*NUM_GUILDS;
+    int startOffset = (clanNo-1)*NUM_GUILDS + guildNo;
     // For now - just return  a hardcoded set of quest names...
     //String[] activities = {"Quest 1", "Furnature Factory", "Perspectives 3"};
     String[] activities = new String[NUM_ACTIVITIES];
-    for (int i=0; i<activities.length;i++) {
+    for (int i=0; i<activities.length; i++) {
       activities[i] = g_activityNames[(startOffset+i*(NUM_GUILDS+2))%g_activityNames.length];
     }
     return activities;
+  }
+
+  String[] generateActivitiesV2(int clanNo, int guildNo) {
+    ArrayList<String> list = new ArrayList<String>();
+    final int NUM_QUESTS = 4;
+    final int NUM_CHALLENGES = 3;
+    final int NUM_PERSPECTIVES = 1;
+    final int NUM_TOTAL = NUM_QUESTS+NUM_CHALLENGES+NUM_PERSPECTIVES;
+    int curQuests = 0;
+    int curChallenges = 0;
+    int curPerspectives = 0;
+    String[][] allNames = {g_questNames, g_challengeNames, g_perspectiveNames};
+    int[] limits = {4, 3, 1};
+    int[] counts = {0, 0, 0};
+    int startList = (NUM_GUILDS*(clanNo-1)+(guildNo-1)) % allNames.length; // Round robin start list.
+    while (counts[0]+counts[1]+counts[2]<NUM_TOTAL) {
+      for (int i=0; i<allNames.length; i++) {
+        int curIndex = (startList+i) % allNames.length;
+        String[] curNames = allNames[curIndex];
+        int curCount  =counts[curIndex];
+        int curLimit = limits[curIndex];
+        if (curCount<curLimit) {
+          addActivities(clanNo, guildNo, curNames, curCount, list);
+          counts[curIndex]++;
+        }
+      }
+    }
+    return list.toArray(new String[list.size()]);
+  }
+
+  void addActivities(int clanNo, int guildNo, String[]allActivities, int activityCount, ArrayList<String>cumulativeList) {
+
+    assert(clanNo>0 && clanNo<= NUM_CLANS);
+    assert(guildNo>0 && guildNo<= NUM_GUILDS);
+    assert(activityCount>=0);
+    //We want to be sure that offset spans the range of possible combinations without any holes.
+    // Otherwise we will not be fair to specific activities (we saw this when we were simply
+    // ERROR - activity count must be NOT multiplied - that will increment by one.
+    // So need to get the max activity count and multiply it.
+    int offset = (guildNo-1) + (clanNo-1)*NUM_GUILDS +  NUM_GUILDS*NUM_CLANS*activityCount;
+    cumulativeList.add(allActivities[offset % allActivities.length]);
+  }
+
+  void updateActivityStats(int clanNo, int guildNo, String[] activities) {
+    verifyActivities(clanNo, guildNo, activities);
+    for (int i=1; i<=activities.length; i++) {
+      TableRow newRow = activityStats.addRow();
+      newRow.setString(ACTIVITY, activities[i-1]);
+      newRow.setString(CLAN, g_clanNames[clanNo-1]);
+      newRow.setInt(GUILD, guildNo);
+      newRow.setInt(SEQUENCE, i);
+    }
+  }
+
+  void verifyActivities(int clanNo, int guildNo, String[] activities) {
+    verifyActivity(clanNo, guildNo, activities, g_questNames, 4);
+    verifyActivity(clanNo, guildNo, activities, g_perspectiveNames, 1);
+    verifyActivity(clanNo, guildNo, activities, g_challengeNames, 3);
+  }
+  
+   void verifyActivity(int clanNo, int guildNo, String[] activities, String[]allList, int expectedCount) {
+     int[] counts = new int[allList.length];
+     int myCount = 0;
+     for (String name : activities) {
+       for (int i=0;i<allList.length;i++) {
+         if (name.equals(allList[i])) {
+           counts[i]++;
+           myCount++;
+         }
+       }
+     }
+     if(expectedCount!=myCount) {
+       println("expectedCount: " + expectedCount + " myCount: " + myCount);
+       assert(false);
+     }
+     for (int i=0; i<counts.length; i++) {
+       assert(counts[i]<2);
+     }     
+   }
+
+
+
+  void saveActivityStats(String fileName) {
+    saveTable(activityStats, fileName);
   }
   void renderTallySheet(int clanNo, int guildNo) {
     int curY = 0;

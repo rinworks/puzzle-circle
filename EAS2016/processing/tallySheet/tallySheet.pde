@@ -147,6 +147,7 @@ void renderAll(TextTableHelper helper) {
         helper.renderTallySheet(clanNo, guildNo);
       }
     }
+    helper.saveActivityStats("output/stats.csv");
     exit();
   } else {
     helper.renderTallySheet(2, 3);
