@@ -119,16 +119,16 @@ class TextTableHelper {
   final String TITLE_STYLE = "TITLE";
   final String TITLE_FONT = DEFAULT_FONT;
   final int TITLE_SIZE = 20;
-  final color TITLE_COLOR = color(255, 0, 0);
+  final color TITLE_COLOR = color(0); //color(255, 0, 0);
 
   final String H1_STYLE = "H1";
   final String H1_FONT = DEFAULT_FONT;
   final int H1_SIZE = 15;
-  final color H1_COLOR = color(128, 128, 255);
+  final color H1_COLOR = color(0); //color(128, 128, 255);
 
   final String NORMAL_STYLE = "NORMAL";
   final String NORMAL_FONT = "Segoe";
-  final int NORMAL_SIZE = 10;
+  final int NORMAL_SIZE = 12;
   final color NORMAL_COLOR = color(0);
 
   GraphicsParams gParams;
@@ -391,7 +391,7 @@ class TextTableHelper {
   // These must be in the form of a 2D array.
   String[][] generateGuildQuests(int clanNo, int guildNo) {
     // For now - just return a hardcoded set of quest names...
-    String[] activities = generateActivities(clanNo, guildNo);
+    String[] activities = generateActivitiesV2(clanNo, guildNo);
     //String[][] quests = {{"Quest 1", "Quest 3"}, {"Quest 5"}};
     String[][] quests = new String[2][2];
     // Tack on " sticker" to each string.
@@ -428,7 +428,7 @@ class TextTableHelper {
     return cellText;
   }
 
-  String[] generateActivities(int clanNo, int guildNo) {
+  String[] generateActivitiesOld(int clanNo, int guildNo) {
     final int NUM_ACTIVITIES = 8;
     assert(clanNo>0 && clanNo<= NUM_CLANS);
     assert(guildNo>0 && guildNo<= NUM_GUILDS);
