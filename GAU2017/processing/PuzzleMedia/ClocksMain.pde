@@ -1,13 +1,8 @@
 // Module: ClocksMain - code to generate  media needed for the Clocks Puzzle
 // History:
 //  Feb 2017  - JMJ created, adapted from earlier code I wrote for EAS and Puzzle Safari puzzles
-class ClocksOptions {
-  public String puzzleText;
-}
-
 class ClocksMain {
 
-  final String outputDir;
   final String PUZZLE_TYPE = "clocks";
   final String[][] puzzleTexts = {
     {
@@ -23,15 +18,12 @@ class ClocksMain {
       "BABY"
     }
   };
-  public ClocksMain(String outputDir) {
-    this.outputDir = outputDir;
-  }
 
   void genAllMedia() {
 
     for (int i=0; i<puzzleTexts.length; i++) {
       String fileStub = gUtils.genMediaFilenameStub(PUZZLE_TYPE, i);
-      background(150);
+      background(DEFAULT_BACKGROUND);
       drawClocks(puzzleTexts[i], false);
       save(fileStub +  ".png");
       drawClocks(puzzleTexts[i], true);

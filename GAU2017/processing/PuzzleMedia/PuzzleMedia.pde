@@ -3,6 +3,7 @@
 //  Feb 2017  - JMJ created.
 public static final int DISPLAY_HEIGHT = 1300;
 public static final int DISPLAY_WIDTH = 1300;
+public static final int DEFAULT_BACKGROUND = 150;
 public CommonUtils gUtils = new CommonUtils();
 
 // Just set display height and width here.
@@ -17,6 +18,9 @@ void setup() {
 }
 
 void generateAllPuzzleMedia() {
-  ClocksMain clocks = new ClocksMain("output/clocks/");
+  ClocksMain clocks = new ClocksMain();
   clocks.genAllMedia();
+  
+  BricksMain bricks = new BricksMain();
+  bricks.genAllMedia();
 }
