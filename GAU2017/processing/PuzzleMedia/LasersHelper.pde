@@ -916,6 +916,7 @@ class LaserHelper {
 
 
   void drawLaserPath(ArrayList<Cell> path, String expectedText) {
+    final int LASER_WEIGHT = 3;
     if (path.size()==0) {
       return;
     }
@@ -933,7 +934,7 @@ class LaserHelper {
       }
     }
     int laserColor = color(255, 0, 0);
-    int weight = 2;
+    int weight = LASER_WEIGHT;
     if (!success) {
       laserColor = color(255, 153, 0); // orange (comment out to have it a red path)
       weight = 10; // reduce to 4 to be thinner so that it doesn't extend behind the mirror.

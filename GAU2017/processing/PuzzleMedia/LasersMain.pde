@@ -68,6 +68,7 @@ class LasersMain {
 
         LaserHelper lh = generateGoodPuzzle(rows, cols, puzzleText, numCandidatePuzzlesPerPuzzle);
         background(LIGHT_GRAY_BACKGROUND);
+        lh.drawLaserPath(1, puzzleText.substring(0, 1)); // Uncomment to draw a specific path for the answer doc.
         lh.g.draw();
         save(fileStub +  ".png");
         gUtils.saveAnswerText(PUZZLE_TYPE, IN, puzzleText);
@@ -92,7 +93,7 @@ class LasersMain {
         //PuzzleStats pStats = lh.computePuzzleStats();
         //println("Puzzle Stats:");
         //println(pStats);
-        // break;
+        //break;
       }
     }
   }
