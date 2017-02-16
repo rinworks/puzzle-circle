@@ -1,7 +1,6 @@
 // Module: LasersMain - code to generate  media needed for the Lasers Puzzle
 // History:
 //  Feb 2017  - JMJ created, adapted from earlier code I wrote for EAS and Puzzle Safari puzzles
-// //<>// //<>// //<>//
 // Module: LASERS.PDE
 // Description: Main file for the lasers puzzle generator.
 // History:
@@ -15,13 +14,10 @@
 import java.util.Comparator;
 import java.util.Arrays;
 
-class LaserMain {
+class LasersMain {
 
-
-  void setup() {
-    size(1300, 1300);
-    //size(2000, 2000);
-
+  
+  void genAllMedia() {
 
     // To recreate a specific puzzle, make a note of the printed seed value and 
     // set seed to that printed seed value (comment out the call to round(random(...))).
@@ -94,8 +90,6 @@ class LaserMain {
   }
 
 
-
-
   // Create a gid and fill it with dots.
   LaserHelper createDotGrid(int rows, int cols) {
     String[] spec = new String[rows];
@@ -110,9 +104,6 @@ class LaserMain {
     }
     return genObjects(spec, null);
   }
-
-
-
 
 
   LaserHelper generateGoodPuzzle(int rows, int cols, String puzzleText, int numTrials) {
@@ -177,6 +168,7 @@ class LaserMain {
     return lhFinal;
   }
 
+
   Boolean disqualifyPuzzle(LaserHelper lh) {
     // Check if any two lasers are back-to-back.
     Cell[] laserCells = lh.getLasers();
@@ -199,6 +191,7 @@ class LaserMain {
     return false;
   }
 
+
   // We return the min of the min after normalizing each by dividing by the supplied population average.
   float primaryCompositeScore(PuzzleStats ps, float mirrorCountAvg, float ssDAvg, float maxSpanAvg) {
     float min1 = ps.mirrorCount.min/mirrorCountAvg;
@@ -207,6 +200,7 @@ class LaserMain {
     return min(min1, min2, min3);
     //return min(min2, min3);
   }
+
 
   float secondaryCompositeScore(PuzzleStats ps, float mirrorCountAvg, float ssDAvg, float maxSpanAvg) {
     //float min1 = ps.mirrorCount.min/mirrorCountAvg;
@@ -244,6 +238,7 @@ class LaserMain {
     }
     return lh;
   }
+
 
   // Generate a specific puzzle from its textual description.
   // This same description is printed by the call to printGrid().

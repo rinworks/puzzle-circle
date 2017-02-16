@@ -28,7 +28,10 @@ void generateAllPuzzleMedia() {
   //BricksMain bricks = new BricksMain();
   //bricks.genAllMedia();
   
-  CountCellsMain ccells = new CountCellsMain();
-  ccells.genAllMedia();
+  //CountCellsMain ccells = new CountCellsMain();
+  //ccells.genAllMedia();
+
+  LasersMain lasers = new LasersMain();
+  lasers.genAllMedia();
 
 }

@@ -31,7 +31,7 @@ class CountCellsMain {
 
   };
 
-  void genAllMedia() {
+  void genAllMedia() { //<>//
     CellHelper helper = new CellHelper();
     for (int[] p : puzzleParams) {
       Grid g = genOverlappingRectsPuzzle(helper, p[0], p[1], p[2], p[3], p[4], p[5]);

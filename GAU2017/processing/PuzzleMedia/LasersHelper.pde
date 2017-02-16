@@ -3,6 +3,8 @@
 //  Feb 2017  - JMJ created, adapted from earlier code I wrote for EAS and Puzzle Safari puzzles
 // Keep track of a single cell in a chain
 // of cells visited in a laser beam trace.
+
+
 class TraceCellInfo {
   public final Cell c;
   public final int direction;
@@ -12,6 +14,7 @@ class TraceCellInfo {
     this.direction=direction;
   }
 }
+
 
 class Stats {
 
@@ -26,6 +29,7 @@ class Stats {
   }
 }
 
+
 class PuzzleStats {
   public Stats mirrorCount; // Number of mirrors in path.
   public Stats ssDistance;  // Manhattan distance between source and sink.
@@ -35,6 +39,7 @@ class PuzzleStats {
     return "  mirrorCount:" + mirrorCount + "\n   ssDist:" + ssDistance + "\n  maxSpan:" + maxSpan + "\n";
   }
 }
+
 
 class Laser implements  Drawable {
   int id;
@@ -48,6 +53,7 @@ class Laser implements  Drawable {
     this.graphicsParams = params;
     this.hilightedGraphicsParams = hilightedParams;
   }
+
 
   void draw(Cell c) {
     float x = c.center.x;
@@ -80,6 +86,7 @@ class Laser implements  Drawable {
   }
 }
 
+
 class Dot implements  Drawable {
 
   GraphicsParams  graphicsParams;
@@ -89,6 +96,7 @@ class Dot implements  Drawable {
     this.graphicsParams = params;
     this.hilightedGraphicsParams = hilightedParams;
   }
+
 
   void draw(Cell c) {
     float x = c.center.x;
@@ -102,17 +110,20 @@ class Dot implements  Drawable {
   }
 }
 
+
 class TextBox implements  Drawable {
 
   String label;
   GraphicsParams  graphicsParams;
   GraphicsParams  hilightedGraphicsParams;
 
+
   TextBox(String label, GraphicsParams params, GraphicsParams hilightedParams) {
     this.label = label;
     this.graphicsParams = params;
     this.hilightedGraphicsParams = hilightedParams;
   }
+
 
   void draw(Cell c) {
     float x = c.center.x;
@@ -133,15 +144,18 @@ class TextBox implements  Drawable {
   }
 }
 
+
 class TwowayMirror implements  Drawable {
 
   GraphicsParams  graphicsParams;
   GraphicsParams  hilightedGraphicsParams;
 
+
   TwowayMirror(GraphicsParams params, GraphicsParams hilightedParams) {
     this.graphicsParams = params;
     this.hilightedGraphicsParams = hilightedParams;
   }
+
 
   void draw(Cell c) {
     float x = c.center.x;
@@ -204,6 +218,8 @@ class LaserHelper {
 
   public Grid g;
   public Boolean hasError=false; // If there was an internal error while computing puzzle patterns.
+  
+  
   public  LaserHelper(Grid g) {
     this.g = g;
 
@@ -220,6 +236,7 @@ class LaserHelper {
     gLaserParams.backgroundFill = color(255, 0, 0);
     gLaserParams.borderColor = -1;
   }
+
 
   void initFromSpec(String[] spec, int[] laserIds) {
     int laserCount = 0;
@@ -263,6 +280,8 @@ class LaserHelper {
       }
     }
   }
+
+  
   // convert orientation in degrees to a number from 1-7
   // representing the cardinal directions.
   // 0=E(right), 1=N(up), 2=W(left), 3=S(down)
@@ -275,13 +294,14 @@ class LaserHelper {
     return dir;
   }
 
+
   // Return the cell if available to place
   // an object without disrupting anything
   Cell getCellIfAvailable(int i, int j) {
-
     Cell cj = g.tryGetCell(i, j);
     return (cj !=null && (cj.dObject == null || (cj.dObject instanceof Dot && !cj.visited))) ? cj : null;
   }
+
 
   // Add a laser that targets the specified text cell. Return true if the laser was
   // successfully added.
@@ -304,7 +324,6 @@ class LaserHelper {
       }
     }
 
-
     // Now add a laser in a random orientation among the available
     // orientations.
     if (candidateCells.size()>0) {
@@ -318,6 +337,8 @@ class LaserHelper {
       return false;
     }
   }
+
+  
   // Return a count of dot-cells that are hit if a hypothetical beam is traced from the start cell
   // heading in the specified direction. The current cell does not need to be a laser.
   // All hard (non-dot) cells visited are added (NOT including the first cell) to hardObjects. All
@@ -360,6 +381,7 @@ class LaserHelper {
     return dotCounts[0];
   }
 
+
   void markAllPaths() {
     g.clearVisited();
     Cell[] laserCells = getLasers();
@@ -371,6 +393,7 @@ class LaserHelper {
     }
   }
 
+
   ArrayList<Cell> computeLaserPath(Cell c, Boolean mark) {
     ArrayList<Cell> path = new ArrayList<Cell>();
     LaserHelper lh = new LaserHelper(g);
@@ -378,6 +401,7 @@ class LaserHelper {
     lh.tracePath(c, lh.cardinalDirection(c.orientation), path, null, mark);
     return path;
   }
+
 
   // Return the lasers in the order that they are found in the grid
   Cell[] getLasers() {
@@ -394,6 +418,7 @@ class LaserHelper {
     return ret;
   }
 
+
   // Return all cells with lasers, in order of
   // increasing laserIds.
   Cell[] getLasersOrderedById() {
@@ -408,9 +433,11 @@ class LaserHelper {
     return ret;
   }
 
+
   Laser laserFromCell(Cell c) {
     return (Laser) c.dObject;
   }
+
 
   // Return the list of lasers in random order.
   Cell[] pickRandomLaserOrder() {
@@ -422,11 +449,13 @@ class LaserHelper {
     return lasers;
   }
 
+
   void swapCells(Cell[] cells, int i, int j) {
     Cell c = cells[i];
     cells[i] =  cells[j];
     cells[j] = c;
   }
+
 
   void addToPathComplexity() {
     markAllPaths();
@@ -503,6 +532,7 @@ class LaserHelper {
     //println("compute mirror direction - id:" + incomingDir + " od: " + outgoingDir + " CHANGE: " + change + " ORIENTATION: " + orientation);
     return orientation;
   }
+
 
   // Assuming a beam with orientation prevOrientation hits the mirror,
   // compute the new orientation
@@ -583,6 +613,7 @@ class LaserHelper {
     return cNext;
   }
 
+
   // Sets the viability score for all cells in the list - indicating
   // how suitable that location is for (re)placement of lasers
   // and/or placement of mirrors.
@@ -591,6 +622,7 @@ class LaserHelper {
       info.viabilityScore = computeViabiliyScore(info);
     }
   }
+
 
   int computeViabiliyScore(TraceCellInfo info) {
     Cell c = info.c;
@@ -604,6 +636,7 @@ class LaserHelper {
     int rightDots = tracePath(c, rightDir, null, null, false);
     return 1+leftDots+rightDots;
   }
+
 
   // Given  a list of dots, pick a dot at random from
   // "among the more promising ones" - based on the viabilityScore
@@ -655,6 +688,7 @@ class LaserHelper {
     return null;
   }
 
+
   // returns true iff the two dots are adjacent in a straight path
   // with info1 preceeding info2.
   Boolean adjacentDot(TraceCellInfo info1, TraceCellInfo info2) {
@@ -680,6 +714,7 @@ class LaserHelper {
 
     return true;
   }
+
 
   float orientationFromCardinalDirection_OBSOLETE(int direction) {
     assert(direction>=0 && direction<4);
@@ -709,9 +744,6 @@ class LaserHelper {
     return dotCellInfo.c;
   }
 
-  // public Stats mirrorCount; // Number of mirrors in path.
-  //public Stats ssDistance;  // Manhattan distance between source and sink.
-  //public Stats maxSpan; // Max distance between adjacent mirrors.
 
   PuzzleStats computePuzzleStats() {
     Cell[]laserCells =  getLasers();
@@ -735,6 +767,7 @@ class LaserHelper {
     return pStats;
   }
 
+
   int computeMirrorCount(ArrayList<Cell> objects) {
     int count = 0;
     for (Cell c : objects) {
@@ -745,10 +778,12 @@ class LaserHelper {
     return count;
   }
 
+
   // return manhattan distance between the two objects
   int computeManhattanDistance(Cell c1, Cell c2) {
     return (abs(c1.i-c2.i)+abs(c1.j-c2.j));
   }
+
 
   int computeMaxSpan(ArrayList<Cell> objects) {
     int maxSpan = 0;
@@ -764,6 +799,7 @@ class LaserHelper {
     }
     return maxSpan;
   }
+
 
   Stats computeStats(int[] data) {
     int min=Integer.MAX_VALUE, max=Integer.MIN_VALUE;
@@ -819,6 +855,7 @@ class LaserHelper {
     return (i==-1) ? c : SPECIAL_CHARS.charAt(i);
   }
 
+
   // Draw the laser paths using appropriate styling
   // depending on whether there are discrepancies
   // with the expected puzzle text.
@@ -836,6 +873,7 @@ class LaserHelper {
     }
     highlightUnvisitedObjects();
   }
+
 
   // Draw the laser paths for the specific ID using appropriate styling
   // depending on whether there are discrepancies
@@ -855,9 +893,9 @@ class LaserHelper {
 
   // Set exactly those cells that are touched by
   // beams to "visited" status.
-
-
-
+  // ???
+  
+  
   // Hilight all non-DOT objects that have not
   // been visited
   void highlightUnvisitedObjects() {
@@ -872,15 +910,6 @@ class LaserHelper {
       }
     }
   }
-
-
-
-  String shortClassName(String className) {
-    return className.substring(className.indexOf("$")+1); // relise of indexOf returning -1 if not found.
-  }
-
-
-
 
 
   void drawLaserPath(ArrayList<Cell> path, String expectedText) {
@@ -906,8 +935,6 @@ class LaserHelper {
       laserColor = color(255, 153, 0); // orange (comment out to have it a red path)
       weight = 10; // reduce to 4 to be thinner so that it doesn't extend behind the mirror.
     }
-
-
 
     Cell cFinal = null;
     for (Cell c : path) {
@@ -984,8 +1011,6 @@ class LaserHelper {
   }
 
 
-
-
   // Return the text boxes in the order that they are found in the grid
   Cell[] getTextBoxes() {
     ArrayList<Cell> list = new ArrayList<Cell>();
@@ -1001,6 +1026,7 @@ class LaserHelper {
     return ret;
   }
 
+
   int[] getLaserIds () {
     Cell[] cells = getLasers();
     int[] ids = new int[cells.length];
@@ -1010,6 +1036,7 @@ class LaserHelper {
     return ids;
   }
 
+
   String getText () {
     Cell[] cells = getTextBoxes();
     String text = "";
@@ -1018,6 +1045,7 @@ class LaserHelper {
     }
     return text;
   }
+
 
   // If path is null output is to console.
   void printGrid(String path) {
@@ -1047,6 +1075,7 @@ class LaserHelper {
     }
   }
 
+
   // Find an available text box (one that can serve
   // as a fresh target) or create and insert a new text 
   // box.
@@ -1057,6 +1086,7 @@ class LaserHelper {
     }
     return c;
   }
+
 
   Cell findViableExistingTextBox(String s) {
     ArrayList<Cell> candidateCells = new ArrayList<Cell>();
@@ -1078,6 +1108,7 @@ class LaserHelper {
 
     return pickRandomTopViableCellForTextBox(candidateCells, candidateScores);
   }
+
 
   // Given a list of candidate cells (all of which are assumed to be viable)
   // pick a random one amongst the very top scorers
@@ -1154,6 +1185,7 @@ class LaserHelper {
     return score;
   }
 
+
   Cell placeNewTextBox(String s) {
     // Place the text box by computing viable locations and then picking
     // randomly among the top scorers.
@@ -1177,7 +1209,6 @@ class LaserHelper {
     }
     return chosenCell;
   }
-
 
 
   // Add more lasers so that the supplied text
@@ -1209,6 +1240,7 @@ class LaserHelper {
     return true;
   }
 
+
   String locationToString(Cell c) {
     return "["+c.i+","+c.j+"]";
   }
@@ -1219,6 +1251,7 @@ class LaserHelper {
     int[] deltas = {1, 0, -1, 0}; // left, up, right, down
     return deltas[direction];
   }
+
 
   // How much do we increment the row to take
   // one step in the given direction
