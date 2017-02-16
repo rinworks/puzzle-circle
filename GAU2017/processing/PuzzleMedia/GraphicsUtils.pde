@@ -1,4 +1,7 @@
-// Subset of GraphicsBase from the laser puzzle
+// Module: GraphicsUtils - Subset of GraphicsBase from the old laser puzzle
+// History:
+//  Feb 2017  - JMJ created, adapted from earlier code I wrote for EAS and Puzzle Safari puzzles
+// 
 //
 
 class Point {
