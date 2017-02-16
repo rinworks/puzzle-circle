@@ -92,6 +92,7 @@ class LasersMain {
         //PuzzleStats pStats = lh.computePuzzleStats();
         //println("Puzzle Stats:");
         //println(pStats);
+        // break;
       }
     }
   }

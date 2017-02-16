@@ -42,6 +42,7 @@ class PuzzleStats {
 
 
 class Laser implements  Drawable {
+  final int LASER_WIDTH = 15;
   int id;
   String label;
   GraphicsParams  graphicsParams;
@@ -61,7 +62,7 @@ class Laser implements  Drawable {
     float orientation = c.orientation;
     ShapeState state = c.state;
     GraphicsParams params = (state==ShapeState.HILIGHTED)?hilightedGraphicsParams:graphicsParams;
-    int a = 22, b=10;
+    int a = (int)(2*LASER_WIDTH), b=LASER_WIDTH;
     int aDelta = 0;
     pushMatrix();
     translate(x, y);
@@ -88,7 +89,7 @@ class Laser implements  Drawable {
 
 
 class Dot implements  Drawable {
-
+  public final int DOT_DIA = 3;
   GraphicsParams  graphicsParams;
   GraphicsParams  hilightedGraphicsParams;
 
@@ -106,13 +107,13 @@ class Dot implements  Drawable {
     noStroke();
     fill(params.borderColor);
     ellipseMode(CENTER);
-    ellipse(x, y, 2, 2);
+    ellipse(x, y, DOT_DIA, DOT_DIA);
   }
 }
 
 
 class TextBox implements  Drawable {
-
+  public final int TEXTBOX_HEIGHT = 40;
   String label;
   GraphicsParams  graphicsParams;
   GraphicsParams  hilightedGraphicsParams;
@@ -137,7 +138,7 @@ class TextBox implements  Drawable {
     rotate(radians(-orientation));
     gGrUtils.setShapeParams(params);
     rectMode(CENTER);
-    rect(0, 0, 30, 30);
+    rect(0, 0, TEXTBOX_HEIGHT, TEXTBOX_HEIGHT);
     gGrUtils.setTextParams(params);
     text(label, 0, -b/4.0);
     popMatrix();
@@ -146,7 +147,7 @@ class TextBox implements  Drawable {
 
 
 class TwowayMirror implements  Drawable {
-
+  public final int MIRROR_WIDTH = 50;
   GraphicsParams  graphicsParams;
   GraphicsParams  hilightedGraphicsParams;
 
@@ -163,13 +164,12 @@ class TwowayMirror implements  Drawable {
     float orientation = c.orientation;
     ShapeState state = c.state;
     GraphicsParams params = (state==ShapeState.HILIGHTED)?hilightedGraphicsParams:graphicsParams;
-    int a = 30, b=10;
     gGrUtils.pushTransform(x, y, orientation);
     //gUtils.setShapeParams(params);
     noStroke();
     fill(params.borderColor);
     rectMode(CENTER);
-    rect(0, 0, 5, 30); // A vertical mirror - corresponding to it's NORMAL having an orientation of0
+    rect(0, 0, 5, MIRROR_WIDTH); // A vertical mirror - corresponding to it's NORMAL having an orientation of0
     gGrUtils.popTransform();
   }
 }
@@ -181,6 +181,8 @@ class LaserHelper {
   final  String SPECIAL_CHARS = LASER_CHARS + MIRROR_CHARS + '.';
   final String ESCAPE_CHARS = ""; //"BDFGHIJLMNOPQRST";
 
+  final String DEFAULT_FONT = "Segoe WP Black";
+  final int TEXT_SIZE = 30;
   // Directions
   // 3   2   1
   //  \  |  /
@@ -218,20 +220,21 @@ class LaserHelper {
 
   public Grid g;
   public Boolean hasError=false; // If there was an internal error while computing puzzle patterns.
-  
-  
+
+
   public  LaserHelper(Grid g) {
     this.g = g;
 
-    String DEFAULT_FONT = "Segoe WP Black";
 
     // Set look of the textboxes
-    gParams.font = createFont(DEFAULT_FONT, 20); // null means don't set
+    gParams.font = createFont(DEFAULT_FONT, TEXT_SIZE); // null means don't set
+    gParams.textSize = TEXT_SIZE;
     gParams.textColor = 0;
     gParams.backgroundFill = 255;
 
     // Set look of the lasers
-    gLaserParams.font = createFont(DEFAULT_FONT, 20); // null means don't set
+    gLaserParams.font = createFont(DEFAULT_FONT, TEXT_SIZE); // null means don't set
+    gLaserParams.textSize = TEXT_SIZE;
     gLaserParams.textColor = 255;
     gLaserParams.backgroundFill = color(255, 0, 0);
     gLaserParams.borderColor = -1;
@@ -281,7 +284,7 @@ class LaserHelper {
     }
   }
 
-  
+
   // convert orientation in degrees to a number from 1-7
   // representing the cardinal directions.
   // 0=E(right), 1=N(up), 2=W(left), 3=S(down)
@@ -338,7 +341,7 @@ class LaserHelper {
     }
   }
 
-  
+
   // Return a count of dot-cells that are hit if a hypothetical beam is traced from the start cell
   // heading in the specified direction. The current cell does not need to be a laser.
   // All hard (non-dot) cells visited are added (NOT including the first cell) to hardObjects. All
@@ -894,8 +897,8 @@ class LaserHelper {
   // Set exactly those cells that are touched by
   // beams to "visited" status.
   // ???
-  
-  
+
+
   // Hilight all non-DOT objects that have not
   // been visited
   void highlightUnvisitedObjects() {
