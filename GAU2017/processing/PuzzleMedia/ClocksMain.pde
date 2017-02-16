@@ -5,43 +5,43 @@ class ClocksMain {
 
   final String PUZZLE_TYPE = "clocks";
   final String[][] puzzleTexts = {
-    {
-      "MINU", 
-      "TES ", 
-      "IN A", 
-      "WEEK"
+    { "MINUTOS", 
+      "EN UN", 
+      "DIA"
+    },
+    { "SEGUNDO", 
+      "PLANETA"
     }, 
     {
-      "HASTA", 
-      "LA", 
-      "VISTA", 
-      "BABY"
+      "CUAR TO", 
+      "PLANETA"
     }
   };
 
   void genAllMedia() {
 
-    for (int i=0; i<puzzleTexts.length; i++) {
-      String fileStub = gUtils.genMediaFilenameStub(PUZZLE_TYPE, i);
+    for (String[] puzzleText : puzzleTexts) {
+      String sol = extractSolution(puzzleText);
+      String IN  = gSolutions.lookupIN(sol);
+      String fileStub = gUtils.genMediaFilenameStub(PUZZLE_TYPE, IN);
       background(DEFAULT_BACKGROUND);
-      drawClocks(puzzleTexts[i], false);
+      drawClocks(puzzleText, false);
       save(fileStub +  ".png");
-      drawClocks(puzzleTexts[i], true);
+      drawClocks(puzzleText, true);
       save(fileStub + "-answer" + ".png");
-      saveAnswerText(i);
+      gUtils.saveAnswerText(PUZZLE_TYPE, IN, sol);
     }
   }
 
   // saves the text associated with 0-based puzzle "index" in a text file.
-  void saveAnswerText(int index) {
-    String[] puzzleText = puzzleTexts[index];
+  String extractSolution(String[] puzzleText) {
     String txt = "";
-    for (String s: puzzleText) {
+    for (String s : puzzleText) {
       txt += s;
     }
-    gUtils.saveAnswerText(PUZZLE_TYPE, index, txt);
+    return txt;
   }
-  
+
   void drawClocks(String[] puzzleText, Boolean showText) {
     if (puzzleText.length==0) {
       return; // ******************** EARLY RETURN
