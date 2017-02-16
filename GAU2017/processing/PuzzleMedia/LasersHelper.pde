@@ -226,12 +226,12 @@ class LaserHelper {
     String DEFAULT_FONT = "Segoe WP Black";
 
     // Set look of the textboxes
-    gParams.font = createFont(DEFAULT_FONT, 7); // null means don't set
+    gParams.font = createFont(DEFAULT_FONT, 20); // null means don't set
     gParams.textColor = 0;
     gParams.backgroundFill = 255;
 
     // Set look of the lasers
-    gLaserParams.font = createFont(DEFAULT_FONT, 7); // null means don't set
+    gLaserParams.font = createFont(DEFAULT_FONT, 20); // null means don't set
     gLaserParams.textColor = 255;
     gLaserParams.backgroundFill = color(255, 0, 0);
     gLaserParams.borderColor = -1;

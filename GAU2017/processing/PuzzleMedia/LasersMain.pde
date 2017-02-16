@@ -16,7 +16,33 @@ import java.util.Arrays;
 
 class LasersMain {
 
-  
+  final String PUZZLE_TYPE = "lasers";
+  final String[] puzzleTexts = {
+    "BÚFALO", 
+    "CAMELLO", 
+    "VENADO", 
+    "ELEFANTE", 
+    "JIRAFA", 
+    "GORILA", 
+    "CABALLO", 
+    "CANGURO", 
+    "LEOPARDO", 
+    "CONEJO", 
+    "ARDILLA", 
+    "BELLENA", 
+    "DELFÍN", 
+    "CUERVO", 
+    "PALOMA", 
+    "ÁGUILA", 
+    "FLAMENCO", 
+    "COLIBRÍ", 
+    "AVESTRUZ", 
+    "PAPAGAYO", 
+    "PELICANO", 
+    "PALOMA", 
+    "QUETZAL"
+  };
+
   void genAllMedia() {
 
     // To recreate a specific puzzle, make a note of the printed seed value and 
@@ -26,52 +52,47 @@ class LasersMain {
     randomSeed(seed);
 
     // Set runSpecific to true to run a specific, previously-computed puzzle
-    Boolean runSpecific = true;
+    Boolean runSpecific = false;
     if (runSpecific) {
       runSpecific();
     } else { 
-      String puzzleText = "D=880 & W=A+23";
-
-      Boolean bestOfMany = true; // Whether to generate a bunch of puzzles and pick
-      // the best of the based on certain metrics
-      LaserHelper lh;
 
       // Size of the grid...
-      int rows = 25;
-      int cols = 25;
+      int rows = 7;
+      int cols = 7;
+      int numCandidatePuzzlesPerPuzzle = 100;
 
-      if (bestOfMany) {
-        // This code picks the "best" puzzle out of numPuzzles random puzzles
-        int numPuzzles = 1000;
-        lh = generateGoodPuzzle(rows, cols, puzzleText, numPuzzles);
-      } else {
-        // Create a random puzzle specified rows and columns, 
-        // (and attempt to grow the laser paths
-        // up to a growthIterations times). If growthIterations is set to 0,
-        // a degenerate (but valid) puzzle is created with all lasers directly
-        // next to their target letter.
-        int growthIterations=100;
-        lh = createRandomPuzzle(rows, cols, puzzleText, growthIterations);
+      for (String puzzleText : puzzleTexts) {
+        String IN  = gSolutions.lookupIN(puzzleText); // We expect the string version of the count to be a valid solution!
+        String fileStub = gUtils.genMediaFilenameStub(PUZZLE_TYPE, IN);
+
+        LaserHelper lh = generateGoodPuzzle(rows, cols, puzzleText, numCandidatePuzzlesPerPuzzle);
+        background(LIGHT_GRAY_BACKGROUND);
+        lh.g.draw();
+        save(fileStub +  ".png");
+        gUtils.saveAnswerText(PUZZLE_TYPE, IN, puzzleText);
+
+        background(LIGHT_GRAY_BACKGROUND);
+        // Actually draw out the paths taken by all the lasers
+        // (comment out to NOT draw paths - the puzzle itself of course does NOT have
+        // any paths drawn)
+        lh.drawPaths(puzzleText);
+
+        // Draw the lasers and the grid (drawn on TOP of the paths so that the labels, etc
+        // are shown)
+        lh.g.draw();
+        save(fileStub +  "-ans.png");
+
+        // Print out a text representation of the grid. This is actually Java code that defines
+        // a couple of arrays - you can cut and paste this code into the runSpecific() method to
+        // regenerate exactly that puzzle.
+        //lh.printGrid(null);
+
+        // Compute various "goodness" stats about this puzzle and print it out.
+        //PuzzleStats pStats = lh.computePuzzleStats();
+        //println("Puzzle Stats:");
+        //println(pStats);
       }
-
-      // Actually draw out the paths taken by all the lasers
-      // (comment out to NOT draw paths - the puzzle itself of course does NOT have
-      // any paths drawn)
-      lh.drawPaths(puzzleText);
-
-      // Draw the lasers and the grid (drawn on TOP of the paths so that the labels, etc
-      // are shown)
-      lh.g.draw();
-
-      // Print out a text representation of the grid. This is actually Java code that defines
-      // a couple of arrays - you can cut and paste this code into the runSpecific() method to
-      // regenerate exactly that puzzle.
-      lh.printGrid(null);
-
-      // Compute various "goodness" stats about this puzzle and print it out.
-      PuzzleStats pStats = lh.computePuzzleStats();
-      println("Puzzle Stats:");
-      println(pStats);
     }
   }
 
@@ -279,7 +300,7 @@ class LasersMain {
     background(200);
     String puzzleText = "1";
     //drawLaserPath(g, 1, "a"); // Uncomment to draw a specific path for the answer doc.
-    lh.drawPaths(puzzleText);
+    //lh.drawPaths(puzzleText);
     lh.g.draw();
     save("output\\ouput-withPaths.png");
     lh.printGrid(sketchPath("output\\output-spec.txt"));
