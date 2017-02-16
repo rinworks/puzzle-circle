@@ -52,7 +52,7 @@ class MasterSolutionList {
       int id = row.getInt(ID_HEADING);
       String sol = row.getString(solutionCol);
       map[i] = new Mapping(String.format("%02d", id), sol, canonicalize(sol));
-      println(map[i]);
+      //println(map[i]);
       i++;
     }
   }

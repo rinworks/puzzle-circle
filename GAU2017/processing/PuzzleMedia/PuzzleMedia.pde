@@ -4,7 +4,10 @@
 public static final int DISPLAY_HEIGHT = 1300;
 public static final int DISPLAY_WIDTH = 1300;
 public static final int DEFAULT_BACKGROUND = 150;
+public static final int WHITE_BACKGROUND = 255;
 public CommonUtils gUtils = new CommonUtils();
+public GraphicsUtils gGrUtils = new GraphicsUtils();
+
 public MasterSolutionList gSolutions = null; // initialized in setup
 // Just set display height and width here.
 // No processing methods other than setting up the display are permitted here.
@@ -14,14 +17,18 @@ void settings() {
 
 void setup() {
   noLoop();
-  gSolutions = new MasterSolutionList("data/solution-table.csv", "ES Hint");
+  gSolutions = new MasterSolutionList("data/puzzle-phrases.csv", "ES Hint");
   generateAllPuzzleMedia();
 }
 
 void generateAllPuzzleMedia() {
-  ClocksMain clocks = new ClocksMain();
-  clocks.genAllMedia();
+  //ClocksMain clocks = new ClocksMain();
+  //clocks.genAllMedia();
   
-  BricksMain bricks = new BricksMain();
-  bricks.genAllMedia();
+  //BricksMain bricks = new BricksMain();
+  //bricks.genAllMedia();
+  
+  CountCellsMain ccells = new CountCellsMain();
+  ccells.genAllMedia();
+
 }
