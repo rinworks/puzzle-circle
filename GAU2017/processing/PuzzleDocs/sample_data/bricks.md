@@ -5,4 +5,4 @@
 ![](data/bricks/bricks-{{IN}}b.png)
 <<El  mensaje es una pista para la respuesta final.
 vvv
-<<©2015 Joseph Joy (Rinworks, LLC)
+<<2017 TINFA Puzzle Event. Puzzle © 2017 Joseph Joy (Rinworks, LLC)
