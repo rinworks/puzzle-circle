@@ -14,7 +14,6 @@
 //import java.util.Arrays;
 import processing.pdf.*;
 Utils gUtils = new Utils();
-public static final boolean GENERATE_PDF = true;
 
 void mySetup() {
   // Pick 2nd one if GENERATE_PDF is true.
