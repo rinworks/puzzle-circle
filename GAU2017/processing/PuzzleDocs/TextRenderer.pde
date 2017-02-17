@@ -56,7 +56,7 @@ class TextRenderer {
     origin.y = newY;
     wRegion  = newWRegion;
     hRegion = newHRegion;
-    curDY = 2*DEFAULT_FONT_SIZE;
+    // obsolete curDY = 2*DEFAULT_FONT_SIZE;
   }
 
   void addStyle(String styleName, String fontName, int size, color c) {
@@ -134,9 +134,10 @@ class TextRenderer {
         renderMdImage(line);
       } else if (line.startsWith("vvv")) {
         // Remaining text is in footer. Jump to
-        // footer area.
+        // footer area, which is BELOW the current region.
         setStyle(MD_FOOTER_STYLE);
-        curDY = (int) (origin.y + hRegion - 2*curStyle.size);
+        curDY = hRegion;
+        println("curDY: " + curDY);
       } else {
         renderText(line, true);
       }
@@ -150,7 +151,16 @@ class TextRenderer {
     fname = fname.replaceAll("\\)(.*)","");
     println("Img name: " + fname);
     PImage img = loadImage(fname);
-    image(img, origin.x, curDY);
+    float iw = img.width;
+    float ih = img.height;
+    // We scale so that image fits avialable space
+    float w = wRegion;
+    float h = max(hRegion-curDY, 0);
+    float xScale = w/iw;
+    float yScale = h/ih;
+    float scale = min(xScale, yScale);
+    image(img, origin.x, origin.y+curDY, iw*scale, ih*scale);
+    curDY  += ih*scale;
   }
 
   // Insert newlines to prevent text from
