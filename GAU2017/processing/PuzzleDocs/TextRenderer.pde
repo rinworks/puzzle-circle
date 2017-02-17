@@ -127,7 +127,7 @@ class TextRenderer {
         // Render header
         setStyle(MD_H1_STYLE);
         renderText(line.substring(1), false); // Skip first char
-        moveDownBy((int)(0.5*curStyle.size));
+        //moveDownBy((int)(0.5*curStyle.size));
         setStyle(MD_PARA_STYLE);
       } else if (line.startsWith("![](")) {
         // Render image
@@ -150,6 +150,8 @@ class TextRenderer {
     String fname = text.replaceAll(".*[(]", "");
     fname = fname.replaceAll("\\)(.*)","");
     println("Img name: " + fname);
+    // We need to skip down a wee bit...
+    moveDownBy((int)(1.0*curStyle.size));
     PImage img = loadImage(fname);
     float iw = img.width;
     float ih = img.height;

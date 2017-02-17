@@ -22,7 +22,9 @@ void setup() {
 void generateAllPuzzles() {
   final String[] PUZZLE_TYPES = {
     "clocks", 
-    "lasers"
+    "lasers",
+    "countCells",
+    "bricks"
   };
   String[][] templates = loadMdTemplates(PUZZLE_TYPES);
   String[][] INValues = loadINValues(PUZZLE_TYPES);
@@ -45,6 +47,7 @@ void generateAllPuzzles() {
     renderOnePuzzle(templates[i], PNVal, INVal, IRVal);
   }
   exit();
+  println("***PDF GENERATION COMPLETE***");
 }
 
 void runAllTests() {
