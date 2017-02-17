@@ -32,7 +32,7 @@ class TextRenderer {
   final int DEFAULT_FONT_SIZE = 10;
   final color DEFAULT_COLOR = color(0);
   //final int LINE_SPACING = 10;
-  int curDY=2*DEFAULT_FONT_SIZE;
+  int curDY=0; // WAS 2*DEFAULT_FONT_SIZE;
 
   public TextRenderer(Point origin, int wRegion, int hRegion) {
     this.origin = new Point(origin.x, origin.y);
@@ -46,9 +46,9 @@ class TextRenderer {
   // Initialize default style values for various Markdown
   // text types.
   private void initDefaultMdStyles() {
-    addStyle(MD_H1_STYLE, "Segoe", 15, color(0));
-    addStyle(MD_PARA_STYLE, "Segoe", 12, color(0));
-    addStyle(MD_FOOTER_STYLE, "Segoe", 10, color(0));
+    addStyle(MD_H1_STYLE, "Segoe", 40, color(0));
+    addStyle(MD_PARA_STYLE, "Segoe", 15, color(0));
+    addStyle(MD_FOOTER_STYLE, "Segoe", 12, color(0));
   }
 
   public void moveTo(int newX, int newY, int newWRegion, int newHRegion) {
@@ -95,12 +95,12 @@ class TextRenderer {
     if (text.indexOf(">>") == 0) {
       // Push to rilign(RIGHT);
       dX = wRegion;
-      textAlign(RIGHT);
+      textAlign(RIGHT, TOP);
       text = text.substring(2);
     } else if (text.indexOf("<<") == 0) {
       // Push to rilign(RIGHT);
       dX = 0;
-      textAlign(LEFT);
+      textAlign(LEFT, TOP);
       text = text.substring(2);
     } else {
       // Center - default
@@ -127,6 +127,7 @@ class TextRenderer {
         // Render header
         setStyle(MD_H1_STYLE);
         renderText(line.substring(1), false); // Skip first char
+        moveDownBy((int)(0.5*curStyle.size));
         setStyle(MD_PARA_STYLE);
       } else if (line.startsWith("![](")) {
         // Render image
@@ -180,16 +181,16 @@ class TextRenderer {
     }
     return insertNewlines(input, inserts);
   }
-  
+
   // Return a string that has newlines inserted at the insert points.
   String insertNewlines(String input, ArrayList<Integer> inserts) {
     if (inserts.size()==0) {
       return input; // *** EARLY RETURN ***
     }
-    
+
     StringBuilder sb = new StringBuilder();
     int prevOffset = 0;
-    for (Integer offset: inserts) {
+    for (Integer offset : inserts) {
       int end = offset;
       if (input.charAt(offset) == ' ') {
         end--; // Trim final space if there is one.
@@ -202,7 +203,7 @@ class TextRenderer {
     sb.append(input.substring(prevOffset)); // last bit.
     return sb.toString();
   }
-  
+
   // Find the last place we can break the line.
   // Break on spaces and hyphens. Note that other punctuation
   // are expected to have spaces after them.
@@ -241,6 +242,5 @@ class TextRenderer {
 
   // Run internal tests
   void runTests() {
-
   }
 }
