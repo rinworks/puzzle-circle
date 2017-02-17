@@ -61,6 +61,7 @@ class LasersMain {
       int rows = 7;
       int cols = 7;
       int numCandidatePuzzlesPerPuzzle = 100;
+      Table infoTable = gUtils.newInfoTable();
 
       for (String puzzleText : puzzleTexts) {
         String IN  = gSolutions.lookupIN(puzzleText); // We expect the string version of the count to be a valid solution!
@@ -71,7 +72,6 @@ class LasersMain {
         lh.drawLaserPath(1, puzzleText.substring(0, 1)); // Uncomment to draw a specific path for the answer doc.
         lh.g.draw();
         save(fileStub +  ".png");
-        gUtils.saveAnswerText(PUZZLE_TYPE, IN, puzzleText);
 
         background(LIGHT_GRAY_BACKGROUND);
         // Actually draw out the paths taken by all the lasers
@@ -83,6 +83,8 @@ class LasersMain {
         // are shown)
         lh.g.draw();
         save(fileStub +  "-ans.png");
+        gUtils.addInstanceToTable(infoTable, IN, puzzleText);
+
 
         // Print out a text representation of the grid. This is actually Java code that defines
         // a couple of arrays - you can cut and paste this code into the runSpecific() method to
@@ -95,6 +97,7 @@ class LasersMain {
         //println(pStats);
         //break;
       }
+      gUtils.saveInfoTable(infoTable, PUZZLE_TYPE);
     }
   }
 

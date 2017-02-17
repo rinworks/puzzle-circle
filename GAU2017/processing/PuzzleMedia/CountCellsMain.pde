@@ -1,7 +1,7 @@
-// Module: CountCellsMain - code to generate  media needed for the CountCells  Puzzle
+// Module: CountCellsMain - code to generate  media needed for the CountCells  Puzzle //<>// //<>//
 // History:
 //  Feb 2017  - JMJ created, adapted from earlier code I wrote for EAS and Puzzle Safari puzzles
-// //<>// //<>// //<>//
+// //<>// //<>//
 // Module: countCells.PDE
 // Description: Main file for Count Cells puzzle generator.
 //  CountCells is based on an Excel-based Count Cells puzzle JMJ created for Audubon Puzzle Circle
@@ -31,7 +31,8 @@ class CountCellsMain {
 
   };
 
-  void genAllMedia() { //<>//
+  void genAllMedia() {
+    Table infoTable = gUtils.newInfoTable();
     CellHelper helper = new CellHelper();
     for (int[] p : puzzleParams) {
       Grid g = genOverlappingRectsPuzzle(helper, p[0], p[1], p[2], p[3], p[4], p[5]);
@@ -45,8 +46,9 @@ class CountCellsMain {
       g.draw();
       String fileStub = gUtils.genMediaFilenameStub(PUZZLE_TYPE, IN);
       save(fileStub +  ".png");
-      gUtils.saveAnswerText(PUZZLE_TYPE, IN, sol);
+      gUtils.addInstanceToTable(infoTable, IN, sol);
     }
+    gUtils.saveInfoTable(infoTable, PUZZLE_TYPE);
   }
 
   // A parametrized puzzle generator. It creates a pattern consiting of two overlapping rectangles. The rectangles

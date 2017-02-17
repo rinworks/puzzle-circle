@@ -23,16 +23,17 @@ void setup() {
 }
 
 void generateAllPuzzleMedia() {
-  //ClocksMain clocks = new ClocksMain();
-  //clocks.genAllMedia();
+  ClocksMain clocks = new ClocksMain();
+  clocks.genAllMedia();
   
-  //BricksMain bricks = new BricksMain();
-  //bricks.genAllMedia();
+  BricksMain bricks = new BricksMain();
+  bricks.genAllMedia();
   
-  //CountCellsMain ccells = new CountCellsMain();
-  //ccells.genAllMedia();
+  CountCellsMain ccells = new CountCellsMain();
+  ccells.genAllMedia();
 
   LasersMain lasers = new LasersMain();
   lasers.genAllMedia();
 
+  println("***ALL PUZZLES FOR ALL TYPES GENERATED!***");
 }

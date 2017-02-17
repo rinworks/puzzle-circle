@@ -8,7 +8,7 @@ class ClocksMain {
     { "MINUTOS", 
       "EN UN", 
       "DIA"
-    },
+    }, 
     { "SEGUNDO", 
       "PLANETA"
     }, 
@@ -19,7 +19,7 @@ class ClocksMain {
   };
 
   void genAllMedia() {
-
+    Table infoTable = gUtils.newInfoTable();
     for (String[] puzzleText : puzzleTexts) {
       String sol = extractSolution(puzzleText);
       String IN  = gSolutions.lookupIN(sol);
@@ -29,8 +29,9 @@ class ClocksMain {
       save(fileStub +  ".png");
       drawClocks(puzzleText, true);
       save(fileStub + "-answer" + ".png");
-      gUtils.saveAnswerText(PUZZLE_TYPE, IN, sol);
+      gUtils.addInstanceToTable(infoTable, IN, sol);
     }
+    gUtils.saveInfoTable(infoTable, PUZZLE_TYPE);
   }
 
   // saves the text associated with 0-based puzzle "index" in a text file.

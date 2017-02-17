@@ -19,6 +19,8 @@ class BricksMain {
 
   void genAllMedia() {
 
+    Table infoTable = gUtils.newInfoTable();
+
     // Write out the bricks.scad file. This is common code used by all the bricks files.
     writeBricksSCADFile("output/" + PUZZLE_TYPE + "/");
     //size(1000, 100);
@@ -30,14 +32,15 @@ class BricksMain {
     for (String puzzleText : puzzleTexts) {
       String IN  = gSolutions.lookupIN(puzzleText);
       String fileStub = gUtils.genMediaFilenameStub(PUZZLE_TYPE, IN);
-       String supportedText = puzzleText.replaceAll(SPECIAL_CHAR_PATTERN, "");
+      String supportedText = puzzleText.replaceAll(SPECIAL_CHAR_PATTERN, "");
       MyColor[] colors = {MyColor.RED, MyColor.GREEN, MyColor.YELLOW }; // BLUE tends to be too dark, plus the pastel version looks too much like green
       int[] order = makePuzzle(rand, supportedText, colors, fileStub + "a");
       //println(order);
       renderHintPanel(order, colors, puzzleText, false, fileStub + "b");
       renderHintPanel(order, colors, puzzleText, true, fileStub + "-answer");
-      gUtils.saveAnswerText(PUZZLE_TYPE, IN, puzzleText);
+      gUtils.addInstanceToTable(infoTable, IN, puzzleText);
     }
+    gUtils.saveInfoTable(infoTable, PUZZLE_TYPE);
   }
 
 
