@@ -3,10 +3,10 @@
 //  Feb 2017  - JMJ created.
 
 public static final boolean GENERATE_PDF = true;
-
+public static final String PKT_ID = "07";
 void settings() {
   if (GENERATE_PDF) {
-    size(800, 1024, PDF, "output/puzzles.pdf");
+    size(800, 1024, PDF, "output/puzzles" + PKT_ID + ".pdf");
   } else {
     size(800, 1024);
   }
@@ -22,8 +22,8 @@ void setup() {
 void generateAllPuzzles() {
   final String[] PUZZLE_TYPES = {
     "clocks", 
-    "lasers",
-    "countCells",
+    "lasers", 
+    "countCells", 
     "bricks"
   };
   String[][] templates = loadMdTemplates(PUZZLE_TYPES);
@@ -33,15 +33,31 @@ void generateAllPuzzles() {
     pdf = (PGraphicsPDF) g;  // Get the renderer - seem's it's called "g" !?
   }
 
-  // Render one random puzzle per type.
+  // Render one random puzzle per type. We have to be sure not to repeat IN values so we don't get the same solution to
+  // multiple puzzles!
+  String[] selectedINVals = new String[PUZZLE_TYPES.length];
   for (int i = 0; i< PUZZLE_TYPES.length; i++) {
     if (pdf!=null && i>0) {
       pdf.nextPage();
     }
-    String[] mdTemp = templates[i];
     String[] INVals = INValues[i];
-    int selected = (int) (Math.random()*INVals.length);
-    String INVal = INVals[selected];
+    boolean foundOne = false;
+    // Select an IN val at random, but check that we haven't 
+    // already selected it.
+    String INVal = null;
+    do {
+      int selected = (int) (Math.random()*INVals.length);
+      INVal = INVals[selected];
+      foundOne = true;
+      for (int k = 0; k < i; k++) {
+        if (selectedINVals[k].equals(INVal)) {
+          foundOne = false; // Ugh, already got this one
+          break;
+        }
+      }
+    } while (!foundOne);
+    assert(INVal!=null);
+    selectedINVals[i]=INVal;
     String PNVal = "" + (i+1) + INVal;
     String IRVal = ""; // Suppress Roman numerals in title.
     renderOnePuzzle(templates[i], PNVal, INVal, IRVal);

@@ -12,8 +12,15 @@ class BricksMain {
 
   final String PUZZLE_TYPE = "bricks";
   final String[] puzzleTexts = {
-    "SEGUNDO PLANETA", 
-    "CUATRO PIES EN PULGADAS"
+    "CUARTO PLANETA", 
+    "QUINTO PLANETA", 
+    "AGUA CONGELADA", 
+    "# RUEDAS EN UN COCHE", 
+    "# RUEDAS EN UNA BICICLETA", 
+    "1KG EN GRAMOS",
+    "SIETE PIES EN PULGADAS", 
+    "CINCO PIES EN PULGADAS", 
+    "SEIS PIES EN PULGADAS", 
   };
 
 

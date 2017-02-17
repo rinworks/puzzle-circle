@@ -5,17 +5,20 @@ class ClocksMain {
 
   final String PUZZLE_TYPE = "clocks";
   final String[][] puzzleTexts = {
-    { "MINUTOS", 
-      "EN UN", 
-      "DIA"
-    }, 
-    { "SEGUNDO", 
-      "PLANETA"
-    }, 
-    {
-      "CUAR TO", 
-      "PLANETA"
-    }
+    {"PRIMER", "PLANETA"}, 
+    {"SEGUNDO", "PLANETA"}, 
+    {"TERCER", "PLANETA"}, 
+    {"MATERIAL", "MAS", "DURO"}, 
+    {"HIELO", "DERRETIDO"}, 
+    {"CONTINENTE", "MAS", "FRIO"}, 
+    {"HORAS", "EN UNA", "SEMANA"}, 
+    {"SEGUNDOS", "EN UNA", "HORA"}, 
+    {"MINUTOS", "EN UN", "DIA"}, 
+    {"TRES", "PIES EN", "PULGADAS"}, 
+    {"CUATRO", "PIES EN", "PULGADAS"}, 
+    {"MAMIFERO", "MAS", "GRANDE"}, 
+    {"ROCA", "FUNDIDA"}, 
+    {"NUESTRA", "GALAXIA"}, 
   };
 
   void genAllMedia() {

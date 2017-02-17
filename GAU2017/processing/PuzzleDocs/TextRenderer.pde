@@ -47,7 +47,7 @@ class TextRenderer {
   // text types.
   private void initDefaultMdStyles() {
     addStyle(MD_H1_STYLE, "Segoe", 40, color(0));
-    addStyle(MD_PARA_STYLE, "Segoe", 15, color(0));
+    addStyle(MD_PARA_STYLE, "Segoe", 18, color(0));
     addStyle(MD_FOOTER_STYLE, "Segoe", 12, color(0));
   }
 
