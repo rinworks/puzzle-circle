@@ -136,7 +136,7 @@ class TextRenderer {
         // Remaining text is in footer. Jump to
         // footer area.
         setStyle(MD_FOOTER_STYLE);
-        curDY = (int) (origin.y + hRegion - curStyle.size);
+        curDY = (int) (origin.y + hRegion - 2*curStyle.size);
       } else {
         renderText(line, true);
       }
@@ -145,7 +145,12 @@ class TextRenderer {
 
 
   private void renderMdImage(String text) {
-    println("renderMdImage UNIMPLEMENTED");
+    // We expect text to be of the form: ![](file).
+    String fname = text.replaceAll(".*[(]", "");
+    fname = fname.replaceAll("\\)(.*)","");
+    println("Img name: " + fname);
+    PImage img = loadImage(fname);
+    image(img, origin.x, curDY);
   }
 
   // Insert newlines to prevent text from
