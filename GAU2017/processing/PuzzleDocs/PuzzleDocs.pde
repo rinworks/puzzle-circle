@@ -3,10 +3,10 @@
 //  Feb 2017  - JMJ created.
 
 public static final boolean GENERATE_PDF = true;
-public static final String PKT_ID = "07";
+public static final String DOC_ID = "10";
 void settings() {
   if (GENERATE_PDF) {
-    size(800, 1024, PDF, "output/puzzles" + PKT_ID + ".pdf");
+    size(800, 1024, PDF, "output/puzzleStack" + DOC_ID + ".pdf");
   } else {
     size(800, 1024);
   }
@@ -17,6 +17,13 @@ void setup() {
   //size(800, 1024);
   //runAllTests();
   generateAllPuzzles();
+  //String[] puzzleIDs = {"101", "202", "303", "404"};
+  //renderScoringSheet(puzzleIDs);
+}
+
+void renderScoringSheet(String[] puzzleIDs) {
+  TextTableHelper tth = new TextTableHelper();
+  tth.renderGAUScoreSheet(puzzleIDs);
 }
 
 void generateAllPuzzles() {
@@ -33,14 +40,56 @@ void generateAllPuzzles() {
     pdf = (PGraphicsPDF) g;  // Get the renderer - seem's it's called "g" !?
   }
 
-  // Render one random puzzle per type. We have to be sure not to repeat IN values so we don't get the same solution to
-  // multiple puzzles!
-  String[] selectedINVals = new String[PUZZLE_TYPES.length];
-  for (int i = 0; i< PUZZLE_TYPES.length; i++) {
-    if (pdf!=null && i>0) {
-      pdf.nextPage();
+  // Generate multiple Puzzle Packets!
+  final int PUZZLES_PER_DOC = 10;
+  for (int pkt = 0; pkt < PUZZLES_PER_DOC; pkt++) {
+    String packetID = ((pkt % 9) + 1) + ""; // Cycles through 1...9
+
+    // Select the IN values for each puzzle type, more or less at random. We DO have to be sure not to repeat
+    // IN values so we don't get the same solution to
+    // multiple puzzles!
+    String[] selectedINVals = selectRandomPuzzles(INValues, PUZZLE_TYPES);//  new String[PUZZLE_TYPES.length];
+
+    // Render scoring sheet;
+    String[] puzzleIDs = generatePuzzleIDs(packetID, selectedINVals);
+    renderScoringSheet(puzzleIDs);
+
+    for (int i = 0; i< PUZZLE_TYPES.length; i++) {
+      if (pdf!=null) {
+        pdf.nextPage();
+      }
+      String INVal = selectedINVals[i];
+      assert(INVal!=null);
+      String PNVal = puzzleIDs[i];
+      String IRVal = ""; // Suppress Roman numerals in title.
+      renderOnePuzzle(templates[i], PNVal, INVal, IRVal);
     }
-    String[] INVals = INValues[i];
+    if ((pkt+1) < PUZZLES_PER_DOC) {
+      // More puzzles to go...
+      if (pdf!=null) {
+        pdf.nextPage();
+      }
+    }
+  }
+  exit();
+  println("***PDF GENERATION COMPLETE***");
+}
+
+
+// Generate 3-digit puzzle IDs from the Instance IDs
+String[] generatePuzzleIDs(String pre, String[] selectedINVals) {
+  String[] puzzleIDs = new String[selectedINVals.length];
+  for (int i=0; i<puzzleIDs.length; i++) {
+    puzzleIDs[i] = pre + selectedINVals[i];
+  }
+  return puzzleIDs;
+}
+
+// Return IN vals of selected puzzles
+String[] selectRandomPuzzles(String[][] AllINValues, String[] puzzleTypes) {
+  String[] selectedValues = new String[puzzleTypes.length] ;
+  for (int i = 0; i< puzzleTypes.length; i++) {
+    String[] INVals = AllINValues[i];
     boolean foundOne = false;
     // Select an IN val at random, but check that we haven't 
     // already selected it.
@@ -50,21 +99,18 @@ void generateAllPuzzles() {
       INVal = INVals[selected];
       foundOne = true;
       for (int k = 0; k < i; k++) {
-        if (selectedINVals[k].equals(INVal)) {
+        if (selectedValues[k].equals(INVal)) {
           foundOne = false; // Ugh, already got this one
           break;
         }
       }
     } while (!foundOne);
     assert(INVal!=null);
-    selectedINVals[i]=INVal;
-    String PNVal = "" + (i+1) + INVal;
-    String IRVal = ""; // Suppress Roman numerals in title.
-    renderOnePuzzle(templates[i], PNVal, INVal, IRVal);
+    selectedValues[i]=INVal;
   }
-  exit();
-  println("***PDF GENERATION COMPLETE***");
+  return selectedValues;
 }
+
 
 void runAllTests() {
   String s = "blah{{IN}}blah";

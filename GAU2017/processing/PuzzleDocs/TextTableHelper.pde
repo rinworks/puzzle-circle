@@ -113,13 +113,13 @@ class TextTableHelper {
   final int MARGIN_WIDTH = 20; // Width of margins around printable areas.
   final String DEFAULT_FONT = "Segoe WP Black";
   final String SMALL_FONT = "Segoe UI Light Italic";
-  final int DEFAULT_SIZE = 13;
+  final int DEFAULT_SIZE = 20; // was 13;
   final int GRID_PADDING =20;// 10;
 
   final String TITLE_STYLE = "TITLE";
-  final String TITLE_FONT = DEFAULT_FONT;
-  final int TITLE_SIZE = 20;
-  final color TITLE_COLOR = color(0); //color(255, 0, 0);
+  final String TITLE_FONT = "AR DARLING"; // WAS DEFAULT_FONT;
+  final int TITLE_SIZE = 60;
+  final color TITLE_COLOR = color(0, 51, 204); // WAS color(0); //color(255, 0, 0);
 
   final String H1_STYLE = "H1";
   final String H1_FONT = DEFAULT_FONT;
@@ -314,6 +314,8 @@ class TextTableHelper {
     return g;
   }
 
+
+
   // questNames: {"Quest 1", "Quest 3", ...}
   // Returns a nested grid.
   Grid generateStickerGrid(int clanNo, int guildNo) {
@@ -500,26 +502,26 @@ class TextTableHelper {
     verifyActivity(clanNo, guildNo, activities, g_perspectiveNames, 1);
     verifyActivity(clanNo, guildNo, activities, g_challengeNames, 3);
   }
-  
-   void verifyActivity(int clanNo, int guildNo, String[] activities, String[]allList, int expectedCount) {
-     int[] counts = new int[allList.length];
-     int myCount = 0;
-     for (String name : activities) {
-       for (int i=0;i<allList.length;i++) {
-         if (name.equals(allList[i])) {
-           counts[i]++;
-           myCount++;
-         }
-       }
-     }
-     if(expectedCount!=myCount) {
-       println("expectedCount: " + expectedCount + " myCount: " + myCount);
-       assert(false);
-     }
-     for (int i=0; i<counts.length; i++) {
-       assert(counts[i]<2);
-     }     
-   }
+
+  void verifyActivity(int clanNo, int guildNo, String[] activities, String[]allList, int expectedCount) {
+    int[] counts = new int[allList.length];
+    int myCount = 0;
+    for (String name : activities) {
+      for (int i=0; i<allList.length; i++) {
+        if (name.equals(allList[i])) {
+          counts[i]++;
+          myCount++;
+        }
+      }
+    }
+    if (expectedCount!=myCount) {
+      println("expectedCount: " + expectedCount + " myCount: " + myCount);
+      assert(false);
+    }
+    for (int i=0; i<counts.length; i++) {
+      assert(counts[i]<2);
+    }
+  }
 
 
 
@@ -576,5 +578,46 @@ class TextTableHelper {
     translate(-ticketGrid.gridWidth, MARGIN_WIDTH);
     ticketGrid.draw();
     popMatrix();
+  }
+
+  // Returns a grid, including header.
+  // puzzles: 2D array - 1st col is PuzzleID and 2nd col is puzzle name:
+  // {{"886", "Foo bar"},...}
+  Grid generateGUAScoresheet(String[]puzzlesData) {
+    String[] heading = {"NÚMERO", "SU SOLUCIÓN", "VERIFICACIÓN"};
+    String[][] tableData = new String[puzzlesData.length+1][3]; // 3: (#, name, solution)
+    tableData[0] = heading;
+    for (int i=0; i<puzzlesData.length; i++) {
+      tableData[i+1][0] = puzzlesData[i];
+    }
+    //public Grid createGrid(int rows, int cols, String[][]text, int originX, int originY, int dX, int dY) {
+    final int DX = 200;
+    final int DY = 100;
+    int rows = tableData.length;
+    int cols = tableData[0].length;
+    Grid g= createGrid(rows, cols, tableData, DX, DY, 0.2);
+    return g;
+  }
+
+  void renderGAUScoreSheet(String[] puzzleIDs) {
+    int curY = 0;
+    background(255);
+    texter.moveTo(MARGIN_WIDTH, MARGIN_WIDTH, width-2*MARGIN_WIDTH, height-2*MARGIN_WIDTH);
+    curY = texter.moveDownBy(100);
+
+    // Title:
+    //String title = "ROMPECABEZAS DE TINFA";
+    String title = "Rompecabezas de TINFA";
+    texter.renderText(title, TITLE_STYLE);
+    //texter.renderText("<<Puzzle Answers", H1_STYLE);
+    curY = texter.moveDownBy(200);
+    Grid puzzleGrid = generateGUAScoresheet(puzzleIDs);
+
+    if (puzzleGrid!=null) {
+      puzzleGrid.moveBy(0, curY);
+      puzzleGrid.horizontallyCenter();
+      puzzleGrid.draw();
+      curY = puzzleGrid.bottomY();
+    }
   }
 }
