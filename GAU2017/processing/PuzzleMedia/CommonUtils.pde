@@ -11,9 +11,14 @@ public class CommonUtils {
     private final String HEADING_SOL = "SOLUTION"; // Info-table heading.
 
   // Generates a media filename stub given puzzle type and 0-based index of puzzle index.
-  // Example: genMediaFileNameStub("clocks", "01" ) produces "output/clocks/clocks-01"
+  // Example: genMediaFileNameStub("clocks", "01" ) produces "output/EN/clocks/clocks-01"
+  // If IN is null or empty the -<IN> is omitted.
   public  String genMediaFilenameStub(String puzzleType, String IN) {
-    return "output/" + puzzleType + "/" + puzzleType + "-" + IN;
+    String suffix = "";
+    if (IN != null && !IN.isEmpty()) {
+      suffix = "-" + IN;
+    }
+    return "output/" + LANG_VER + "/" + puzzleType + "/" + puzzleType + suffix;
   }
 
   
@@ -37,7 +42,7 @@ public class CommonUtils {
   
   // Save the info table. File name is output/<puzzleType>/<p  uzzleType>-info.csv
   public void saveInfoTable(Table tab, String puzzleType) {
-    saveTable(tab, "output/" + puzzleType + "/" + puzzleType + "-info.csv");
+    saveTable(tab, genMediaFilenameStub(puzzleType, null) + "-info.csv");
   }
 }
 

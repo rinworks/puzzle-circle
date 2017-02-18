@@ -4,7 +4,7 @@
 class ClocksMain {
 
   final String PUZZLE_TYPE = "clocks";
-  final String[][] puzzleTexts = {
+  final String[][] puzzleTextsES = {
     {"PRIMER", "PLANETA"}, 
     {"SEGUNDO", "PLANETA"}, 
     {"TERCER", "PLANETA"}, 
@@ -20,6 +20,20 @@ class ClocksMain {
     {"ROCA", "FUNDIDA"}, 
     {"NUESTRA", "GALAXIA"}, 
   };
+
+  final String[][] puzzleTextsEN = {
+    {"MINUTES", "IN A", "DAY"}, 
+    {"THREE", "FEET IN", "INCHES"}, 
+    {"FOUR", "FEET IN", "INCHES"}, 
+    {"LARGEST", "MAMMAL"}, 
+    {"MOLTEN", "ROCK"}, 
+    {"OUR", "GALAXY"}, 
+    {"THIRD", "PLANET"}, 
+    {"HOURS", "IN A", "WEEK"}, 
+    {"FROZEN", "FORM OF", "WATER"} 
+  };
+
+  final String[][] puzzleTexts = LANG_VER.equals("ES") ? puzzleTextsES : puzzleTextsEN;
 
   void genAllMedia() {
     Table infoTable = gUtils.newInfoTable();

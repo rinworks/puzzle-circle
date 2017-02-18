@@ -11,17 +11,27 @@ final String SPECIAL_CHAR_PATTERN  ="[^A-Z]"; // Chars that do NOT map to Braill
 class BricksMain {
 
   final String PUZZLE_TYPE = "bricks";
-  final String[] puzzleTexts = {
+  final String[] puzzleTextsES = {
     "CUARTO PLANETA", 
     "QUINTO PLANETA", 
     "AGUA CONGELADA", 
     "# RUEDAS EN UN COCHE", 
     "# RUEDAS EN UNA BICICLETA", 
-    "1KG EN GRAMOS",
+    "1KG EN GRAMOS", 
     "SIETE PIES EN PULGADAS", 
     "CINCO PIES EN PULGADAS", 
     "SEIS PIES EN PULGADAS", 
   };
+
+  final String[] puzzleTextsEN = {
+    "FIFTH PLANET", 
+    "HARDEST MATERIAL", 
+    "LIQUID FORM OF ICE", 
+    "COLDEST CONTINENT", 
+    "SECONDS IN AN HOUR"
+  };
+
+  final String[] puzzleTexts = LANG_VER.equals("ES") ? puzzleTextsES : puzzleTextsEN;
 
 
   void genAllMedia() {
@@ -29,7 +39,7 @@ class BricksMain {
     Table infoTable = gUtils.newInfoTable();
 
     // Write out the bricks.scad file. This is common code used by all the bricks files.
-    writeBricksSCADFile("output/" + PUZZLE_TYPE + "/");
+    writeBricksSCADFile("output/" + LANG_VER + "/" + PUZZLE_TYPE + "/");
     //size(1000, 100);
     //noLoop();  
     long seed = 0; //(long) random(100000);

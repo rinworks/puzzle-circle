@@ -17,7 +17,7 @@ import java.util.Arrays;
 class LasersMain {
 
   final String PUZZLE_TYPE = "lasers";
-  final String[] puzzleTexts = {
+  final String[] puzzleTextsES = {
     "BÚFALO", 
     "CAMELLO", 
     "VENADO", 
@@ -42,6 +42,25 @@ class LasersMain {
     "PALOMA", 
     "QUETZAL"
   };
+
+  final String[] puzzleTextsEN = {
+    "BUFFALO", 
+    "ELEPHANT", 
+    "GIRAFFE", 
+    "GORILLA", 
+    "KANGAROO", 
+    "LEOPARD", 
+    "RABBIT", 
+    "SQUIRREL", 
+    "DOLPHIN", 
+    "FLAMINGO", 
+    "OSTRICH", 
+    "PARROT", 
+    "PELICAN", 
+    "PIGEON"
+  };
+
+  final String[] puzzleTexts = LANG_VER.equals("ES") ? puzzleTextsES : puzzleTextsEN;
 
   void genAllMedia() {
 
