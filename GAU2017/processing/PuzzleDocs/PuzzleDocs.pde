@@ -4,9 +4,11 @@
 
 public static final boolean GENERATE_PDF = true;
 public static final String DOC_ID = "10";
+public static final String LANG_VER = "EN";
+
 void settings() {
   if (GENERATE_PDF) {
-    size(800, 1024, PDF, "output/puzzleStack" + DOC_ID + ".pdf");
+    size(800, 1024, PDF, "output/" + LANG_VER + "/puzzleStack" + DOC_ID + ".pdf");
   } else {
     size(800, 1024);
   }
@@ -172,7 +174,7 @@ void renderOnePuzzle(String[]mdTemplate, String PNVal, String INVal, String IRVa
 String[][] loadMdTemplates(String[] puzzleTypes) {
   String[][] templates  = new String[puzzleTypes.length][];
   for (int i = 0; i < templates.length; i++) {
-    String fName = "data/" + puzzleTypes[i] + ".md";
+    String fName = "data/" + LANG_VER + "/" + puzzleTypes[i] + ".md";
     templates[i] = loadStrings(fName);
   }
   return templates;
@@ -189,7 +191,7 @@ String[][] loadINValues(String[] puzzleTypes) {
   String[][] INValues = new String[puzzleTypes.length][];
   for (int i = 0; i < INValues.length; i++) {
     String pType = puzzleTypes[i];
-    String fName = "data/" + pType + "/" + pType + "-info.csv";
+    String fName = "data/" + LANG_VER + "/" + pType + "/" + pType + "-info.csv";
     Table tab = loadTable(fName, "header");
     int count = tab.getRowCount();
     String[]  INVals = new String[count];

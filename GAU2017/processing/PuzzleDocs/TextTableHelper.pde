@@ -584,7 +584,10 @@ class TextTableHelper {
   // puzzles: 2D array - 1st col is PuzzleID and 2nd col is puzzle name:
   // {{"886", "Foo bar"},...}
   Grid generateGUAScoresheet(String[]puzzlesData) {
-    String[] heading = {"NÚMERO", "SU SOLUCIÓN", "VERIFICACIÓN"};
+    String[] headingES = {"NÚMERO", "SU SOLUCIÓN", "VERIFICACIÓN"};
+    String[] headingEN = {"NUMBER", "YOUR SOLUTION", "VERIFICATION"};
+    String[] heading = LANG_VER.equals("EN") ? headingEN : headingES;
+
     String[][] tableData = new String[puzzlesData.length+1][3]; // 3: (#, name, solution)
     tableData[0] = heading;
     for (int i=0; i<puzzlesData.length; i++) {
@@ -607,7 +610,7 @@ class TextTableHelper {
 
     // Title:
     //String title = "ROMPECABEZAS DE TINFA";
-    String title = "Rompecabezas de TINFA";
+    String title = LANG_VER.equals("EN") ? "Welcome to Puzzle Circle!" : "Rompecabezas de TINFA";
     texter.renderText(title, TITLE_STYLE);
     //texter.renderText("<<Puzzle Answers", H1_STYLE);
     curY = texter.moveDownBy(200);

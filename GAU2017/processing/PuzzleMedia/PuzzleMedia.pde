@@ -6,7 +6,7 @@ public static final int DISPLAY_WIDTH = 1300;
 public static final int DEFAULT_BACKGROUND = 150;
 public static final int WHITE_BACKGROUND = 255;
 public static final int LIGHT_GRAY_BACKGROUND = 220;
-public static final String LANG_VER = "EN"; // "EN" for English and "ES" for Spanish.
+public static final String LANG_VER = "ES"; // "EN" for English and "ES" for Spanish.
 public CommonUtils gUtils = new CommonUtils();
 public GraphicsUtils gGrUtils = new GraphicsUtils();
 
