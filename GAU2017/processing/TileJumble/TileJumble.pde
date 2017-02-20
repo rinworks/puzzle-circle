@@ -30,7 +30,7 @@ void setup() {
   String[] solutions = {
     "LA\tMESA\tDE\tLA\tDIRECTORA\tEN\tLA\tDIRECCIÓN", 
     "LA\tPRIMERA\tSILLA\tDEL\tAULA\tVIRTUAL", 
-    "LA\tPUERTA\tGRANDE\tDE\tLA\tENTRADA\tDE\tLA\tESCUELA", 
+    "LA\t  PUERTA\t  GRANDE\tDE\tLA\t  ENTRADA\tDE\tLA\t  ESCUELA", 
     "LA\tPILA\tDE\tLA\tESCUELA"
   };
   String [] fstubs = {
@@ -41,8 +41,8 @@ void setup() {
   };
   
   int[] markIDs = {1, 2, 3, 4}; // Identify the puzzle instance - the image is watermarked with this
-  int[] spaces = {6, 7, 5, 10}; // Spaces to insert between blansk
-  int index = 2;
+  int[] spaces = {6, 7, 5, 12}; // Spaces to insert between blansk
+  int index = 3;
   String fstub = fstubs[index];
   gHP = new HilbertPuzzle(markIDs[index], basePath, fstub+ ".png", solutions[index], fstub, spaces[index]);
 
