@@ -1,3 +1,6 @@
+import java.util.Collections;
+import java.util.Arrays;
+import java.util.HashSet;
 
 class Animal {
   public String type;
@@ -11,30 +14,105 @@ class Animal {
   }
 
   public String toString() {
-    //return name + " is a " + type + " aged " + age;
-    return String.format("%s, name %s, age %d", type, name, age);
+    return name + " the " + type + " is " + age + " year" + (age>1 ? "s" : "") + " old.";
+    //return String.format("%s, name %s, age %d", type, name, age);
   }
 }
 
-Animal[] makeAnimals(String typeFile, String nameFile) {
-  String[] types = loadStrings(typeFile);
+Animal[] makeAnimals(String speciesFile, String nameFile, int count) {
+
+  // Load the data: species data(type and max age), and names
+  String[] species = loadStrings(speciesFile);
   String[] names = loadStrings(nameFile);
   randomSeed(0);
-  ArrayList<Animal> list = new ArrayList<Animal>();
-  ArrayList<String> selectedNames = new ArrayList<String>();
-  for (String type : types) {
-    type = type.trim();
-    if (type.length()>1) {
-      // viable type; pick random name and age.
-      String name = pickRandomName(names, selectedNames);
-      selectedNames.add(name);
-      int age = (int) random(1, 20);
-      Animal a = new Animal(type, name, age);
-      list.add(a);
-    }
+
+  // Select exacly count names in sorted order, out of a larger
+  // list of names.
+  String[] selectedNames = selectNames(names, count); 
+  assert(selectedNames.length == count);
+  Animal[] animals = new Animal[count];
+
+  // We are going to assign species to names in a random permutation, but 
+  // will loop back  to the start of the random permutation if needed.
+  int[] typePermutation = gUtils.randomPermutation(species.length);
+  int unpermutedTypeIndex = 0;
+
+  // Generate exactly count animals. Each with a unique name,
+  // a type (species), and a randome species-appropriate age.
+  for (int i=0; i< count; i++) {
+    String name = selectedNames[i];
+    String info = species[typePermutation[unpermutedTypeIndex]];
+    String type = typeFromInfo(info);
+    int maxAge = maxAgeFromInfo(info);
+    unpermutedTypeIndex = (unpermutedTypeIndex+1) % species.length; // possible wraparound
+    int age = (int) random(1, maxAge+1);
+    Animal a = new Animal(type, name, age);
+    animals[i] = a;
   }
 
-  return list.toArray(new Animal[list.size()]);
+  return animals;
+}
+
+// Carefully select a random selection of {count} names from {names}.
+// Names should be randomly spread over all of {names} but they should not be
+// "too alike".
+String[] selectNames(String[] names, int count) {
+  String[] chosenNames = new String[count];
+  String[] scrunchedNames = new String[names.length];
+  for (int i=0; i<names.length; i++) {
+    String s = names[i].toUpperCase().replaceAll("[AEIOUY]", "");
+    s = s.replaceAll("H$", "");
+    //println(String.format("Name: {0:%s}; Scrunched: {1:%s}", names[i], s));
+    scrunchedNames[i] = s;
+  }
+  //Arrays.sort(scrunchedNames);
+  int[] randomIndexes =   gUtils.randomPermutation(names.length);
+
+  // Now we pick up to count "sufficiently different" names in random order.
+  HashSet set = new HashSet();
+  int outIndex = 0;
+  for (int i = 0; i<names.length && outIndex < count; i++) {
+    int randInd = randomIndexes[i];
+    String scrunched = scrunchedNames[randInd];
+    if (!set.contains(scrunched)) {
+      // Got a distinct name!
+      chosenNames[outIndex] = names[randInd];
+      outIndex++;
+      set.add(scrunched);
+    }
+  }
+  assert(outIndex == count); // We expect to have enough names to do this!
+  Arrays.sort(chosenNames);
+  return chosenNames;
+}
+
+
+// input examples:
+// Gorilla
+// Cocroach, 5
+String typeFromInfo(String info) {
+  int iComma = info.indexOf(',');
+  if (iComma >= 0) {
+    return info.substring(0, iComma).trim();
+  } else {
+    return info.trim();
+  }
+}
+
+// input examples:
+// Gorilla
+// Cocroach, 5
+int maxAgeFromInfo(String info) {
+  final int DEFAULT_AGE = 25;
+  int iComma = info.indexOf(',');
+  if (iComma >= 0) {
+    String sAge  = info.substring(iComma+1).trim();
+    int age = Integer.parseInt(sAge);
+    //println("INPUT: "  + info + "; maxAge: " + age);
+    return age;
+  } else {
+    return DEFAULT_AGE;
+  }
 }
 
 String pickRandomName(String[] names, ArrayList<String>selectedNames) {
@@ -47,18 +125,18 @@ String pickRandomName(String[] names, ArrayList<String>selectedNames) {
       newName = null; // Too small or dup
     }
     /*for (String s: selectedNames) {
-      if (s.equals(newName)) {
-        // Dup.
-        newName = null;
-        break;
-      }
-    }*/
+     if (s.equals(newName)) {
+     // Dup.
+     newName = null;
+     break;
+     }
+     }*/
   } while (newName == null);
   return newName;
 }
 
 void testMakeAnimals() {
-  Animal[] arr = makeAnimals("data/animals.txt", "data/raw-names.txt");
+  Animal[] arr = makeAnimals("data/animals.txt", "data/raw-names.txt", 100);
   for (int i = 0; i<arr.length; i++) {
     println(i + ": " + arr[i]);
   }

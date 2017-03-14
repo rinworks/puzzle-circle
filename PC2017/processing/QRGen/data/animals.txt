@@ -3,63 +3,63 @@ Alligator
 Antelope
 Armadillo
 Baboon
-Bear
+Bear, 50
 Beaver
-Bee
-Butterfly
-Camel
-Cat
-Caterpillar
-Chicken
-Chimpanzee
-Cobra
-Cockroach
-Cod
-Crab
-Crow
-Deer
-Dolphin
+Bee,5
+Butterfly,5
+Camel,50
+Cat,15
+Caterpillar,1
+Chicken,10
+Chimpanzee, 20
+Cobra, 20
+Cockroach, 5
+Cod, 10
+Crab, 10
+Crow, 40
+Deer, 30
+Dolphin, 50
 Donkey
-Dove
-Duck
+Dove, 10
+Duck, 10
 Eagle
 Eel
-Elephant
+Elephant, 100
 Emu
 Flamingo
 Fox
-Frog
+Frog, 10
 Gazelle
 Giraffe
 Goat
 Gorilla
-Hamster
-Hare
+Hamster, 10
+Hare, 10
 Horse
 Hyena
 Jaguar
-Jellyfish
+Jellyfish, 1
 Kangaroo
 Koala
 Leopard
 Lobster
-Mongoose
+Mongoose, 15
 Monkey
-Mosquito
+Mosquito, 1
 Ostrich
 Pelican
 Penguin
 Porcupine
-Quail
-Rabbit
+Quail, 15
+Rabbit, 15
 Raven
-Salmon
-Scorpion
-Squirrel 
-Toad
-Turtle
-Vulture
-Walrus
-Wasp
+Salmon, 10
+Scorpion, 5
+Squirrel, 15
+Toad, 5
+Turtle, 150
+Vulture, 15
+Walrus, 50
+Wasp, 5
 Wolf
 Zebra
