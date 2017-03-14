@@ -16,17 +16,27 @@ class Utils {
     arr[i] = arr[j];
     arr[j] = t;
   }
-  
+
   // Returns an array of integers from 0 to (n-1)
   int[] range(int n) {
     assert(n>=0);
     int[] arr = new int[n];
-    for (int i=0;i<n; i++) {
+    for (int i=0; i<n; i++) {
       arr[i] = i;
     }
     return arr;
   }
-  
+
+  // Returns an array of integers from start to (stop-1)
+  int[] range(int start, int stop) {
+    assert(start <= stop);
+    int[] arr = new int[stop-start];
+    for (int i=0; i<arr.length; i++) {
+      arr[i] = start + i;
+    }
+    return arr;
+  }
+
   // Return a random permutation of [0, (n-1)]
   int[] randomPermutation(int n) {
     assert(n>=0);

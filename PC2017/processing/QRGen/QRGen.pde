@@ -22,7 +22,7 @@ void settings()
 {
   // Use this one to just test a single generated page on screen
   //size(2000*8/11, 2000);
-  
+
   // Use this to generate a multi-page PDF
   size(2000*8/11, 2000, PDF, "output/qr_animals_cards.pdf");
 }
@@ -38,7 +38,8 @@ void setup()
 
   //genCodes();
   //testMakeAnimals();
-  genAnimalTiles();
+  //genAnimalTiles(null);
+  genMessedUpAnimalTiles();
 } 
 
 
@@ -70,7 +71,11 @@ void genCodes() {
   save("output/qr-all.png");
 }
 
-void genAnimalTiles() {
+// If {selectedCardIDs} is null print all the cards.
+// Else just print the cards with the specified card IDs.
+// Note that card'IDs are 1-based numbers - that's what's printed out
+// as the card ID.
+void genAnimalTiles(int[] selectedCardIDs) {
   final int NROWS = 4;
   final int NCOLS = 4;
   final int MARGINX = 50;
@@ -79,7 +84,19 @@ void genAnimalTiles() {
   final int CH = (height-2*MARGINY)/NROWS;
   final int QRDIM = min(CW, CH); // -1 leaves a 1-pixel wide border.
   Animal[] arr = makeAnimals("data/animals.txt", "data/raw-names.txt", NROWS*NCOLS*7); // 7 pages
-  saveEncodedText(arr, "output/qr_animals_key.txt");
+  int []cardIDs;
+  String keyFN;
+  if (selectedCardIDs == null) {
+    cardIDs = gUtils.range(1, arr.length+1); // on based index.
+    keyFN = "output/qr_animals_key.txt";
+  } else {
+    cardIDs = selectedCardIDs;
+    keyFN = "output/PARTIAL_qr_animals_key.txt";
+    arr = selectAnimals(selectedCardIDs, arr); // Replace arr by a filtered list.
+  }
+
+  saveEncodedText(cardIDs, arr, keyFN);
+
   int animalIndex = 0;
   PFont font = createFont(FONT_NAME, TEXT_SIZE); 
   textFont(font);
@@ -109,9 +126,6 @@ void genAnimalTiles() {
         }
         String qrText = arr[animalIndex].toString();
         PImage img = zxing4p.generateQRCode(qrText, QRDIM, QRDIM);
-        animalIndex++;
-        //String fname  = "output/qr"+ row + "-" + col + ".png";
-        //img.save(fname);
         int iy = MARGINY + row*CH; //DIM;
         image(img, ix, iy+QRYOFFSET, QRDIM, QRDIM); //CW, CH);
 
@@ -122,7 +136,8 @@ void genAnimalTiles() {
         pushMatrix();
         translate(tx, ty);
         rotate(radians(180));
-        String label = "" + animalIndex;
+        String label = "" + cardIDs[animalIndex];
+        animalIndex++;
         translate(-textWidth(label)/2, TEXT_SIZE*0.1); // We have to move "down" as we're upside down.
         fill(0);
         textSize(TEXT_SIZE);
@@ -161,10 +176,36 @@ void genAnimalTiles() {
 // Save the encoded text for each animal, prefixed by a 1-based
 // index into the array (this index will match what is printed on the other
 // side of the QR code).
-void saveEncodedText(Animal[] arr, String fname) {
+void saveEncodedText(int[] IDs, Animal[] arr, String fname) {
+  assert(IDs.length == arr.length);
   String[] text = new String[arr.length];
   for (int i = 0; i < arr.length; i++) {
-    text[i] = String.format("%3d: %s", i+1, arr[i].toString());
+    int id = IDs[i];
+    assert(id > 0); // IDs are 1-based
+    String label = arr[i].toString();
+    text[i] = String.format("%3d: %s", id, label);
   }
   saveStrings(fname, text);
+}
+
+// Return an array that contains only the selected animals
+// Ids is a 1-based index into arr.
+Animal[] selectAnimals(int[] selectedIDs, Animal[] arr) {
+  Animal[] arr2 = new Animal[selectedIDs.length];
+  for (int i = 0; i < arr2.length; i++) {
+    int id = selectedIDs[i];
+    assert(id>0 && id<= arr.length); // ID is one-based.
+    arr2[i] = arr[id-1];
+  }
+  return arr2;
+}
+
+
+// (Re)generate selected tiles that need to be re-printed.
+void genMessedUpAnimalTiles() {
+  int[] IDs = new int[12];
+  for (int i = 0; i < IDs.length; i++) {
+    IDs[i] = 2 + 4*i;
+  }
+  genAnimalTiles(IDs);
 }
