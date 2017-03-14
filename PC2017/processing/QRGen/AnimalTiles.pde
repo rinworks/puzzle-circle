@@ -1,6 +1,17 @@
+/*****************************************************************************
+ *
+ *  AnimalTiles - Load animal names and types data and render content to make tiles to be used for
+ *  sorting and searching exercises.
+ *
+ *
+ *  History: 
+ *   Y17M03 JMJ Created
+ *
+ *****************************************************************************/
 import java.util.Collections;
 import java.util.Arrays;
 import java.util.HashSet;
+
 
 class Animal {
   public String type;
@@ -19,6 +30,10 @@ class Animal {
   }
 }
 
+
+// Create {count} animal by reading data from two files:
+// {speciesFile} - text file, one species per line.
+// {nameFile} - A very large raw list of names
 Animal[] makeAnimals(String speciesFile, String nameFile, int count) {
 
   // Load the data: species data(type and max age), and names
@@ -52,6 +67,7 @@ Animal[] makeAnimals(String speciesFile, String nameFile, int count) {
 
   return animals;
 }
+
 
 // Carefully select a random selection of {count} names from {names}.
 // Names should be randomly spread over all of {names} but they should not be
@@ -87,6 +103,7 @@ String[] selectNames(String[] names, int count) {
 }
 
 
+// Extract the species type from line {info} of species data.
 // input examples:
 // Gorilla
 // Cocroach, 5
@@ -99,6 +116,7 @@ String typeFromInfo(String info) {
   }
 }
 
+// Extract the max age from a line {info} of species data.
 // input examples:
 // Gorilla
 // Cocroach, 5
@@ -115,8 +133,10 @@ int maxAgeFromInfo(String info) {
   }
 }
 
+// Picks a random name from {names}, making sure it doesn't already exist in {selectedNames}.
 String pickRandomName(String[] names, ArrayList<String>selectedNames) {
   String newName = null;
+  
   do {
     int ni = (int) random(names.length);
     newName = names[ni];
@@ -124,17 +144,13 @@ String pickRandomName(String[] names, ArrayList<String>selectedNames) {
     if (newName.length()< 2 || selectedNames.contains(newName)) {
       newName = null; // Too small or dup
     }
-    /*for (String s: selectedNames) {
-     if (s.equals(newName)) {
-     // Dup.
-     newName = null;
-     break;
-     }
-     }*/
   } while (newName == null);
+  
   return newName;
 }
 
+
+// Test code
 void testMakeAnimals() {
   Animal[] arr = makeAnimals("data/animals.txt", "data/raw-names.txt", 100);
   for (int i = 0; i<arr.length; i++) {

@@ -2,11 +2,9 @@
  *
  *  QRGen - code to generate QR codes for Puzzle Circle puzzles.
  *
- *  Based on the sample from
- 
  *
  *  history: 
- *   Y17M03D03 JMJ Created, based on a sample from http://cagewebdev.com/zxing4processing-processing-library/
+ *   Y17M03D03 JMJ Created, starting with the sample http://cagewebdev.com/zxing4processing-processing-library/
  *
  *****************************************************************************/
 

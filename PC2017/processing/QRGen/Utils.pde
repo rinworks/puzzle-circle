@@ -1,3 +1,6 @@
+// Utils - simple utilities used by other classes.
+// History:
+// Y17M03 - Joseph created.
 class Utils {
   // Note - to make this predictable, 
   // set the random seed before calling, using randomSeed()
