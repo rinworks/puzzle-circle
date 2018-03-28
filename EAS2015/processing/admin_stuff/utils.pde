@@ -1,4 +1,4 @@
-int[] generateRandomIds(int seed, int[] oldValues, int N) {
+int[] generateRandomIds(int seed, int[] oldValues, int N, int minID, int maxID) {
   int[] values = new int[N];
 
   for (int i=0; i<oldValues.length; i++) {
@@ -11,7 +11,7 @@ int[] generateRandomIds(int seed, int[] oldValues, int N) {
     Boolean unique;
     do {
       unique=true;
-      j = floor(random(100, 900));
+      j = floor(random(minID, maxID));
       if (j==666) {
         continue; // avoid this number :-)
       }
