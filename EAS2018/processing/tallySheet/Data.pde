@@ -27,7 +27,7 @@ String[] g_perspectiveNames = {
 String[] g_challengeNames = {
   "Describe it", 
   "Dibujar", 
-  "Furniture Factory",
+  "Furniture Factory", 
   "Voluminous"
 };
 

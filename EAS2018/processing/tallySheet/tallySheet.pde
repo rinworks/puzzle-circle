@@ -50,14 +50,15 @@ void setup() {
     println("SEED: " + seed);
     randomSeed(seed);
 
-    TextTableHelper helper = new TextTableHelper();
+    Table table = loadTable("input\\tally-sheet-input.csv");
+    println("Table #rows: " + table.getRowCount());
+    DataOrganizer dorg = new DataOrganizer(table);
+    TextTableHelper helper = new TextTableHelper(dorg);
 
     renderAll(helper);
 
     //runTests(helper);
 
-
-    //save("output/tileWorld"+(index+1)+ (permute? "" : "ans") + ".png");
     println("***** ALL DONE! *****");
   }
 }

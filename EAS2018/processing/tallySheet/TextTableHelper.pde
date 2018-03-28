@@ -138,9 +138,10 @@ class TextTableHelper {
   final String CLAN = "Clan";
   final String GUILD = "Guild";
   final String SEQUENCE = "Sequence";
+  final DataOrganizer dataOrg;
 
-  public TextTableHelper() {
-
+  public TextTableHelper(DataOrganizer dataOrg) {
+    this.dataOrg = dataOrg;
     activityStats = new Table();
     initActivityStats();
     texter = new TextRenderer(new Point(MARGIN_WIDTH, MARGIN_WIDTH), width-2*MARGIN_WIDTH, height-2*MARGIN_WIDTH);
@@ -500,26 +501,26 @@ class TextTableHelper {
     verifyActivity(clanNo, guildNo, activities, g_perspectiveNames, 1);
     verifyActivity(clanNo, guildNo, activities, g_challengeNames, 3);
   }
-  
-   void verifyActivity(int clanNo, int guildNo, String[] activities, String[]allList, int expectedCount) {
-     int[] counts = new int[allList.length];
-     int myCount = 0;
-     for (String name : activities) {
-       for (int i=0;i<allList.length;i++) {
-         if (name.equals(allList[i])) {
-           counts[i]++;
-           myCount++;
-         }
-       }
-     }
-     if(expectedCount!=myCount) {
-       println("expectedCount: " + expectedCount + " myCount: " + myCount);
-       assert(false);
-     }
-     for (int i=0; i<counts.length; i++) {
-       assert(counts[i]<2);
-     }     
-   }
+
+  void verifyActivity(int clanNo, int guildNo, String[] activities, String[]allList, int expectedCount) {
+    int[] counts = new int[allList.length];
+    int myCount = 0;
+    for (String name : activities) {
+      for (int i=0; i<allList.length; i++) {
+        if (name.equals(allList[i])) {
+          counts[i]++;
+          myCount++;
+        }
+      }
+    }
+    if (expectedCount!=myCount) {
+      println("expectedCount: " + expectedCount + " myCount: " + myCount);
+      assert(false);
+    }
+    for (int i=0; i<counts.length; i++) {
+      assert(counts[i]<2);
+    }
+  }
 
 
 
