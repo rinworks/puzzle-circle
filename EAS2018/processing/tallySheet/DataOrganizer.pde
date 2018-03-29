@@ -11,7 +11,7 @@ class DataOrganizer {
 
   // guildNo: One-based guild number
   String[][] generateGuildAnswerRowInfo(int guildNo) {
-    ArrayList<String[]> infoList = new ArrayList<>();
+    ArrayList<String[]> infoList = new ArrayList<String[]>();
     // Run down the table, picking up all items that match the specific guild by name.
     String guildName = g_guildNames[guildNo-1];
     for (TableRow row : this.input.rows()) {
@@ -26,36 +26,29 @@ class DataOrganizer {
     return infoList.toArray(new String[0][]);
   }
 
-
-  // guildNo: One-based guild number
-  String[][] generateGuildAnswerRowInfoDummy(int guildNo) {
-    final int N = 10;
-    final int PBASE = 100;
-    String[][] info = new String[N][];
-    for (int i = 0; i < N; i++) {
-      String pnum = ""+ (PBASE+g_guildNames.length*guildNo + i);
-      String pname = "Puzzle " + g_guildNames[guildNo-1] + " " + (i + 1);
-      info[i] = new String[]{pnum, pname};
-    }
-    return info;
-  }
-
   // Generate the tickets that this (clanNo, guildNo) will participate in.
   // These must be in the form of a 2D array.
-  //    cellText[i][1] = "<< "+letter + ") " + a;
-  //    cellText[i][0] = "<<"+a.toUpperCase()+"\n" + g_clanNames[clanNo-1] + "-" + guildNo + " ticket";
 
   String[][] generateGuildTickets(int clanNo, int guildNo) {
-    final int N = 10;
-    final int PBASE = 100;
-    String[][] info = new String[N][];
-    for (int i = 0; i < N; i++) {
-      String ch = "Challenge " + (i+1);
-      String tornoff = "<<"+ch.toUpperCase()+"\n" + g_clanNames[clanNo-1] + "-" + g_guildNames[guildNo-1].toUpperCase() + " ticket";
-      char letter = (char)('a'+i);
-      String remains = "<< "+letter + ") " + ch;
-      info[i] = new String[]{tornoff, remains};
+    ArrayList<String[]> infoList = new ArrayList<String[]>();
+    // Run down the table, picking up all items that match the specific guild by name.
+    String guildName = g_guildNames[guildNo-1];
+    for (TableRow row : this.input.rows()) {
+      // 645,Magical Creatures-1,Green,C
+      String gn = row.getString(2);
+      String type = row.getString(3);
+      final String TYPE_CHALLENGE = "C";
+      int i = 0;
+      if (guildName.equals(gn) && type.equals(TYPE_CHALLENGE)) {
+        String ch = row.getString(1);
+        String tornoff = "<<"+ch.toUpperCase()+"\n" + g_clanNames[clanNo-1] + "-" + g_guildNames[guildNo-1].toUpperCase() + " ticket";
+        char letter = (char)('a'+i);
+        String remains = "<< "+letter + ") " + ch;  
+        String[] info = {tornoff, remains};
+        infoList.add(info);
+        i++;
+      }
     }
-    return info;
+    return infoList.toArray(new String[0][]);
   }
 }

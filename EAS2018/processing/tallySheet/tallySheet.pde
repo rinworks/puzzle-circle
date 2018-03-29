@@ -27,40 +27,14 @@ void setup() {
   //println(PFont.list());
   //size(2000, 2000);
 
-  // To recreate a specific puzzle, make a note of the printed seed value and 
-  // set seed to that printed seed value (comment out the call to round(random(...))).
-  long baseSeed = 156595968; // round(random(MAX_INT));
-  //long baseSeed = round(random(MAX_INT));
+  Table table = loadTable("input\\tally-sheet-input.csv");
+  println("Table #rows: " + table.getRowCount());
+  DataOrganizer dorg = new DataOrganizer(table);
+  TextTableHelper helper = new TextTableHelper(dorg);
 
-  long[] seeds = {
-    baseSeed, 
-    baseSeed+1, 
-    baseSeed+2, 
-    baseSeed+3, 
-    baseSeed+4
-  };
+  renderAll(helper);
 
-  boolean permute = true; // Set to true to generate the (scrambled) puzzle - else the answer.
-
-  // ****************   TO GENERATE MULTIPLE VERSIONS ***************
-  for (int index = 0; index < 1; index++) {
-    //int index=1; // Change this from 0-4 to generate multiple versions of puzzles
-
-    long seed = seeds[index];
-    println("SEED: " + seed);
-    randomSeed(seed);
-
-    Table table = loadTable("input\\tally-sheet-input.csv");
-    println("Table #rows: " + table.getRowCount());
-    DataOrganizer dorg = new DataOrganizer(table);
-    TextTableHelper helper = new TextTableHelper(dorg);
-
-    renderAll(helper);
-
-    //runTests(helper);
-
-    println("***** ALL DONE! *****");
-  }
+  println("ALL DONE!");
 }
 
 void runTests(TextTableHelper helper) {
@@ -115,19 +89,6 @@ void testNestedGrid(TextTableHelper helper, int rows, int cols) {
   }
   pg.borderWeight(10);
   pg.draw();
-}
-
-// Generates permutations of [startValue ... startValue+length-1]
-int[] generatePermutation(int length, int startValue, boolean permute) {
-  assert(length>=0);
-  int[] p = new int[length];
-  for (int i=0; i<length; i++) {
-    p[i] = startValue+i;
-  }
-  if (permute) {
-    gUtils.randomPermutation(p);
-  }
-  return p;
 }
 
 
