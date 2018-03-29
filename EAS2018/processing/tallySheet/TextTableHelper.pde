@@ -76,7 +76,7 @@ class TextTile implements  Drawable {
     String text = centerText;
     float b=0;
     float dX = 0.0;
-    float dY =  - b/4.0;
+    float dY =  params.textSize > 0 ? params.textSize/2 : 2;
     gUtils.setTextParams(params);
 
     if (centerText.indexOf("^^")==0) {
@@ -94,7 +94,13 @@ class TextTile implements  Drawable {
       dX = -cl.iW/2;
       textAlign(LEFT);
       text = centerText.substring(2);
-    } else {
+    }  else if (centerText.indexOf("<^") == 0) {
+      // Push to left-top
+      dY = b/2-cl.iH/2;
+      dX = -cl.iW/2;
+      textAlign(LEFT);
+      text = centerText.substring(2);
+    }else {
       textAlign(CENTER);
     }
     text(text, dX, dY);
@@ -113,7 +119,7 @@ class TextTableHelper {
   final int MARGIN_WIDTH = 20; // Width of margins around printable areas.
   final String DEFAULT_FONT = "Segoe WP Black";
   final String SMALL_FONT = "Segoe UI Light Italic";
-  final int DEFAULT_SIZE = 13;
+  final int DEFAULT_SIZE = 14;
   final int GRID_PADDING =20;// 10;
 
   final String TITLE_STYLE = "TITLE";
@@ -123,17 +129,16 @@ class TextTableHelper {
 
   final String H1_STYLE = "H1";
   final String H1_FONT = DEFAULT_FONT;
-  final int H1_SIZE = 15;
+  final int H1_SIZE = 18;
   final color H1_COLOR = color(0); //color(128, 128, 255);
 
   final String NORMAL_STYLE = "NORMAL";
   final String NORMAL_FONT = "Segoe";
-  final int NORMAL_SIZE = 12;
+  final int NORMAL_SIZE = 13;
   final color NORMAL_COLOR = color(0);
 
   GraphicsParams gParams;
   TextRenderer texter; 
-  Table activityStats;
   final String ACTIVITY  = "Activity";
   final String CLAN = "Clan";
   final String GUILD = "Guild";
@@ -142,8 +147,6 @@ class TextTableHelper {
 
   public TextTableHelper(DataOrganizer dataOrg) {
     this.dataOrg = dataOrg;
-    activityStats = new Table();
-    initActivityStats();
     texter = new TextRenderer(new Point(MARGIN_WIDTH, MARGIN_WIDTH), width-2*MARGIN_WIDTH, height-2*MARGIN_WIDTH);
     texter.addStyle(TITLE_STYLE, TITLE_FONT, TITLE_SIZE, TITLE_COLOR);
     texter.addStyle(H1_STYLE, H1_FONT, H1_SIZE, H1_COLOR);
@@ -156,13 +159,6 @@ class TextTableHelper {
     gParams.backgroundFill = 255;
     gParams.borderColor =  0;
     gParams.borderWeight = 1;
-  }
-
-  void initActivityStats() {
-    activityStats.addColumn(ACTIVITY);
-    activityStats.addColumn(CLAN);
-    activityStats.addColumn(GUILD);
-    activityStats.addColumn(SEQUENCE);
   }
 
   // Greate a grid nested within Grid pg - located at cell(i,j).
@@ -307,7 +303,7 @@ class TextTableHelper {
       tableData[i+1][1] = ">>" + puzzles[i][1];
     }
     //public Grid createGrid(int rows, int cols, String[][]text, int originX, int originY, int dX, int dY) {
-    final int DX = 200;
+    final int DX = 250;
     final int DY = 25;
     int rows = tableData.length;
     int cols = tableData[0].length;
@@ -319,8 +315,8 @@ class TextTableHelper {
 
   Grid generateTicketsGrid(int clanNo, int guildNo) {
     String[][]tickets = this.dataOrg.generateGuildTickets(clanNo, guildNo);
-    final int DX = 150;
-    final int DY = 60;
+    final int DX = 200;
+    final int DY = 70;
     int rows = tickets.length;
     int cols = tickets[0].length;
     assert(cols==2);
@@ -361,18 +357,14 @@ class TextTableHelper {
     curY = texter.moveDownBy(0);
     Grid puzzleGrid = generateAnswersGrid(guildNo);
     Grid ticketGrid  = generateTicketsGrid( clanNo, guildNo);
-
-    //puzzleGrid = null;
-    //stickerGrid = null;
-    //ticketGrid = null;
-
+    
     if (puzzleGrid!=null) {
       puzzleGrid.moveBy(0, curY);
       puzzleGrid.horizontallyCenter();
       puzzleGrid.draw();
       curY = puzzleGrid.bottomY();
     }
-    texter.moveDownTo(curY+2*H1_SIZE);
+    texter.moveDownTo(curY+H1_SIZE);
     curY = texter.moveDownBy(0);
     texter.moveDownTo(curY+2*H1_SIZE);
     texter.renderText("<<Challenge Tickets", H1_STYLE);
