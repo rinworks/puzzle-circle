@@ -298,7 +298,7 @@ class TextTableHelper {
   // puzzles: 2D array - 1st col is PuzzleID and 2nd col is puzzle name:
   // {{"886", "Foo bar"},...}
   Grid generateAnswersGrid(int guildNo) {
-    String[][]puzzles = this.dataOrg.generateGuildPuzzles(guildNo);
+    String[][]puzzles = this.dataOrg.generateGuildAnswerRowInfo(guildNo);
     String[] heading = {"No.", "NAME", "YOUR SOLUTION"};
     String[][] tableData = new String[puzzles.length+1][3]; // 3: (#, name, solution)
     tableData[0] = heading;
