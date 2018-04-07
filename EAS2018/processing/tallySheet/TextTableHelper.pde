@@ -369,7 +369,7 @@ class TextTableHelper {
     texter.moveDownTo(curY+2*H1_SIZE);
     texter.renderText("<<Challenge Tickets", H1_STYLE);
     texter.renderText("<<Attempt one challenge at a time, IN ORDER - left to right.\n" +
-      "Tear off a ticket and TWO of your teammates take this ticket with the artifact to the challenge area.", NORMAL_STYLE);
+      "Tear off a ticket and TWO of your teammates take this ticket to the challenge area.", NORMAL_STYLE);
 
     curY = texter.moveDownBy(0);
 
